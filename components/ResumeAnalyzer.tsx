@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { AnalysisResult, AnalyzeResponse } from "@/lib/types";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
+import { DEMO_JOB_DESCRIPTION, DEMO_RESUME } from "@/lib/demo-data";
 import ResultCards from "@/components/ResultCards";
 
 export default function ResumeAnalyzer() {
@@ -66,6 +67,14 @@ export default function ResumeAnalyzer() {
     if (value.trim()) {
       clearPdf();
     }
+  }
+
+  function handleTryDemo() {
+    clearPdf();
+    setResume(DEMO_RESUME);
+    setJobDescription(DEMO_JOB_DESCRIPTION);
+    setError(null);
+    setResult(null);
   }
 
   async function handleAnalyze(event: React.FormEvent<HTMLFormElement>) {
@@ -235,20 +244,33 @@ export default function ResumeAnalyzer() {
             PDFs are parsed on the server. Your API key never reaches the browser.
           </p>
           <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:items-end">
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="inline-flex min-w-40 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
-            >
-              {isLoading ? (
-                <>
-                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Analyzing...
-                </>
-              ) : (
-                "Analyze match"
-              )}
-            </button>
+            <p className="text-center text-xs text-zinc-400 dark:text-zinc-500 sm:text-right">
+              Demo uses synthetic sample data only.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+              <button
+                type="button"
+                onClick={handleTryDemo}
+                disabled={isLoading}
+                className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+              >
+                Try demo
+              </button>
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="inline-flex min-w-40 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Analyzing...
+                  </>
+                ) : (
+                  "Analyze match"
+                )}
+              </button>
+            </div>
             {error && (
               <p
                 role="alert"
