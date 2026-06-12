@@ -10,3 +10,10 @@ export const RESUMEX_URL =
 
 export const TALENTX_URL =
   process.env.NEXT_PUBLIC_TALENTX_URL ?? "https://talentx-website.vercel.app";
+
+export const TALENTX_LINKEDIN = "https://www.linkedin.com/company/talentxrecruiting";
+
+export const VICENTE_LINKEDIN = "https://www.linkedin.com/in/vicente-barrientos/";
+
+export const BENJAMIN_LINKEDIN =
+  "https://www.linkedin.com/in/benjam%C3%ADn-mahave-cornejo-39b2aa129/";

@@ -1,6 +1,7 @@
 "use client";
 
 import { generateReportPdf } from "@/lib/generate-report-pdf";
+import { useLocale } from "@/components/LocaleProvider";
 import type { AnalysisResult } from "@/lib/types";
 
 interface DownloadReportButtonProps {
@@ -8,6 +9,7 @@ interface DownloadReportButtonProps {
 }
 
 export default function DownloadReportButton({ result }: DownloadReportButtonProps) {
+  const { t } = useLocale();
   function handleDownload() {
     generateReportPdf(result);
   }
@@ -17,9 +19,9 @@ export default function DownloadReportButton({ result }: DownloadReportButtonPro
       type="button"
       onClick={handleDownload}
       className="inline-flex shrink-0 items-center rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-800 transition hover:border-indigo-400 hover:bg-indigo-100 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:border-cyan-300/50 dark:hover:bg-cyan-400/20"
-      aria-label="Download report as PDF"
+      aria-label={t.results.downloadReport}
     >
-      Download Report
+      {t.results.downloadReport}
     </button>
   );
 }

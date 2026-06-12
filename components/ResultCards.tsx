@@ -1,6 +1,9 @@
+"use client";
+
 import CopyButton from "@/components/CopyButton";
 import DownloadReportButton from "@/components/DownloadReportButton";
 import SectionHeader from "@/components/SectionHeader";
+import { useLocale } from "@/components/LocaleProvider";
 import {
   formatClientFacingBullets,
   formatFullAnalysisSummary,
@@ -18,9 +21,9 @@ interface ResultCardsProps {
   result: AnalysisResult;
 }
 
-const MISSING_EVIDENCE = "Not found in resume.";
+const API_MISSING_EVIDENCE = "Not found in resume.";
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreRing({ score, matchLabel }: { score: number; matchLabel: string }) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
@@ -56,7 +59,7 @@ function ScoreRing({ score }: { score: number }) {
         <p className="text-3xl font-bold tabular-nums text-zinc-900 dark:text-white">
           {score}
         </p>
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Match</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{matchLabel}</p>
       </div>
     </div>
   );
@@ -90,10 +93,14 @@ function CriteriaChecklist({
   title,
   items,
   accent,
+  missingEvidenceLabel,
+  emptyMessage,
 }: {
   title: string;
   items: CriteriaItem[];
   accent: "indigo" | "zinc";
+  missingEvidenceLabel: string;
+  emptyMessage: string;
 }) {
   const borderClass =
     accent === "indigo"
@@ -129,12 +136,14 @@ function CriteriaChecklist({
                   </p>
                   <p
                     className={`mt-1 text-xs leading-relaxed ${
-                      item.evidence === MISSING_EVIDENCE
+                      item.evidence === API_MISSING_EVIDENCE
                         ? "italic text-zinc-500"
                         : "text-zinc-600 dark:text-zinc-400"
                     }`}
                   >
-                    {item.evidence}
+                    {item.evidence === API_MISSING_EVIDENCE
+                      ? missingEvidenceLabel
+                      : item.evidence}
                   </p>
                 </div>
               </div>
@@ -142,17 +151,27 @@ function CriteriaChecklist({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-500">No criteria identified.</p>
+        <p className="text-sm text-zinc-500">{emptyMessage}</p>
       )}
     </article>
   );
 }
 
-function StrongMatchesList({ matches }: { matches: StrongMatch[] }) {
+function StrongMatchesList({
+  title,
+  matches,
+  missingEvidenceLabel,
+  emptyMessage,
+}: {
+  title: string;
+  matches: StrongMatch[];
+  missingEvidenceLabel: string;
+  emptyMessage: string;
+}) {
   return (
     <article className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
-        Strong matches with evidence
+        {title}
       </h3>
       {matches.length > 0 ? (
         <ul className="space-y-3">
@@ -164,18 +183,20 @@ function StrongMatchesList({ matches }: { matches: StrongMatch[] }) {
               <h4 className="font-medium text-zinc-900 dark:text-white">{item.match}</h4>
               <p
                 className={`mt-1 text-sm leading-relaxed ${
-                  item.evidence === MISSING_EVIDENCE
+                  item.evidence === API_MISSING_EVIDENCE
                     ? "italic text-zinc-500"
                     : "text-zinc-600 dark:text-zinc-400"
                 }`}
               >
-                {item.evidence}
+                {item.evidence === API_MISSING_EVIDENCE
+                  ? missingEvidenceLabel
+                  : item.evidence}
               </p>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-500">No strong matches identified.</p>
+        <p className="text-sm text-zinc-500">{emptyMessage}</p>
       )}
     </article>
   );
@@ -223,7 +244,17 @@ function ListCard({
   );
 }
 
-function KeywordPills({ keywords, variant }: { keywords: string[]; variant: "matched" | "missing" }) {
+function KeywordPills({
+  keywords,
+  variant,
+  emptyMatched,
+  emptyMissing,
+}: {
+  keywords: string[];
+  variant: "matched" | "missing";
+  emptyMatched: string;
+  emptyMissing: string;
+}) {
   const pillClass =
     variant === "matched"
       ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-400/20 dark:text-emerald-200"
@@ -232,7 +263,7 @@ function KeywordPills({ keywords, variant }: { keywords: string[]; variant: "mat
   if (keywords.length === 0) {
     return (
       <p className="text-sm text-zinc-500">
-        {variant === "matched" ? "No clear keyword overlap found." : "No major gaps detected."}
+        {variant === "matched" ? emptyMatched : emptyMissing}
       </p>
     );
   }
@@ -252,21 +283,26 @@ function KeywordPills({ keywords, variant }: { keywords: string[]; variant: "mat
 }
 
 export default function ResultCards({ result }: ResultCardsProps) {
+  const { t } = useLocale();
   const fullSummaryText = formatFullAnalysisSummary(result);
 
   return (
     <section className="space-y-6" aria-live="polite">
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <ScoreRing score={result.matchScore} />
+          <ScoreRing score={result.matchScore} matchLabel={t.results.match} />
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
-                  Overall fit
+                  {t.results.overallFit}
                 </h2>
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  <CopyButton text={fullSummaryText} label="Copy full summary" />
+                  <CopyButton
+                    text={fullSummaryText}
+                    label={t.results.copyFullSummary}
+                    copiedLabel={t.results.copied}
+                  />
                   <DownloadReportButton result={result} />
                 </div>
               </div>
@@ -278,14 +314,18 @@ export default function ResultCards({ result }: ResultCardsProps) {
               <div
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${concernStyles(result.concernLevel)}`}
               >
-                <span className="text-xs uppercase tracking-wide opacity-80">Concern</span>
-                <span>{result.concernLevel}</span>
+                <span className="text-xs uppercase tracking-wide opacity-80">
+                  {t.results.concern}
+                </span>
+                <span>{t.concernLevels[result.concernLevel]}</span>
               </div>
               <div
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${nextStepStyles(result.recommendedNextStep)}`}
               >
-                <span className="text-xs uppercase tracking-wide opacity-80">Recommendation</span>
-                <span>{result.recommendedNextStep}</span>
+                <span className="text-xs uppercase tracking-wide opacity-80">
+                  {t.results.recommendation}
+                </span>
+                <span>{t.nextSteps[result.recommendedNextStep]}</span>
               </div>
             </div>
           </div>
@@ -294,30 +334,39 @@ export default function ResultCards({ result }: ResultCardsProps) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <CriteriaChecklist
-          title="Must-have criteria"
+          title={t.results.mustHave}
           items={result.mustHaveCriteria}
           accent="indigo"
+          missingEvidenceLabel={t.results.missingEvidence}
+          emptyMessage={t.results.noCriteria}
         />
         <CriteriaChecklist
-          title="Nice-to-have criteria"
+          title={t.results.niceToHave}
           items={result.niceToHaveCriteria}
           accent="zinc"
+          missingEvidenceLabel={t.results.missingEvidence}
+          emptyMessage={t.results.noCriteria}
         />
       </div>
 
-      <StrongMatchesList matches={result.strongMatches} />
+      <StrongMatchesList
+        title={t.results.strongMatches}
+        matches={result.strongMatches}
+        missingEvidenceLabel={t.results.missingEvidence}
+        emptyMessage={t.results.noStrongMatches}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <ListCard
-          title="Strengths"
+          title={t.results.strengths}
           items={result.strengths}
-          emptyMessage="No standout strengths identified."
+          emptyMessage={t.results.noStrengths}
           accent="emerald"
         />
         <ListCard
-          title="Gaps"
+          title={t.results.gaps}
           items={result.gaps}
-          emptyMessage="No major gaps identified."
+          emptyMessage={t.results.noGaps}
           accent="amber"
         />
       </div>
@@ -325,21 +374,31 @@ export default function ResultCards({ result }: ResultCardsProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm dark:border-sky-400/20 dark:bg-sky-400/10">
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
-            Matched keywords
+            {t.results.matchedKeywords}
           </h3>
-          <KeywordPills keywords={result.matchedKeywords} variant="matched" />
+          <KeywordPills
+            keywords={result.matchedKeywords}
+            variant="matched"
+            emptyMatched={t.results.noMatchedKeywords}
+            emptyMissing={t.results.noMissingKeywords}
+          />
         </article>
         <article className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-sm dark:border-rose-400/20 dark:bg-rose-400/10">
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
-            Missing keywords
+            {t.results.missingKeywords}
           </h3>
-          <KeywordPills keywords={result.missingKeywords} variant="missing" />
+          <KeywordPills
+            keywords={result.missingKeywords}
+            variant="missing"
+            emptyMatched={t.results.noMatchedKeywords}
+            emptyMissing={t.results.noMissingKeywords}
+          />
         </article>
       </div>
 
       <article className="rounded-2xl border border-violet-200 bg-violet-50/60 p-5 shadow-sm dark:border-violet-400/20 dark:bg-violet-400/10">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
-          Suggestions
+          {t.results.suggestions}
         </h3>
         {result.suggestions.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
@@ -358,15 +417,17 @@ export default function ResultCards({ result }: ResultCardsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">No suggestions available.</p>
+          <p className="text-sm text-zinc-500">{t.results.noSuggestions}</p>
         )}
       </article>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm dark:border-sky-400/20 dark:bg-sky-400/10">
           <SectionHeader
-            title="Suggested Interview Questions"
+            title={t.results.interviewQuestions}
             copyText={formatPhoneScreenQuestions(result.phoneScreenQuestions)}
+            copyLabel={t.results.copy}
+            copiedLabel={t.results.copied}
           />
           <ol className="space-y-3">
             {result.phoneScreenQuestions.map((question, index) => (
@@ -385,8 +446,10 @@ export default function ResultCards({ result }: ResultCardsProps) {
 
         <article className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-sm dark:border-cyan-400/20 dark:bg-cyan-400/10">
           <SectionHeader
-            title="AI Assessment Highlights"
+            title={t.results.assessmentHighlights}
             copyText={formatClientFacingBullets(result.clientFacingBullets)}
+            copyLabel={t.results.copy}
+            copiedLabel={t.results.copied}
           />
           <ul className="space-y-3">
             {result.clientFacingBullets.map((bullet) => (
@@ -401,8 +464,6 @@ export default function ResultCards({ result }: ResultCardsProps) {
           </ul>
         </article>
       </div>
-
-      
     </section>
   );
 }

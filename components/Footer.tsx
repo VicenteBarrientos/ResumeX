@@ -1,5 +1,12 @@
+"use client";
+
 import ThemedExternalLink from "@/components/ThemedExternalLink";
-import { TALENTX_URL } from "@/lib/constants";
+import { useLocale } from "@/components/LocaleProvider";
+import {
+  BENJAMIN_LINKEDIN,
+  TALENTX_URL,
+  VICENTE_LINKEDIN,
+} from "@/lib/constants";
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -14,33 +21,12 @@ function GitHubIcon({ className }: { className?: string }) {
   );
 }
 
-function LinkedInIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  );
-}
-
-const socialLinks = [
-  {
-    label: "GitHub",
-    href: "https://github.com/VicenteBarrientos",
-    icon: GitHubIcon,
-  },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/vicente-barrientos/",
-    icon: LinkedInIcon,
-  },
-] as const;
+const linkClass =
+  "inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200";
 
 export default function Footer() {
+  const { t } = useLocale();
+
   return (
     <footer className="relative z-10 mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-white/10 dark:bg-[#050816]/80 dark:backdrop-blur-none">
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -50,35 +36,55 @@ export default function Footer() {
               ResumeX
             </p>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              Built by Vicente Barrientos
+              {t.footer.builtBy}
             </p>
             <ThemedExternalLink
               href={TALENTX_URL}
               fallbackTheme="light"
               className="mt-2 inline-block text-sm text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-cyan-300"
             >
-              TalentX Recruiting
+              {t.footer.talentX}
             </ThemedExternalLink>
           </div>
 
-          <div className="flex items-center gap-3">
-            {socialLinks.map(({ label, href, icon: Icon }) => (
+          <div className="flex flex-col items-center gap-3 sm:items-end">
+            <nav
+              className="flex flex-wrap items-center justify-center gap-2 sm:justify-end"
+              aria-label={t.footer.partnerLinksAria}
+            >
               <a
-                key={label}
-                href={href}
+                href={VICENTE_LINKEDIN}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={label}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200"
+                className={linkClass}
+                aria-label={t.footer.vicenteLinkedInAria}
               >
-                <Icon className="h-4 w-4" />
+                {t.footer.vicenteLinkedIn}
               </a>
-            ))}
+              <a
+                href={BENJAMIN_LINKEDIN}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+                aria-label={t.footer.benjaminLinkedInAria}
+              >
+                {t.footer.benjaminLinkedIn}
+              </a>
+            </nav>
+            <a
+              href="https://github.com/VicenteBarrientos"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t.footer.github}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200"
+            >
+              <GitHubIcon className="h-4 w-4" />
+            </a>
           </div>
         </div>
 
         <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500 sm:text-left">
-          © 2026 Vicente Barrientos
+          {t.footer.copyright}
         </p>
       </div>
     </footer>

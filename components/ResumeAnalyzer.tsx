@@ -1,12 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { AnalysisResult, AnalyzeResponse } from "@/lib/types";
+import { useLocale } from "@/components/LocaleProvider";
+import ResultCards from "@/components/ResultCards";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 import { DEMO_JOB_DESCRIPTION, DEMO_RESUME } from "@/lib/demo-data";
-import ResultCards from "@/components/ResultCards";
+import { formatMessage } from "@/lib/i18n/resumex";
+import type { AnalysisResult, AnalyzeResponse } from "@/lib/types";
 
 export default function ResumeAnalyzer() {
+  const { t } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resume, setResume] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -20,13 +23,13 @@ export default function ResumeAnalyzer() {
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
     if (!isPdf) {
-      setError("Only PDF files are supported for resume upload.");
+      setError(t.errors.pdfOnly);
       setPdfFile(null);
       return;
     }
 
     if (file.size > MAX_PDF_SIZE_BYTES) {
-      setError(`PDF must be ${MAX_PDF_SIZE_LABEL} or smaller.`);
+      setError(formatMessage(t.errors.pdfSize, { size: MAX_PDF_SIZE_LABEL }));
       setPdfFile(null);
       return;
     }
@@ -106,18 +109,18 @@ export default function ResumeAnalyzer() {
       const data: AnalyzeResponse = await response.json();
 
       if (!response.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ?? t.errors.generic);
         return;
       }
 
       if (!data.result) {
-        setError("No analysis was returned. Please try again.");
+        setError(t.errors.noResult);
         return;
       }
 
       setResult(data.result);
     } catch {
-      setError("Network error. Please check your connection and try again.");
+      setError(t.errors.network);
     } finally {
       setIsLoading(false);
     }
@@ -130,16 +133,15 @@ export default function ResumeAnalyzer() {
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <header className="mb-10 text-center">
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
-          AI Resume Coach
+          {t.header.eyebrow}
         </p>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           <span className="text-zinc-900 dark:bg-gradient-to-r dark:from-white dark:via-cyan-100 dark:to-blue-300 dark:bg-clip-text dark:text-transparent">
-            ResumeX
+            {t.header.title}
           </span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-          Upload a PDF or paste your resume, then add a target job description. Get an instant
-          match score, keyword gaps, and actionable suggestions — processed securely on the server.
+          {t.header.description}
         </p>
       </header>
 
@@ -147,7 +149,7 @@ export default function ResumeAnalyzer() {
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
             <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              Your resume
+              {t.form.yourResume}
             </span>
 
             <div
@@ -165,10 +167,10 @@ export default function ResumeAnalyzer() {
             >
               <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
                 <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                  Drag & drop your PDF resume
+                  {t.form.dragDrop}
                 </span>
                 <span className="text-xs text-zinc-500">
-                  or click to browse — PDF only, up to {MAX_PDF_SIZE_LABEL}
+                  {formatMessage(t.form.browseHint, { size: MAX_PDF_SIZE_LABEL })}
                 </span>
                 <input
                   ref={fileInputRef}
@@ -179,7 +181,7 @@ export default function ResumeAnalyzer() {
                   className="sr-only"
                 />
                 <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200">
-                  Choose PDF file
+                  {t.form.choosePdf}
                 </span>
               </label>
 
@@ -194,7 +196,7 @@ export default function ResumeAnalyzer() {
                     disabled={isLoading}
                     className="shrink-0 text-xs font-medium text-indigo-700 hover:text-indigo-900 disabled:opacity-50 dark:text-cyan-200 dark:hover:text-cyan-100"
                   >
-                    Remove
+                    {t.form.remove}
                   </button>
                 </div>
               )}
@@ -202,39 +204,39 @@ export default function ResumeAnalyzer() {
 
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
-              <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">or</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                {t.form.or}
+              </span>
               <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
             </div>
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                Paste resume text
+                {t.form.pasteResume}
               </span>
               <textarea
                 value={resume}
                 onChange={(event) => handleResumePaste(event.target.value)}
                 rows={12}
-                placeholder="Paste your resume text here..."
+                placeholder={t.form.pasteResumePlaceholder}
                 className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20 dark:disabled:bg-white/[0.02]"
                 disabled={isLoading || Boolean(pdfFile)}
               />
               {pdfFile && (
-                <p className="mt-2 text-xs text-zinc-500">
-                  Remove the PDF to paste resume text instead.
-                </p>
+                <p className="mt-2 text-xs text-zinc-500">{t.form.removePdfHint}</p>
               )}
             </label>
           </div>
 
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              Job description
+              {t.form.jobDescription}
             </span>
             <textarea
               value={jobDescription}
               onChange={(event) => setJobDescription(event.target.value)}
               rows={24}
-              placeholder="Paste the job posting here..."
+              placeholder={t.form.jobDescriptionPlaceholder}
               className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
               disabled={isLoading}
             />
@@ -242,12 +244,10 @@ export default function ResumeAnalyzer() {
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-          <p className="text-xs text-zinc-500">
-            PDFs are parsed on the server. Your API key never reaches the browser.
-          </p>
+          <p className="text-xs text-zinc-500">{t.form.privacyNote}</p>
           <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:items-end">
             <p className="text-center text-xs text-zinc-400 dark:text-zinc-500 sm:text-right">
-              Demo uses synthetic sample data only.
+              {t.form.demoNote}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
               <button
@@ -256,7 +256,7 @@ export default function ResumeAnalyzer() {
                 disabled={isLoading}
                 className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
               >
-                Try demo
+                {t.form.tryDemo}
               </button>
               <button
                 type="submit"
@@ -266,10 +266,10 @@ export default function ResumeAnalyzer() {
                 {isLoading ? (
                   <>
                     <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Analyzing...
+                    {t.form.analyzing}
                   </>
                 ) : (
-                  "Analyze match"
+                  t.form.analyze
                 )}
               </button>
             </div>
@@ -288,7 +288,7 @@ export default function ResumeAnalyzer() {
       {result && (
         <div className="mt-10">
           <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-inherit">
-            Analysis results
+            {t.results.title}
           </h2>
           <ResultCards result={result} />
         </div>

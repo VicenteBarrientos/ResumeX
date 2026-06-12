@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Footer from "@/components/Footer";
+import LanguageToggle from "@/components/LanguageToggle";
+import SiteLinks from "@/components/SiteLinks";
+import LocaleProvider from "@/components/LocaleProvider";
+import LocaleSync from "@/components/LocaleSync";
 import ThemeProvider from "@/components/ThemeProvider";
 import ThemeSync from "@/components/ThemeSync";
 import ThemeToggle from "@/components/ThemeToggle";
+import { localeInitScript } from "@/lib/locale-sync";
 import { themeInitScript } from "@/lib/theme-sync";
 import "./globals.css";
 
@@ -36,19 +41,27 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className="flex min-h-screen flex-col">
         <ThemeProvider defaultTheme="light">
-          <ThemeSync />
-          <div className="relative flex min-h-screen flex-col">
-            <div className="pointer-events-none fixed right-4 top-4 z-50 sm:right-6 lg:right-8">
-              <div className="pointer-events-auto">
-                <ThemeToggle />
+          <LocaleProvider defaultLocale="en">
+            <ThemeSync />
+            <LocaleSync />
+            <div className="relative flex min-h-screen flex-col">
+              <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex items-start justify-between gap-3 sm:inset-x-6 lg:inset-x-8">
+                <div className="pointer-events-auto">
+                  <SiteLinks />
+                </div>
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+                  <LanguageToggle />
+                  <ThemeToggle />
+                </div>
               </div>
+              <main className="flex-1 pt-16 sm:pt-20">{children}</main>
+              <Footer />
             </div>
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>
