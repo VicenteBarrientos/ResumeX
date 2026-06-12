@@ -132,10 +132,12 @@ export default function ResumeAnalyzer() {
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
           AI Resume Coach
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
-          ResumeX
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <span className="text-zinc-900 dark:bg-gradient-to-r dark:from-white dark:via-cyan-100 dark:to-blue-300 dark:bg-clip-text dark:text-transparent">
+            ResumeX
+          </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
           Upload a PDF or paste your resume, then add a target job description. Get an instant
           match score, keyword gaps, and actionable suggestions — processed securely on the server.
         </p>
@@ -285,7 +287,7 @@ export default function ResumeAnalyzer() {
 
       {result && (
         <div className="mt-10">
-          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-inherit">
             Analysis results
           </h2>
           <ResultCards result={result} />

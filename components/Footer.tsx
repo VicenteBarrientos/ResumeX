@@ -42,7 +42,7 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-white/10 dark:bg-[#050816]/80">
+    <footer className="relative z-10 mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-white/10 dark:bg-[#050816]/80 dark:backdrop-blur-none">
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-center sm:text-left">
