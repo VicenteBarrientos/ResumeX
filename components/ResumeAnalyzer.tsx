@@ -129,10 +129,10 @@ export default function ResumeAnalyzer() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <header className="mb-10 text-center">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
+        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
           AI Resume Coach
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
           ResumeX
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -157,8 +157,8 @@ export default function ResumeAnalyzer() {
               onDragLeave={() => setIsDragging(false)}
               className={`rounded-2xl border border-dashed p-4 transition ${
                 isDragging
-                  ? "border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-950/40"
-                  : "border-zinc-300 bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/40"
+                  ? "border-indigo-500 bg-indigo-50 dark:border-cyan-400 dark:bg-cyan-400/10"
+                  : "border-zinc-300 bg-zinc-50/80 dark:border-white/10 dark:bg-white/[0.03]"
               }`}
             >
               <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
@@ -176,21 +176,21 @@ export default function ResumeAnalyzer() {
                   disabled={isLoading}
                   className="sr-only"
                 />
-                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-indigo-500 dark:hover:text-indigo-300">
+                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200">
                   Choose PDF file
                 </span>
               </label>
 
               {pdfFile && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm dark:border-indigo-900 dark:bg-indigo-950/40">
-                  <span className="truncate text-indigo-900 dark:text-indigo-100">
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm dark:border-cyan-400/30 dark:bg-cyan-400/10">
+                  <span className="truncate text-indigo-900 dark:text-cyan-100">
                     {pdfFile.name}
                   </span>
                   <button
                     type="button"
                     onClick={clearPdf}
                     disabled={isLoading}
-                    className="shrink-0 text-xs font-medium text-indigo-700 hover:text-indigo-900 disabled:opacity-50 dark:text-indigo-300 dark:hover:text-indigo-100"
+                    className="shrink-0 text-xs font-medium text-indigo-700 hover:text-indigo-900 disabled:opacity-50 dark:text-cyan-200 dark:hover:text-cyan-100"
                   >
                     Remove
                   </button>
@@ -199,9 +199,9 @@ export default function ResumeAnalyzer() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">or</span>
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
             </div>
 
             <label className="block">
@@ -213,7 +213,7 @@ export default function ResumeAnalyzer() {
                 onChange={(event) => handleResumePaste(event.target.value)}
                 rows={12}
                 placeholder="Paste your resume text here..."
-                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:disabled:bg-zinc-900"
+                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20 dark:disabled:bg-white/[0.02]"
                 disabled={isLoading || Boolean(pdfFile)}
               />
               {pdfFile && (
@@ -233,7 +233,7 @@ export default function ResumeAnalyzer() {
               onChange={(event) => setJobDescription(event.target.value)}
               rows={24}
               placeholder="Paste the job posting here..."
-              className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
               disabled={isLoading}
             />
           </label>
@@ -252,14 +252,14 @@ export default function ResumeAnalyzer() {
                 type="button"
                 onClick={handleTryDemo}
                 disabled={isLoading}
-                className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+                className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
               >
                 Try demo
               </button>
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="inline-flex min-w-40 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
+                className="inline-flex min-w-40 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90 dark:disabled:bg-white/10 dark:disabled:text-zinc-500"
               >
                 {isLoading ? (
                   <>
@@ -285,7 +285,7 @@ export default function ResumeAnalyzer() {
 
       {result && (
         <div className="mt-10">
-          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
             Analysis results
           </h2>
           <ResultCards result={result} />

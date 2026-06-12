@@ -1,3 +1,6 @@
+import ThemedExternalLink from "@/components/ThemedExternalLink";
+import { TALENTX_URL } from "@/lib/constants";
+
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -39,16 +42,23 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/60">
+    <footer className="mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-white/10 dark:bg-[#050816]/80">
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <p className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
               ResumeX
             </p>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               Built by Vicente Barrientos
             </p>
+            <ThemedExternalLink
+              href={TALENTX_URL}
+              fallbackTheme="light"
+              className="mt-2 inline-block text-sm text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-cyan-300"
+            >
+              TalentX Recruiting
+            </ThemedExternalLink>
           </div>
 
           <div className="flex items-center gap-3">
@@ -59,7 +69,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200"
               >
                 <Icon className="h-4 w-4" />
               </a>
