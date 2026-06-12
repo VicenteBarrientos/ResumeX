@@ -6,7 +6,6 @@ import {
   getThemeFromSearch,
   isThemeMode,
   syncThemeToCookie,
-  syncThemeToUrl,
 } from "@/lib/theme-sync";
 
 export default function ThemeSync() {
@@ -24,7 +23,6 @@ export default function ThemeSync() {
       return;
     }
 
-    syncThemeToUrl(resolvedTheme);
     syncThemeToCookie(resolvedTheme);
   }, [resolvedTheme]);
 

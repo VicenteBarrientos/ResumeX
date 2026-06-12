@@ -14,7 +14,6 @@ import {
   isLocale,
   LOCALE_STORAGE_KEY,
   syncLocaleToCookie,
-  syncLocaleToUrl,
   type Locale,
 } from "@/lib/locale-sync";
 
@@ -50,7 +49,6 @@ export default function LocaleProvider({
     setLocaleState(nextLocale);
     localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
     document.documentElement.lang = nextLocale;
-    syncLocaleToUrl(nextLocale);
     syncLocaleToCookie(nextLocale);
   };
 
