@@ -10,7 +10,6 @@ import {
 } from "react";
 import { getResumeXMessages, type ResumeXMessages } from "@/lib/i18n/resumex";
 import {
-  getLocaleFromSearch,
   isLocale,
   LOCALE_STORAGE_KEY,
   syncLocaleToCookie,
@@ -37,9 +36,8 @@ export default function LocaleProvider({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const fromUrl = getLocaleFromSearch(window.location.search);
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    const initial = fromUrl ?? (isLocale(stored) ? stored : defaultLocale);
+    const initial = isLocale(stored) ? stored : defaultLocale;
     setLocaleState(initial);
     document.documentElement.lang = initial;
     setMounted(true);

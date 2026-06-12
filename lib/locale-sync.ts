@@ -35,4 +35,4 @@ export function syncLocaleToCookie(locale: Locale) {
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 }
 
-export const localeInitScript = `(function(){try{var l=null,p=new URLSearchParams(window.location.search);l=p.get("${LOCALE_PARAM}");if(l!=="en"&&l!=="es"){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);if(m)l=decodeURIComponent(m[1]);}if(l!=="en"&&l!=="es")l=localStorage.getItem("${LOCALE_STORAGE_KEY}");if(l==="en"||l==="es"){localStorage.setItem("${LOCALE_STORAGE_KEY}",l);document.documentElement.lang=l;}}catch(e){}})();`;
+export const localeInitScript = `(function(){try{var u=new URL(window.location.href),f=u.searchParams.get("${LOCALE_PARAM}"),v=f==="en"||f==="es",l=v?f:null;if(!l){l=localStorage.getItem("${LOCALE_STORAGE_KEY}");if(l!=="en"&&l!=="es"){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);if(m)l=decodeURIComponent(m[1]);}}if(l==="en"||l==="es"){localStorage.setItem("${LOCALE_STORAGE_KEY}",l);document.documentElement.lang=l;}if(v){u.searchParams.delete("${LOCALE_PARAM}");window.history.replaceState({},"",u.pathname+u.search+u.hash);}}catch(e){}})();`;
