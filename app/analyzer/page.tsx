@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import CvFormatter from "@/components/CvFormatter";
+import ResumeAnalyzer from "@/components/ResumeAnalyzer";
 
 export const metadata: Metadata = {
-  title: "ResumeX — Turn any resume into a polished CV",
+  title: "ResumeX — AI Resume Match Analyzer",
   description:
-    "Turn any resume into a polished, professional CV in one click. Upload or paste your resume — AI cleans the structure, you fine-tune it, then export to PDF or DOCX.",
+    "Compare your resume to any job description. Get match scores, keyword gaps, and tailored suggestions.",
 };
 
-export default function Home() {
+export default function AnalyzerPage() {
   return (
     <div className="relative min-h-full flex-1 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white text-zinc-900 dark:bg-[#050816] dark:bg-none dark:text-white">
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden dark:block">
@@ -16,7 +16,7 @@ export default function Home() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <CvFormatter />
+        <ResumeAnalyzer />
       </div>
     </div>
   );

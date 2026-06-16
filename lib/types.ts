@@ -57,3 +57,62 @@ export interface AnalyzeResponse {
   usage?: TokenUsage;
   error?: string;
 }
+
+export interface ResumeContact {
+  name: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  website: string;
+}
+
+export interface ExperienceEntry {
+  company: string;
+  role: string;
+  location: string;
+  dates: string;
+  bullets: string[];
+}
+
+export interface EducationEntry {
+  institution: string;
+  degree: string;
+  location: string;
+  dates: string;
+  details: string[];
+}
+
+export interface ProjectEntry {
+  name: string;
+  description: string;
+  bullets: string[];
+}
+
+export interface CertificationEntry {
+  name: string;
+  issuer: string;
+  date: string;
+}
+
+export interface FormattedResume {
+  contact: ResumeContact;
+  summary: string;
+  experience: ExperienceEntry[];
+  education: EducationEntry[];
+  skills: string[];
+  projects: ProjectEntry[];
+  certifications: CertificationEntry[];
+  languages: string[];
+}
+
+export interface FormatRequest {
+  resume: string;
+}
+
+export interface FormatResponse {
+  result?: FormattedResume;
+  usage?: TokenUsage;
+  error?: string;
+}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import AppNav from "@/components/AppNav";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/LanguageToggle";
 import SiteLinks from "@/components/SiteLinks";
@@ -23,9 +24,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumeX — AI Resume Match Analyzer",
+  title: "ResumeX — Turn any resume into a polished CV",
   description:
-    "Compare your resume to any job description. Get match scores, keyword gaps, and tailored suggestions.",
+    "Turn any resume into a polished, professional CV in one click. Format, edit, and export to PDF or DOCX — plus an AI job-description match analyzer.",
 };
 
 export default function RootLayout({
@@ -50,7 +51,8 @@ export default function RootLayout({
             <LocaleSync />
             <div className="relative flex min-h-screen flex-col">
               <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex items-start justify-between gap-3 sm:inset-x-6 lg:inset-x-8">
-                <div className="pointer-events-auto">
+                <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+                  <AppNav />
                   <SiteLinks />
                 </div>
                 <div className="pointer-events-auto flex shrink-0 items-center gap-2">

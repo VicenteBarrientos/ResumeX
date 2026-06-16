@@ -122,11 +122,19 @@ export interface AnalyzeResumeResponse {
   usage: TokenUsage;
 }
 
+const isDev = process.env.NODE_ENV === "development";
+
 export async function analyzeResume(
   resume: string,
   jobDescription: string,
   apiKey: string,
 ): Promise<AnalyzeResumeResponse> {
+  if (isDev) {
+    console.log("[ResumeX] analyzeResume — resume input (first 400 chars):");
+    console.log(resume.slice(0, 400));
+    console.log("[ResumeX] analyzeResume — resume length:", resume.length);
+  }
+
   const openai = new OpenAI({ apiKey });
 
   const completion = await openai.chat.completions.create({
