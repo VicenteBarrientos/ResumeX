@@ -41,6 +41,27 @@ export default function AutoApplyDashboard() {
       const storedProfile = localStorage.getItem(STORAGE_KEYS.profile);
       if (storedProfile) setProfile(JSON.parse(storedProfile));
     } catch {}
+
+    // Listen for live updates pushed by the Chrome extension
+    const onNewApp = (e: Event) => {
+      const app = (e as CustomEvent).detail as Application;
+      setApplications((prev) => {
+        if (prev.find((a) => a.id === app.id)) return prev;
+        return [app, ...prev];
+      });
+    };
+
+    const onProfileUpdate = (e: Event) => {
+      const p = (e as CustomEvent).detail as CandidateProfile;
+      setProfile(p);
+    };
+
+    window.addEventListener("autoapply:new_application", onNewApp);
+    window.addEventListener("autoapply:profile_updated", onProfileUpdate);
+    return () => {
+      window.removeEventListener("autoapply:new_application", onNewApp);
+      window.removeEventListener("autoapply:profile_updated", onProfileUpdate);
+    };
   }, []);
 
   const saveApplications = (apps: Application[]) => {
