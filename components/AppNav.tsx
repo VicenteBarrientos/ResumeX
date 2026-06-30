@@ -20,6 +20,7 @@ export default function AppNav() {
   const links = [
     { href: "/", label: t.nav.cvFormatter },
     { href: "/analyzer", label: t.nav.analyzer },
+    { href: "/jobsearcher", label: t.nav.jobSearcher },
     { href: "/autoapply", label: "AutoApply" },
   ];
 

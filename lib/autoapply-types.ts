@@ -30,6 +30,8 @@ export interface CandidateProfile {
     remote: boolean;
     willingToRelocate: boolean;
     startAvailability: string;
+    greenhouseBoards?: string[];
+    leverBoards?: string[];
   };
   experience: {
     totalYears: number;
