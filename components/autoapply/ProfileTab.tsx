@@ -97,9 +97,12 @@ export default function ProfileTab({ profile, onSave }: Props) {
       return;
     }
 
-    if (backendSecret.trim()) {
-      saveBackendSettings(getBackendUrl(), backendSecret.trim());
+    const secret = backendSecret.trim();
+    if (!secret) {
+      setImportError("Enter your AutoApply API secret first (see C:\\Users\\hp\\.autoapply-secret.txt).");
+      return;
     }
+    saveBackendSettings(getBackendUrl(), secret);
 
     setImporting(true);
     setImportError(null);
@@ -107,7 +110,7 @@ export default function ProfileTab({ profile, onSave }: Props) {
 
     try {
       const text = file ? await extractResumeFromPdf(file) : resumeText.trim();
-      const parsed = await parseProfileFromResumeText(text);
+      const parsed = await parseProfileFromResumeText(text, secret);
       setDraft((prev) => mergeProfile(prev, parsed));
       setImportNotice("Profile fields filled from your resume — review and save when ready.");
       clearFile();
@@ -214,7 +217,9 @@ export default function ProfileTab({ profile, onSave }: Props) {
             className={inputClass}
           />
           <p className="mt-1 text-xs text-zinc-400">
-            Uses your AutoApply backend at {getBackendUrl()} (Claude). Check{" "}
+            Same 64-character hex secret as the Chrome extension (saved in{" "}
+            <code className="text-[10px]">.autoapply-secret.txt</code> on your PC). Uses your
+            AutoApply backend at {getBackendUrl()} (Claude). Check{" "}
             <a href={`${getBackendUrl()}/health`} target="_blank" rel="noopener noreferrer" className="underline">
               /health
             </a>{" "}

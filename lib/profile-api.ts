@@ -3,6 +3,13 @@ import { getBackendSecret, getBackendUrl } from "@/lib/job-api";
 
 export { getBackendSecret, getBackendUrl, saveBackendSettings } from "@/lib/job-api";
 
+function backendErrorMessage(status: number, error: string | undefined): string {
+  if (status === 401 || error === "Unauthorized") {
+    return "API secret incorrect — open C:\\Users\\hp\\.autoapply-secret.txt, copy the full value, paste here, and try again.";
+  }
+  return error ?? `Backend error (${status})`;
+}
+
 /** Extract text from a PDF via ResumeX (no OpenAI key needed). */
 export async function extractResumeFromPdf(file: File): Promise<string> {
   const formData = new FormData();
@@ -15,8 +22,11 @@ export async function extractResumeFromPdf(file: File): Promise<string> {
 }
 
 /** Parse resume text via AutoApply backend (Claude). */
-export async function parseProfileViaBackend(resume: string): Promise<CandidateProfile> {
-  const secret = getBackendSecret();
+export async function parseProfileViaBackend(
+  resume: string,
+  secretOverride?: string
+): Promise<CandidateProfile> {
+  const secret = (secretOverride ?? getBackendSecret()).trim();
   if (!secret) {
     throw new Error("AutoApply API secret is required. Enter it below (same as the extension).");
   }
@@ -33,7 +43,7 @@ export async function parseProfileViaBackend(resume: string): Promise<CandidateP
   });
 
   const data: { profile?: CandidateProfile; error?: string } = await res.json();
-  if (!res.ok) throw new Error(data.error ?? `Backend error (${res.status})`);
+  if (!res.ok) throw new Error(backendErrorMessage(res.status, data.error));
   if (!data.profile) throw new Error("No profile data returned from backend.");
   return data.profile;
 }
@@ -52,9 +62,13 @@ export async function parseProfileViaOpenAI(resume: string): Promise<CandidatePr
 }
 
 /** Prefer AutoApply backend (Claude); fall back to ResumeX OpenAI if no secret. */
-export async function parseProfileFromResumeText(resume: string): Promise<CandidateProfile> {
-  if (getBackendSecret()) {
-    return parseProfileViaBackend(resume);
+export async function parseProfileFromResumeText(
+  resume: string,
+  secretOverride?: string
+): Promise<CandidateProfile> {
+  const secret = (secretOverride ?? getBackendSecret()).trim();
+  if (secret) {
+    return parseProfileViaBackend(resume, secret);
   }
   return parseProfileViaOpenAI(resume);
 }

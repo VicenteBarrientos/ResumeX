@@ -10,12 +10,12 @@ export function getBackendUrl(): string {
 }
 
 export function getBackendSecret(): string {
-  return localStorage.getItem(BACKEND_SECRET_KEY) || "";
+  return (localStorage.getItem(BACKEND_SECRET_KEY) || "").trim();
 }
 
 export function saveBackendSettings(url: string, secret: string) {
   localStorage.setItem(BACKEND_URL_KEY, url.replace(/\/$/, "") || DEFAULT_BACKEND);
-  localStorage.setItem(BACKEND_SECRET_KEY, secret);
+  localStorage.setItem(BACKEND_SECRET_KEY, secret.trim());
 }
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
