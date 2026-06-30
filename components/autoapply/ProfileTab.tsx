@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CandidateProfile } from "@/lib/autoapply-types";
+import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
+import { mergeProfile } from "@/lib/merge-profile";
 
 interface Props {
   profile: CandidateProfile;
@@ -23,6 +25,13 @@ const inputClass =
 export default function ProfileTab({ profile, onSave }: Props) {
   const [draft, setDraft] = useState<CandidateProfile>(profile);
   const [saved, setSaved] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importNotice, setImportNotice] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = (path: string, value: unknown) => {
     const keys = path.split(".");
@@ -37,6 +46,85 @@ export default function ProfileTab({ profile, onSave }: Props) {
     });
   };
 
+  const validateAndSetFile = (selected: File) => {
+    const isPdf =
+      selected.type === "application/pdf" || selected.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      setImportError("Only PDF files are supported.");
+      return;
+    }
+    if (selected.size > MAX_PDF_SIZE_BYTES) {
+      setImportError(`PDF must be ${MAX_PDF_SIZE_LABEL} or smaller.`);
+      return;
+    }
+    setImportError(null);
+    setFile(selected);
+    setResumeText("");
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0];
+    if (selected) validateAndSetFile(selected);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const dropped = event.dataTransfer.files?.[0];
+    if (dropped) validateAndSetFile(dropped);
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleImportFromResume = async () => {
+    if (!file && !resumeText.trim()) {
+      setImportError("Upload a PDF or paste your resume text first.");
+      return;
+    }
+
+    setImporting(true);
+    setImportError(null);
+    setImportNotice(null);
+
+    try {
+      let response: Response;
+      if (file) {
+        const formData = new FormData();
+        formData.append("resumePdf", file);
+        response = await fetch("/api/autoapply/parse-profile", { method: "POST", body: formData });
+      } else {
+        response = await fetch("/api/autoapply/parse-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resume: resumeText.trim() }),
+        });
+      }
+
+      const data: { profile?: CandidateProfile; error?: string } = await response.json();
+      if (!response.ok) {
+        setImportError(data.error ?? "Could not parse resume.");
+        return;
+      }
+
+      if (!data.profile) {
+        setImportError("No profile data was returned.");
+        return;
+      }
+
+      setDraft((prev) => mergeProfile(prev, data.profile!));
+      setImportNotice("Profile fields filled from your resume — review and save when ready.");
+      clearFile();
+      setResumeText("");
+    } catch {
+      setImportError("Network error. Please try again.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleSave = () => {
     onSave(draft);
     setSaved(true);
@@ -45,6 +133,91 @@ export default function ProfileTab({ profile, onSave }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* Import from resume */}
+      <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-6 shadow-sm dark:border-cyan-400/20 dark:bg-cyan-400/5">
+        <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Import from resume</h2>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          Upload a PDF or paste resume text to auto-fill your profile fields.
+        </p>
+
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`mt-4 rounded-xl border-2 border-dashed px-4 py-6 text-center transition ${
+            isDragging
+              ? "border-indigo-400 bg-indigo-50 dark:border-cyan-400 dark:bg-cyan-400/10"
+              : "border-zinc-200 bg-white dark:border-white/15 dark:bg-white/5"
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf,.pdf"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          {file ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">{file.name}</p>
+              <button
+                type="button"
+                onClick={clearFile}
+                className="text-xs text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400"
+              >
+                Remove file
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">Drag & drop your PDF resume</p>
+              <p className="mt-1 text-xs text-zinc-400">or</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-2 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200"
+              >
+                Choose PDF
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+            Or paste resume text
+          </label>
+          <textarea
+            className={`${inputClass} min-h-[100px] resize-y`}
+            placeholder="Paste your resume text here…"
+            value={resumeText}
+            onChange={(e) => {
+              setResumeText(e.target.value);
+              if (e.target.value.trim()) clearFile();
+            }}
+          />
+        </div>
+
+        {importError && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{importError}</p>
+        )}
+        {importNotice && (
+          <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-400">{importNotice}</p>
+        )}
+
+        <button
+          type="button"
+          disabled={importing || (!file && !resumeText.trim())}
+          onClick={handleImportFromResume}
+          className="mt-4 w-full rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-cyan-500 dark:hover:bg-cyan-400"
+        >
+          {importing ? "Extracting profile…" : "Fill from resume"}
+        </button>
+      </section>
+
       {/* Personal Info */}
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
         <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-200">Personal Info</h2>
