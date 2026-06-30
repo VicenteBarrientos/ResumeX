@@ -1,9 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile } from "@/lib/autoapply-types";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 import { mergeProfile } from "@/lib/merge-profile";
+import {
+  extractResumeFromPdf,
+  getBackendSecret,
+  getBackendUrl,
+  parseProfileFromResumeText,
+  saveBackendSettings,
+} from "@/lib/profile-api";
 
 interface Props {
   profile: CandidateProfile;
@@ -31,7 +38,12 @@ export default function ProfileTab({ profile, onSave }: Props) {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importNotice, setImportNotice] = useState<string | null>(null);
+  const [backendSecret, setBackendSecret] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setBackendSecret(getBackendSecret());
+  }, []);
 
   const set = (path: string, value: unknown) => {
     const keys = path.split(".");
@@ -85,41 +97,23 @@ export default function ProfileTab({ profile, onSave }: Props) {
       return;
     }
 
+    if (backendSecret.trim()) {
+      saveBackendSettings(getBackendUrl(), backendSecret.trim());
+    }
+
     setImporting(true);
     setImportError(null);
     setImportNotice(null);
 
     try {
-      let response: Response;
-      if (file) {
-        const formData = new FormData();
-        formData.append("resumePdf", file);
-        response = await fetch("/api/autoapply/parse-profile", { method: "POST", body: formData });
-      } else {
-        response = await fetch("/api/autoapply/parse-profile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resume: resumeText.trim() }),
-        });
-      }
-
-      const data: { profile?: CandidateProfile; error?: string } = await response.json();
-      if (!response.ok) {
-        setImportError(data.error ?? "Could not parse resume.");
-        return;
-      }
-
-      if (!data.profile) {
-        setImportError("No profile data was returned.");
-        return;
-      }
-
-      setDraft((prev) => mergeProfile(prev, data.profile!));
+      const text = file ? await extractResumeFromPdf(file) : resumeText.trim();
+      const parsed = await parseProfileFromResumeText(text);
+      setDraft((prev) => mergeProfile(prev, parsed));
       setImportNotice("Profile fields filled from your resume — review and save when ready.");
       clearFile();
       setResumeText("");
-    } catch {
-      setImportError("Network error. Please try again.");
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : "Could not parse resume.");
     } finally {
       setImporting(false);
     }
@@ -207,6 +201,22 @@ export default function ProfileTab({ profile, onSave }: Props) {
         {importNotice && (
           <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-400">{importNotice}</p>
         )}
+
+        <div className="mt-4">
+          <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+            AutoApply API secret
+          </label>
+          <input
+            type="password"
+            value={backendSecret}
+            onChange={(e) => setBackendSecret(e.target.value)}
+            placeholder="Same secret as the Chrome extension"
+            className={inputClass}
+          />
+          <p className="mt-1 text-xs text-zinc-400">
+            Uses your AutoApply backend (Claude) — no OpenAI key needed on ResumeX.
+          </p>
+        </div>
 
         <button
           type="button"
