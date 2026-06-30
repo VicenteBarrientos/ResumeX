@@ -1,7 +1,7 @@
 import type { CandidateProfile } from "@/lib/autoapply-types";
 import type { Job, JobMatchResult } from "@/lib/job-types";
 
-const DEFAULT_BACKEND = "https://backend-inky-kappa-12.vercel.app";
+const DEFAULT_BACKEND = "https://autoapply-rwhg.vercel.app";
 const BACKEND_URL_KEY = "resumex_backend_url";
 const BACKEND_SECRET_KEY = "resumex_backend_secret";
 
