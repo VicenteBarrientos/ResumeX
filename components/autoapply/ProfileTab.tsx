@@ -214,7 +214,12 @@ export default function ProfileTab({ profile, onSave }: Props) {
             className={inputClass}
           />
           <p className="mt-1 text-xs text-zinc-400">
-            Uses your AutoApply backend (Claude) — no OpenAI key needed on ResumeX.
+            Uses your AutoApply backend at {getBackendUrl()} (Claude). Check{" "}
+            <a href={`${getBackendUrl()}/health`} target="_blank" rel="noopener noreferrer" className="underline">
+              /health
+            </a>{" "}
+            — <code className="text-[10px]">anthropicConfigured</code> must be{" "}
+            <code className="text-[10px]">true</code>.
           </p>
         </div>
 
