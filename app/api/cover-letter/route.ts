@@ -4,7 +4,9 @@ import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export async function POST(req: Request) {
   const { jobDescription, company, role } = await req.json();
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
 
   const userPrompt = `Job Description:\n${jobDescription.slice(0, 4000)}${company ? `\n\nCompany: ${company}` : ""}${role ? `\nRole: ${role}` : ""}`;
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       { role: "system", content: systemPrompt },
