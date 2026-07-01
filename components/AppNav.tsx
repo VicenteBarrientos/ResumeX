@@ -22,6 +22,7 @@ export default function AppNav() {
     { href: "/analyzer", label: t.nav.analyzer },
     { href: "/jobsearcher", label: t.nav.jobSearcher },
     { href: "/autoapply", label: "AutoApply" },
+    { href: "/tracker", label: "Tracker" },
   ];
 
   return (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AppNav from "@/components/AppNav";
+import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/LanguageToggle";
 import SiteLinks from "@/components/SiteLinks";
@@ -45,6 +46,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className="flex min-h-screen flex-col">
+        <AuthProvider>
         <ThemeProvider defaultTheme="light">
           <LocaleProvider defaultLocale="en">
             <ThemeSync />
@@ -65,6 +67,7 @@ export default function RootLayout({
             </div>
           </LocaleProvider>
         </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

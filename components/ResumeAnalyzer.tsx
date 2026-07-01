@@ -14,6 +14,8 @@ export default function ResumeAnalyzer() {
   const [resume, setResume] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [company, setCompany] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +78,8 @@ export default function ResumeAnalyzer() {
     clearPdf();
     setResume(DEMO_RESUME);
     setJobDescription(DEMO_JOB_DESCRIPTION);
+    setCompany("Acme Corp");
+    setJobTitle("Senior Recruiter");
     setError(null);
     setResult(null);
   }
@@ -228,19 +232,49 @@ export default function ResumeAnalyzer() {
             </label>
           </div>
 
-          <label className="block">
+          <div className="block space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  Company
+                </span>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="e.g. Google"
+                  className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
+                  disabled={isLoading}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  Job Title
+                </span>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="e.g. Senior Recruiter"
+                  className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
+                  disabled={isLoading}
+                />
+              </label>
+            </div>
+            <label className="block">
             <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
               {t.form.jobDescription}
             </span>
             <textarea
               value={jobDescription}
               onChange={(event) => setJobDescription(event.target.value)}
-              rows={24}
+              rows={20}
               placeholder={t.form.jobDescriptionPlaceholder}
               className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
               disabled={isLoading}
             />
-          </label>
+            </label>
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
@@ -287,9 +321,17 @@ export default function ResumeAnalyzer() {
 
       {result && (
         <div className="mt-10">
-          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-inherit">
-            {t.results.title}
-          </h2>
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-inherit">
+              {t.results.title}
+            </h2>
+            <a
+              href={`/tracker/add?score=${result.matchScore}${company ? `&company=${encodeURIComponent(company)}` : ""}${jobTitle ? `&role=${encodeURIComponent(jobTitle)}` : ""}`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
+            >
+              + Save to Tracker
+            </a>
+          </div>
           <ResultCards result={result} />
         </div>
       )}
