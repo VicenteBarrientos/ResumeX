@@ -41,6 +41,7 @@ model Profile {
   location     String?
   linkedinUrl  String?
   resumeText   String?
+  profileJson  String?
   updatedAt    DateTime @updatedAt
 }
 

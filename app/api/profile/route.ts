@@ -8,7 +8,17 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
-  return NextResponse.json(profile ?? {});
+  if (!profile) return NextResponse.json({});
+
+  return NextResponse.json({
+    fullName: profile.fullName,
+    email: profile.email,
+    phone: profile.phone,
+    location: profile.location,
+    linkedinUrl: profile.linkedinUrl,
+    resumeText: profile.resumeText,
+    profileJson: profile.profileJson ? JSON.parse(profile.profileJson) : null,
+  });
 }
 
 export async function PUT(req: Request) {
@@ -16,13 +26,30 @@ export async function PUT(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { fullName, email, phone, location, linkedinUrl, resumeText } = body;
+  const { fullName, email, phone, location, linkedinUrl, resumeText, profileJson } = body;
 
   const profile = await db.profile.upsert({
     where: { userId: session.user.id },
-    create: { userId: session.user.id, fullName, email, phone, location, linkedinUrl, resumeText },
-    update: { fullName, email, phone, location, linkedinUrl, resumeText },
+    create: {
+      userId: session.user.id,
+      fullName,
+      email,
+      phone,
+      location,
+      linkedinUrl,
+      resumeText,
+      profileJson: profileJson ? JSON.stringify(profileJson) : null,
+    },
+    update: {
+      fullName,
+      email,
+      phone,
+      location,
+      linkedinUrl,
+      resumeText,
+      profileJson: profileJson ? JSON.stringify(profileJson) : null,
+    },
   });
 
-  return NextResponse.json(profile);
+  return NextResponse.json({ success: true, id: profile.id });
 }

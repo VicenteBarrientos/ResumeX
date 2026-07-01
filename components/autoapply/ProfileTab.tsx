@@ -6,10 +6,7 @@ import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 import { mergeProfile } from "@/lib/merge-profile";
 import {
   extractResumeFromPdf,
-  getBackendSecret,
-  getBackendUrl,
-  parseProfileFromResumeText,
-  saveBackendSettings,
+  parseProfileViaOpenAI,
 } from "@/lib/profile-api";
 
 interface Props {
@@ -38,12 +35,7 @@ export default function ProfileTab({ profile, onSave }: Props) {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importNotice, setImportNotice] = useState<string | null>(null);
-  const [backendSecret, setBackendSecret] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setBackendSecret(getBackendSecret());
-  }, []);
 
   const set = (path: string, value: unknown) => {
     const keys = path.split(".");
@@ -97,20 +89,13 @@ export default function ProfileTab({ profile, onSave }: Props) {
       return;
     }
 
-    const secret = backendSecret.trim();
-    if (!secret) {
-      setImportError("Enter your AutoApply API secret first (see C:\\Users\\hp\\.autoapply-secret.txt).");
-      return;
-    }
-    saveBackendSettings(getBackendUrl(), secret);
-
     setImporting(true);
     setImportError(null);
     setImportNotice(null);
 
     try {
       const text = file ? await extractResumeFromPdf(file) : resumeText.trim();
-      const parsed = await parseProfileFromResumeText(text, secret);
+      const parsed = await parseProfileViaOpenAI(text);
       setDraft((prev) => mergeProfile(prev, parsed));
       setImportNotice("Profile fields filled from your resume — review and save when ready.");
       clearFile();
@@ -204,29 +189,6 @@ export default function ProfileTab({ profile, onSave }: Props) {
         {importNotice && (
           <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-400">{importNotice}</p>
         )}
-
-        <div className="mt-4">
-          <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-            AutoApply API secret
-          </label>
-          <input
-            type="password"
-            value={backendSecret}
-            onChange={(e) => setBackendSecret(e.target.value)}
-            placeholder="Same secret as the Chrome extension"
-            className={inputClass}
-          />
-          <p className="mt-1 text-xs text-zinc-400">
-            Same 64-character hex secret as the Chrome extension (saved in{" "}
-            <code className="text-[10px]">.autoapply-secret.txt</code> on your PC). Uses your
-            AutoApply backend at {getBackendUrl()} (Claude). Check{" "}
-            <a href={`${getBackendUrl()}/health`} target="_blank" rel="noopener noreferrer" className="underline">
-              /health
-            </a>{" "}
-            — <code className="text-[10px]">anthropicConfigured</code> must be{" "}
-            <code className="text-[10px]">true</code>.
-          </p>
-        </div>
 
         <button
           type="button"

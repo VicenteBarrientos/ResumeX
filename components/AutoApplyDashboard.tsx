@@ -35,12 +35,24 @@ export default function AutoApplyDashboard() {
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Load from localStorage first (instant)
     try {
       const storedApps = localStorage.getItem(STORAGE_KEYS.applications);
       if (storedApps) setApplications(JSON.parse(storedApps));
       const storedProfile = localStorage.getItem(STORAGE_KEYS.profile);
       if (storedProfile) setProfile(JSON.parse(storedProfile));
     } catch {}
+
+    // Then hydrate from DB (source of truth for logged-in users)
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.profileJson) {
+          setProfile(data.profileJson);
+          localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(data.profileJson));
+        }
+      })
+      .catch(() => {});
 
     // Listen for live updates pushed by the Chrome extension
     const onNewApp = (e: Event) => {
@@ -69,9 +81,24 @@ export default function AutoApplyDashboard() {
     localStorage.setItem(STORAGE_KEYS.applications, JSON.stringify(apps));
   };
 
-  const saveProfile = (p: CandidateProfile) => {
+  const saveProfile = async (p: CandidateProfile) => {
     setProfile(p);
     localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(p));
+    // Persist to DB (best-effort, fire and forget)
+    try {
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: `${p.personal.firstName} ${p.personal.lastName}`.trim() || undefined,
+          email: p.personal.email || undefined,
+          phone: p.personal.phone || undefined,
+          location: p.personal.location || undefined,
+          linkedinUrl: p.personal.linkedinUrl || undefined,
+          profileJson: p,
+        }),
+      });
+    } catch {}
   };
 
   const updateApplicationStatus = (id: string, status: Application["status"]) => {
