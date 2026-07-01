@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -26,9 +26,13 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<Profile>({});
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [resumePdfUrl, setResumePdfUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const [newQ, setNewQ] = useState("");
   const [newA, setNewA] = useState("");
@@ -48,6 +52,7 @@ export default function ProfilePage() {
     ]);
     const [p, a] = await Promise.all([pRes.json(), aRes.json()]);
     setProfile(p ?? {});
+    if (p?.resumePdfUrl) setResumePdfUrl(p.resumePdfUrl);
     setAnswers(Array.isArray(a) ? a : []);
     setLoading(false);
   }, []);
@@ -67,6 +72,29 @@ export default function ProfilePage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+  }
+
+  async function uploadPdf(file: File) {
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) { setPdfError("Only PDF files are supported."); return; }
+    if (file.size > 5 * 1024 * 1024) { setPdfError("PDF must be 5 MB or smaller."); return; }
+    setPdfError(null);
+    setUploadingPdf(true);
+    const form = new FormData();
+    form.append("resumePdf", file);
+    const res = await fetch("/api/profile/resume", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) { setPdfError(data.error ?? "Upload failed."); }
+    else {
+      setResumePdfUrl(data.url);
+      if (data.resumeText) setProfile((p) => ({ ...p, resumeText: data.resumeText }));
+    }
+    setUploadingPdf(false);
+  }
+
+  async function deletePdf() {
+    await fetch("/api/profile/resume", { method: "DELETE" });
+    setResumePdfUrl(null);
   }
 
   async function addAnswer() {
@@ -190,6 +218,36 @@ export default function ProfilePage() {
             className={inputClass}
           />
         </label>
+
+        {/* PDF upload */}
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Resume PDF</span>
+          {resumePdfUrl ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-cyan-400/30 dark:bg-cyan-400/10">
+              <svg className="h-5 w-5 shrink-0 text-indigo-600 dark:text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <a href={resumePdfUrl} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-sm font-medium text-indigo-700 underline dark:text-cyan-200">
+                View stored PDF ↗
+              </a>
+              <button type="button" onClick={deletePdf} className="shrink-0 text-xs text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400">Remove</button>
+            </div>
+          ) : (
+            <div
+              onClick={() => pdfInputRef.current?.click()}
+              className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50/80 px-4 py-6 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-cyan-400/40"
+            >
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">{uploadingPdf ? "Uploading…" : "Click to upload your resume PDF"}</p>
+              <p className="mt-1 text-xs text-zinc-400">PDF · max 5 MB · text is auto-extracted</p>
+            </div>
+          )}
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept="application/pdf,.pdf"
+            className="sr-only"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdf(f); }}
+          />
+          {pdfError && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{pdfError}</p>}
+        </div>
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Resume Text</span>

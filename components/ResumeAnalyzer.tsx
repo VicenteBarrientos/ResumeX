@@ -24,10 +24,15 @@ export default function ResumeAnalyzer() {
   const [savedResumeText, setSavedResumeText] = useState<string | null>(null);
   const extractTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [savedResumePdfUrl, setSavedResumePdfUrl] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/profile")
       .then((r) => r.json())
-      .then((d) => { if (d?.resumeText) setSavedResumeText(d.resumeText); })
+      .then((d) => {
+        if (d?.resumeText) setSavedResumeText(d.resumeText);
+        if (d?.resumePdfUrl) setSavedResumePdfUrl(d.resumePdfUrl);
+      })
       .catch(() => {});
   }, []);
 
@@ -243,13 +248,27 @@ export default function ResumeAnalyzer() {
               <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
             </div>
 
-            {savedResumeText && !pdfFile && !resume && (
+            {(savedResumeText || savedResumePdfUrl) && !pdfFile && !resume && (
               <button
                 type="button"
-                onClick={() => handleResumePaste(savedResumeText)}
+                onClick={async () => {
+                  if (savedResumePdfUrl) {
+                    // Fetch the stored PDF and load it as a File
+                    try {
+                      const res = await fetch(savedResumePdfUrl);
+                      const blob = await res.blob();
+                      const file = new File([blob], "saved-resume.pdf", { type: "application/pdf" });
+                      validateAndSetPdf(file);
+                    } catch {
+                      if (savedResumeText) handleResumePaste(savedResumeText);
+                    }
+                  } else if (savedResumeText) {
+                    handleResumePaste(savedResumeText);
+                  }
+                }}
                 className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-2 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-200 dark:hover:bg-cyan-400/20"
               >
-                ✦ Use saved resume
+                ✦ Use saved resume {savedResumePdfUrl ? "(PDF)" : "(text)"}
               </button>
             )}
 

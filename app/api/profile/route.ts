@@ -17,6 +17,7 @@ export async function GET() {
     location: profile.location,
     linkedinUrl: profile.linkedinUrl,
     resumeText: profile.resumeText,
+    resumePdfUrl: profile.resumePdfUrl,
     profileJson: profile.profileJson ? JSON.parse(profile.profileJson) : null,
   });
 }
