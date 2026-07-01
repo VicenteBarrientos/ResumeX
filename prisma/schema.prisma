@@ -13,6 +13,8 @@ model User {
   passwordHash String
   createdAt    DateTime      @default(now())
   applications Application[]
+  profile      Profile?
+  answers      Answer[]
 }
 
 model Application {
@@ -27,4 +29,27 @@ model Application {
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Profile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String?
+  email        String?
+  phone        String?
+  location     String?
+  linkedinUrl  String?
+  resumeText   String?
+  updatedAt    DateTime @updatedAt
+}
+
+model Answer {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
