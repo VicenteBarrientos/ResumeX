@@ -43,7 +43,7 @@ export default function AutoApplyDashboard() {
       if (storedProfile) setProfile(JSON.parse(storedProfile));
     } catch {}
 
-    // Then hydrate from DB (source of truth for logged-in users)
+    // Hydrate profile from DB
     fetch("/api/profile")
       .then((r) => r.json())
       .then((data) => {
@@ -51,6 +51,31 @@ export default function AutoApplyDashboard() {
           setProfile(data.profileJson);
           localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(data.profileJson));
         }
+      })
+      .catch(() => {});
+
+    // Merge DB tracker applications (logged via Chrome extension or tracker UI)
+    fetch("/api/tracker")
+      .then((r) => r.json())
+      .then((dbApps: Array<{ id: string; company: string; role: string; jobUrl: string | null; status: string; createdAt: string }>) => {
+        if (!Array.isArray(dbApps)) return;
+        setApplications((prev) => {
+          const existingIds = new Set(prev.map((a) => a.id));
+          const mapped = dbApps
+            .filter((a) => !existingIds.has(a.id))
+            .map((a) => ({
+              id: a.id,
+              platform: "tracker",
+              company: a.company,
+              role: a.role,
+              jobUrl: a.jobUrl ?? "",
+              jobDescription: "",
+              appliedAt: a.createdAt,
+              status: a.status.toLowerCase() as import("@/lib/autoapply-types").ApplicationStatus,
+              answers: {},
+            }));
+          return mapped.length ? [...mapped, ...prev] : prev;
+        });
       })
       .catch(() => {});
 

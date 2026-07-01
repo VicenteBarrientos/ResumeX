@@ -46,6 +46,25 @@ export default function TrackerPage() {
       .finally(() => setLoading(false));
   }, [status]);
 
+  function exportCSV() {
+    const header = ["Company", "Role", "Status", "Match Score", "Job URL", "Notes", "Date Added"];
+    const rows = apps.map((a) => [
+      a.company, a.role, a.status,
+      a.matchScore ?? "",
+      a.jobUrl ?? "",
+      (a.notes ?? "").replace(/\n/g, " "),
+      new Date(a.createdAt).toLocaleDateString(),
+    ]);
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `resumex-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -94,6 +113,14 @@ export default function TrackerPage() {
           >
             My Profile
           </Link>
+          {apps.length > 0 && (
+            <button
+              onClick={exportCSV}
+              className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
+            >
+              Export CSV
+            </button>
+          )}
           <Link
             href="/tracker/add"
             className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
@@ -109,25 +136,48 @@ export default function TrackerPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {[
-          { label: "Total", value: stats.total, color: "text-zinc-900 dark:text-white" },
-          { label: "Applied", value: stats.applied, color: "text-indigo-600 dark:text-indigo-400" },
-          { label: "Interview", value: stats.interview, color: "text-amber-600 dark:text-amber-400" },
-          { label: "Offer", value: stats.offer, color: "text-emerald-600 dark:text-emerald-400" },
-          { label: "Rejected", value: stats.rejected, color: "text-rose-600 dark:text-rose-400" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.03]"
-          >
-            <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="mt-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              {s.label}
+      {/* Stats + Funnel */}
+      <div className="mb-8 grid gap-4 lg:grid-cols-3">
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 gap-3 lg:col-span-2 sm:grid-cols-4 lg:grid-cols-4">
+          {[
+            { label: "Total", value: stats.total, color: "text-zinc-900 dark:text-white" },
+            { label: "Applied", value: stats.applied, color: "text-indigo-600 dark:text-indigo-400" },
+            { label: "Interview", value: stats.interview, color: "text-amber-600 dark:text-amber-400" },
+            { label: "Offer", value: stats.offer, color: "text-emerald-600 dark:text-emerald-400" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+              <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
+              <div className="mt-1 text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Funnel chart */}
+        {stats.total > 0 && (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Pipeline</p>
+            <div className="space-y-2">
+              {[
+                { label: "Applied", value: stats.applied, bar: "bg-indigo-500 dark:bg-indigo-400" },
+                { label: "Interview", value: stats.interview, bar: "bg-amber-400" },
+                { label: "Offer", value: stats.offer, bar: "bg-emerald-500" },
+                { label: "Rejected", value: stats.rejected, bar: "bg-rose-400" },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center gap-2">
+                  <span className="w-16 shrink-0 text-xs text-zinc-500">{row.label}</span>
+                  <div className="flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10" style={{ height: 8 }}>
+                    <div
+                      className={`h-full rounded-full transition-all ${row.bar}`}
+                      style={{ width: stats.total ? `${Math.round((row.value / stats.total) * 100)}%` : "0%" }}
+                    />
+                  </div>
+                  <span className="w-5 shrink-0 text-right text-xs font-medium text-zinc-600 dark:text-zinc-400">{row.value}</span>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+        )}
       </div>
 
       {apps.length === 0 ? (

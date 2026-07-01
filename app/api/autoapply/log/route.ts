@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 // POST /api/autoapply/log
-// Called by the Chrome extension after each successful application
-// Since we use localStorage on the client, this endpoint just validates
-// and echoes back — the extension stores data in ResumeX via window.postMessage
-// when the user has the dashboard open, or localStorage sync on next visit.
+// Called by the Chrome extension after each successful application.
+// If the user is logged in, also writes the application to the DB tracker.
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const { platform, company, role, jobUrl, jobDescription, answers } = body;
 
     if (!platform || !role) {
@@ -29,19 +35,27 @@ export async function POST(req: NextRequest) {
       answers: answers ?? {},
     };
 
-    return NextResponse.json({ ok: true, application });
+    // Also write to DB tracker if the user is authenticated
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      await db.application.create({
+        data: {
+          userId: session.user.id,
+          company: company ?? "Unknown Company",
+          role,
+          jobUrl: jobUrl || null,
+          status: "Applied",
+          notes: jobDescription ? `Applied via ${platform}\n\n${jobDescription.slice(0, 500)}` : `Applied via ${platform}`,
+        },
+      }).catch(() => {});
+    }
+
+    return NextResponse.json({ ok: true, application }, { headers: CORS_HEADERS });
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400, headers: CORS_HEADERS });
   }
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }

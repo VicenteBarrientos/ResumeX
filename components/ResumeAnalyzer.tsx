@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import ResultCards from "@/components/ResultCards";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
@@ -20,6 +20,35 @@ export default function ResumeAnalyzer() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [extractingJob, setExtractingJob] = useState(false);
+  const [savedResumeText, setSavedResumeText] = useState<string | null>(null);
+  const extractTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((d) => { if (d?.resumeText) setSavedResumeText(d.resumeText); })
+      .catch(() => {});
+  }, []);
+
+  const autoExtractJob = useCallback((jd: string) => {
+    if (extractTimerRef.current) clearTimeout(extractTimerRef.current);
+    if (jd.trim().length < 100) return;
+    extractTimerRef.current = setTimeout(async () => {
+      setExtractingJob(true);
+      try {
+        const res = await fetch("/api/extract-job", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobDescription: jd }),
+        });
+        const data = await res.json();
+        if (data.company) setCompany((prev) => prev || data.company);
+        if (data.role) setJobTitle((prev) => prev || data.role);
+      } catch {}
+      setExtractingJob(false);
+    }, 800);
+  }, []);
 
   function validateAndSetPdf(file: File) {
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -214,6 +243,16 @@ export default function ResumeAnalyzer() {
               <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
             </div>
 
+            {savedResumeText && !pdfFile && !resume && (
+              <button
+                type="button"
+                onClick={() => handleResumePaste(savedResumeText)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-4 py-2 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-200 dark:hover:bg-cyan-400/20"
+              >
+                ✦ Use saved resume
+              </button>
+            )}
+
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
                 {t.form.pasteResume}
@@ -235,8 +274,9 @@ export default function ResumeAnalyzer() {
           <div className="block space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
                   Company
+                  {extractingJob && <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">extracting…</span>}
                 </span>
                 <input
                   type="text"
@@ -267,7 +307,10 @@ export default function ResumeAnalyzer() {
             </span>
             <textarea
               value={jobDescription}
-              onChange={(event) => setJobDescription(event.target.value)}
+              onChange={(event) => {
+                setJobDescription(event.target.value);
+                autoExtractJob(event.target.value);
+              }}
               rows={20}
               placeholder={t.form.jobDescriptionPlaceholder}
               className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
