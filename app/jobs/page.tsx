@@ -15,23 +15,9 @@ interface Job {
   postedAt?: string;
 }
 
-const COUNTRIES = [
-  { code: "us", label: "United States" },
-  { code: "gb", label: "United Kingdom" },
-  { code: "ca", label: "Canada" },
-  { code: "au", label: "Australia" },
-  { code: "de", label: "Germany" },
-  { code: "fr", label: "France" },
-  { code: "nl", label: "Netherlands" },
-  { code: "sg", label: "Singapore" },
-  { code: "nz", label: "New Zealand" },
-  { code: "za", label: "South Africa" },
-];
-
 export default function JobsPage() {
   const { data: session } = useSession();
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("us");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +34,7 @@ export default function JobsPage() {
     setSearched(true);
     try {
       const q = remoteOnly ? `${query} remote` : query;
-      const res = await fetch(`/api/jobs?q=${encodeURIComponent(q)}&country=${country}`);
+      const res = await fetch(`/api/jobs?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Search failed");
       let results = data.results ?? [];
@@ -124,42 +110,22 @@ export default function JobsPage() {
           </button>
         </div>
 
-        {/* Filters row */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Country selector */}
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className={`${inputClass} cursor-pointer pr-8`}
+        {/* Filter row */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setRemoteOnly((r) => !r)}
+            className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-sm transition ${
+              remoteOnly
+                ? "border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-cyan-400/40 dark:bg-cyan-400/10 dark:text-cyan-300"
+                : "border-zinc-300 bg-white text-zinc-600 hover:border-indigo-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-300"
+            }`}
           >
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.label}</option>
-            ))}
-          </select>
-
-          {/* Remote toggle */}
-          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm shadow-sm transition dark:border-white/10 dark:bg-white/[0.03]">
-            <div
-              onClick={() => setRemoteOnly((r) => !r)}
-              className={`relative h-5 w-9 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600 dark:bg-cyan-400" : "bg-zinc-300 dark:bg-white/20"}`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${remoteOnly ? "translate-x-4" : ""}`}
-              />
+            <div className={`relative h-4 w-7 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600 dark:bg-cyan-400" : "bg-zinc-300 dark:bg-white/20"}`}>
+              <span className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${remoteOnly ? "translate-x-3" : ""}`} />
             </div>
-            <span
-              onClick={() => setRemoteOnly((r) => !r)}
-              className={`font-medium select-none ${remoteOnly ? "text-indigo-600 dark:text-cyan-400" : "text-zinc-600 dark:text-zinc-300"}`}
-            >
-              Remote only
-            </span>
-          </label>
-
-          {remoteOnly && (
-            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-cyan-400/10 dark:text-cyan-300">
-              Showing jobs you can do from anywhere
-            </span>
-          )}
+            Available to apply from my country
+          </button>
         </div>
       </form>
 
