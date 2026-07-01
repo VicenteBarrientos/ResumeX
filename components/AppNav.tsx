@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -16,30 +17,71 @@ const activeClass =
 export default function AppNav() {
   const { t } = useLocale();
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const links = [
-    { href: "/", label: t.nav.cvFormatter },
+    { href: "/cv", label: t.nav.cvFormatter },
     { href: "/analyzer", label: t.nav.analyzer },
-    { href: "/jobsearcher", label: t.nav.jobSearcher },
+    { href: "/jobs", label: "Jobs" },
+    { href: "/cover-letter", label: "Cover Letter" },
     { href: "/autoapply", label: "AutoApply" },
     { href: "/tracker", label: "Tracker" },
   ];
 
+  const activeLink = links.find((l) => l.href === pathname);
+
   return (
-    <nav className="flex items-center gap-2" aria-label={t.nav.appNavAria}>
-      {links.map((link) => {
-        const isActive = pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={isActive ? "page" : undefined}
-            className={`${baseClass} ${isActive ? activeClass : inactiveClass}`}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      {/* Desktop nav */}
+      <nav className="hidden items-center gap-2 sm:flex" aria-label={t.nav.appNavAria}>
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`${baseClass} ${isActive ? activeClass : inactiveClass}`}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Mobile nav — hamburger */}
+      <div className="relative sm:hidden">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className={`${baseClass} ${inactiveClass} gap-1.5`}
+          aria-label="Menu"
+        >
+          <span className="text-xs">{activeLink?.label ?? "Menu"}</span>
+          <span className="text-zinc-400">▾</span>
+        </button>
+
+        {open && (
+          <div className="absolute left-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900">
+            {links.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`block px-4 py-2.5 text-sm transition ${
+                    isActive
+                      ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-cyan-400/10 dark:text-cyan-200"
+                      : "text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

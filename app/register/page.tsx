@@ -8,6 +8,7 @@ import Link from "next/link";
 export default function RegisterPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, email }),
     });
 
     const data = await res.json();
@@ -39,7 +40,7 @@ export default function RegisterPage() {
     }
 
     await signIn("credentials", { username, password, redirect: false });
-    router.push("/tracker");
+    router.push("/onboarding");
     router.refresh();
   }
 
@@ -51,7 +52,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
-            ResumeX Tracker
+            ResumeX
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
             Create account
@@ -73,6 +74,19 @@ export default function RegisterPage() {
                 required
                 autoFocus
                 autoComplete="username"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                Email <span className="text-zinc-400 font-normal">(optional — for welcome email)</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                autoComplete="email"
+                placeholder="you@example.com"
               />
             </div>
             <div>

@@ -25,9 +25,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumeX — Turn any resume into a polished CV",
+  title: "ResumeX — AI-Powered Job Search Platform",
   description:
-    "Turn any resume into a polished, professional CV in one click. Format, edit, and export to PDF or DOCX — plus an AI job-description match analyzer.",
+    "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place. Free to start.",
+  metadataBase: new URL("https://resumex.talentxrecruiting.com"),
+  openGraph: {
+    title: "ResumeX — AI-Powered Job Search Platform",
+    description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
+    url: "https://resumex.talentxrecruiting.com",
+    siteName: "ResumeX",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ResumeX — AI-Powered Job Search Platform",
+    description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
+  },
 };
 
 export default function RootLayout({
