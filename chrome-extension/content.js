@@ -74,31 +74,47 @@ function getJobInfo() {
 
 // Maps field patterns to profile keys — ordered: specific before generic
 const FIELD_MAP = [
-  { key: "firstName",  patterns: [/first.?name|given.?name|fname/i] },
-  { key: "lastName",   patterns: [/last.?name|family.?name|surname|lname/i] },
-  { key: "fullName",   patterns: [/full.?name|your.?name|first.?last|^name$|^full$/i] },
-  { key: "email",      patterns: [/e.?mail/i], type: "email" },
-  { key: "phone",      patterns: [/phone|mobile|cell|tel/i], type: "tel" },
-  { key: "location",   patterns: [/city|location|address|where.?are.?you/i] },
-  { key: "linkedinUrl",patterns: [/linkedin/i] },
+  { key: "firstName",   patterns: [/^first.?name$|^given.?name$|^fname$/i] },
+  { key: "lastName",    patterns: [/^last.?name$|^family.?name$|^surname$|^lname$/i] },
+  { key: "fullName",    patterns: [/^name$|^full.?name$|^your.?name$|^applicant.?name$/i] },
+  { key: "email",       patterns: [/^email$|^e.?mail/i], type: "email" },
+  { key: "phone",       patterns: [/^phone$|^mobile$|^cell$|^telephone$/i], type: "tel" },
+  { key: "location",    patterns: [/^city$|^location$|^address$/i] },
+  { key: "linkedinUrl", patterns: [/linkedin/i] },
 ];
 
-function getAttr(el, ...attrs) {
-  for (const a of attrs) {
-    const v = el.getAttribute(a) ?? "";
-    if (v) return v;
-  }
-  return "";
+// Collect all meaningful hints from a single input element
+function getHints(input) {
+  const hints = [
+    input.getAttribute("name"),
+    input.getAttribute("id"),
+    input.getAttribute("placeholder"),
+    input.getAttribute("aria-label"),
+    input.getAttribute("autocomplete"),
+    // label[for=id]
+    input.id ? document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent?.trim() : null,
+    // wrapping label
+    input.closest("label")?.textContent?.trim(),
+    // sibling label above
+    input.previousElementSibling?.textContent?.trim(),
+    // label inside nearest field wrapper
+    input.closest('[class*="field"],[class*="form-group"],[class*="input-wrap"]')
+      ?.querySelector("label, legend")?.textContent?.trim(),
+  ].filter(Boolean).map(s => s.trim());
+  return hints;
 }
 
 function fillField(el, value) {
-  if (!value || el.value) return; // don't overwrite existing values
-  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
-    ?? Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-  if (nativeInputValueSetter) nativeInputValueSetter.call(el, value);
+  if (!value || el.value) return false;
+  const proto = el instanceof HTMLTextAreaElement
+    ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+  if (setter) setter.call(el, value);
   else el.value = value;
   el.dispatchEvent(new Event("input", { bubbles: true }));
   el.dispatchEvent(new Event("change", { bubbles: true }));
+  el.dispatchEvent(new Event("blur", { bubbles: true }));
+  return true;
 }
 
 function splitName(fullName) {
@@ -107,7 +123,9 @@ function splitName(fullName) {
 }
 
 async function autoFillForms(profile) {
-  const inputs = document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]), textarea');
+  const inputs = Array.from(document.querySelectorAll(
+    'input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea'
+  ));
   const { first, last } = splitName(profile.fullName);
 
   const values = {
@@ -122,18 +140,12 @@ async function autoFillForms(profile) {
 
   let filled = 0;
   for (const input of inputs) {
-    const hint = [
-      getAttr(input, "name", "id", "placeholder", "aria-label", "autocomplete"),
-      input.closest("label")?.textContent ?? "",
-      input.previousElementSibling?.textContent ?? "",
-      input.closest('[class*="field"], [class*="form-group"]')?.querySelector("label")?.textContent ?? "",
-    ].join(" ").toLowerCase();
-
+    const hints = getHints(input);
     for (const { key, patterns, type } of FIELD_MAP) {
-      if (type && input.type && input.type !== type && input.type !== "text") continue;
-      if (patterns.some((p) => p.test(hint)) && values[key]) {
-        fillField(input, values[key]);
-        filled++;
+      if (type && input.type !== type && input.type !== "text") continue;
+      const matched = hints.some(hint => patterns.some(p => p.test(hint)));
+      if (matched && values[key]) {
+        if (fillField(input, values[key])) filled++;
         break;
       }
     }
