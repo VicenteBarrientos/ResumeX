@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const [newQ, setNewQ] = useState("");
@@ -80,16 +81,21 @@ export default function ProfilePage() {
     if (file.size > 5 * 1024 * 1024) { setPdfError("PDF must be 5 MB or smaller."); return; }
     setPdfError(null);
     setUploadingPdf(true);
-    const form = new FormData();
-    form.append("resumePdf", file);
-    const res = await fetch("/api/profile/resume", { method: "POST", body: form });
-    const data = await res.json();
-    if (!res.ok) { setPdfError(data.error ?? "Upload failed."); }
-    else {
-      setResumePdfUrl(data.url);
-      if (data.resumeText) setProfile((p) => ({ ...p, resumeText: data.resumeText }));
+    try {
+      const form = new FormData();
+      form.append("resumePdf", file);
+      const res = await fetch("/api/profile/resume", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) { setPdfError(data.error ?? "Upload failed."); }
+      else {
+        setResumePdfUrl(data.url);
+        if (data.resumeText) setProfile((p) => ({ ...p, resumeText: data.resumeText }));
+      }
+    } catch {
+      setPdfError("Upload failed — please try again.");
+    } finally {
+      setUploadingPdf(false);
     }
-    setUploadingPdf(false);
   }
 
   async function deletePdf() {
@@ -232,11 +238,39 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div
-              onClick={() => pdfInputRef.current?.click()}
-              className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50/80 px-4 py-6 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-cyan-400/40"
+              onClick={() => !uploadingPdf && pdfInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); if (!uploadingPdf) setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) uploadPdf(f);
+              }}
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-6 text-center transition ${
+                uploadingPdf
+                  ? "cursor-default border-zinc-200 bg-zinc-50/60 dark:border-white/5"
+                  : dragOver
+                  ? "border-indigo-500 bg-indigo-50 dark:border-cyan-400 dark:bg-cyan-400/10"
+                  : "border-zinc-300 bg-zinc-50/80 hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-cyan-400/40"
+              }`}
             >
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">{uploadingPdf ? "Uploading…" : "Click to upload your resume PDF"}</p>
-              <p className="mt-1 text-xs text-zinc-400">PDF · max 5 MB · text is auto-extracted</p>
+              {uploadingPdf ? (
+                <>
+                  <span className="mb-2 h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-600 dark:border-white/20 dark:border-t-cyan-400" />
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Uploading…</p>
+                </>
+              ) : (
+                <>
+                  <svg className="mb-2 h-6 w-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    {dragOver ? "Drop to upload" : "Click or drag your resume PDF here"}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-400">PDF · max 5 MB · text is auto-extracted</p>
+                </>
+              )}
             </div>
           )}
           <input

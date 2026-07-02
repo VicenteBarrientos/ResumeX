@@ -36,12 +36,17 @@ export async function POST(req: Request) {
 
   // Upload to Vercel Blob
   const buffer = Buffer.from(await file.arrayBuffer());
-  console.log("[resume] userId:", session.user.id, "file:", file.name, "size:", file.size);
-  console.log("[resume] BLOB_READ_WRITE_TOKEN present:", !!process.env.BLOB_READ_WRITE_TOKEN);
-  const blob = await put(`resumes/${session.user.id}/${file.name}`, buffer, {
-    access: "public",
-    contentType: "application/pdf",
-  });
+
+  let blob: { url: string };
+  try {
+    blob = await put(`resumes/${session.user.id}/${file.name}`, buffer, {
+      access: "public",
+      contentType: "application/pdf",
+    });
+  } catch (err) {
+    console.error("[resume] Blob upload failed:", err);
+    return NextResponse.json({ error: "File storage unavailable. Please try again." }, { status: 500 });
+  }
 
   // Extract text from PDF
   let resumeText: string | undefined;
@@ -50,18 +55,23 @@ export async function POST(req: Request) {
   } catch {}
 
   // Save to profile
-  await db.profile.upsert({
-    where: { userId: session.user.id },
-    create: {
-      userId: session.user.id,
-      resumePdfUrl: blob.url,
-      resumeText: resumeText ?? null,
-    },
-    update: {
-      resumePdfUrl: blob.url,
-      ...(resumeText ? { resumeText } : {}),
-    },
-  });
+  try {
+    await db.profile.upsert({
+      where: { userId: session.user.id },
+      create: {
+        userId: session.user.id,
+        resumePdfUrl: blob.url,
+        resumeText: resumeText ?? null,
+      },
+      update: {
+        resumePdfUrl: blob.url,
+        ...(resumeText ? { resumeText } : {}),
+      },
+    });
+  } catch (err) {
+    console.error("[resume] DB upsert failed:", err);
+    return NextResponse.json({ error: "Database error saving resume." }, { status: 500 });
+  }
 
   return NextResponse.json({ url: blob.url, resumeText: resumeText ?? null });
 }
