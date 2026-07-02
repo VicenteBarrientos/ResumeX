@@ -5,15 +5,18 @@ const DETECTORS = [
   {
     match: () => location.hostname.includes("lever.co"),
     extract: () => {
-      const title = document.querySelector(".posting-headline h2, [data-qa='posting-name'], h2")?.textContent?.trim()
-        ?? document.title.split(" - ")[0].split(" at ")[0].trim();
-      // Company from page header, breadcrumb, or URL path segment
-      const company = document.querySelector(".main-header-text .company-name, .posting-header .company, [data-qa='posting-company']")?.textContent?.trim()
-        ?? document.querySelector(".posting-logo img")?.getAttribute("alt")?.trim()
-        ?? location.pathname.split("/")[1]  // e.g. /EnvisionRPO/uuid → "EnvisionRPO"
-        ?? document.title.split(" at ").pop()?.trim();
+      // document.title on Lever is reliably "Job Title at Company" or "Job Title - Company"
+      const titleParts = document.title.split(/ at | - /);
+      const titleFromMeta = titleParts[0]?.trim();
+      const companyFromMeta = titleParts[1]?.trim() ?? location.pathname.split("/")[1];
+
+      const title = document.querySelector(".posting-headline h2, [data-qa='posting-name'], h2, h1")?.textContent?.trim()
+        || titleFromMeta;
+      const company = document.querySelector(".main-header-text .company-name, [data-qa='posting-company']")?.textContent?.trim()
+        || document.querySelector(".posting-logo img")?.getAttribute("alt")?.trim()
+        || companyFromMeta;
       const loc = document.querySelector(".posting-categories .location, [data-qa='posting-location'], .location")?.textContent?.trim();
-      const description = document.querySelector(".posting-requirements, .section-wrapper, .posting-description, [data-qa='posting-description']")?.textContent?.trim();
+      const description = document.querySelector(".posting-requirements, .section-wrapper, .posting-description, [data-qa='posting-description'], main")?.textContent?.trim();
       return { title, company, location: loc, description, url: window.location.href };
     },
   },
@@ -337,7 +340,13 @@ function showToast(msg) {
 
 // Listen for popup messages
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg.type === "GET_JOB") sendResponse(getJobInfo());
+  if (msg.type === "GET_JOB") {
+    // Try immediately, then retry after a short wait for React pages
+    const job = getJobInfo();
+    if (job) { sendResponse(job); return true; }
+    setTimeout(() => sendResponse(getJobInfo()), 1500);
+    return true;
+  }
   if (msg.type === "AUTO_APPLY") runAutoApply().then((filled) => sendResponse({ ok: true, filled }));
   return true;
 });
