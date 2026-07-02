@@ -2,88 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ResumeX</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       width: 320px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0d1117;
-      color: #f0f6fc;
-      font-size: 13px;
+      background: #0d1117; color: #f0f6fc; font-size: 13px;
     }
     .header {
-      padding: 16px;
+      padding: 14px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
     }
     .logo {
-      width: 30px; height: 30px;
-      background: #0d1117;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
+      width: 28px; height: 28px; background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; color: #22d3ee;
+      font-size: 10px; font-weight: 700; color: #22d3ee;
     }
     .logo-text { font-size: 14px; font-weight: 700; }
     .logo-text span { color: #22d3ee; }
     .body { padding: 16px; }
-    .section { margin-bottom: 16px; }
-    label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
+    label { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
     input {
-      width: 100%; padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px; color: #f0f6fc;
-      font-size: 13px; outline: none;
-      transition: border-color 0.15s;
+      width: 100%; padding: 8px 12px; margin-bottom: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #f0f6fc; font-size: 13px; outline: none;
     }
     input:focus { border-color: #22d3ee; }
     button {
-      width: 100%; padding: 9px;
-      border-radius: 8px; border: none;
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: opacity 0.15s;
+      width: 100%; padding: 9px; border-radius: 8px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
     }
     button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-primary { background: linear-gradient(135deg, #22d3ee, #3b82f6); color: #0d1117; }
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: rgba(255,255,255,0.07); color: #f0f6fc; margin-bottom: 12px;
+    }
     .btn-secondary { background: rgba(255,255,255,0.07); color: #f0f6fc; margin-top: 8px; }
     .btn-danger { background: rgba(239,68,68,0.15); color: #f87171; margin-top: 8px; }
-    .error { color: #f87171; font-size: 11px; margin-top: 6px; }
-    .status-box {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 12px;
-    }
-    .status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .status-row:last-child { margin-bottom: 0; }
-    .status-label { color: #8b949e; }
-    .status-value { font-weight: 600; color: #f0f6fc; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #22d3ee; display: inline-block; margin-right: 6px; }
-    .score-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 4px; overflow: hidden; }
-    .score-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
-    .score-high { background: #22c55e; }
-    .score-mid { background: #f59e0b; }
-    .score-low { background: #ef4444; }
+    .divider { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: #8b949e; font-size: 11px; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+    .error { color: #f87171; font-size: 11px; margin-bottom: 10px; }
+    .status-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .status-row { display: flex; justify-content: space-between; align-items: center; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22d3ee; display: inline-block; margin-right: 6px; }
+    .score-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 6px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 4px; }
+    .score-high { background: #22c55e; } .score-mid { background: #f59e0b; } .score-low { background: #ef4444; }
     .job-info { font-size: 12px; color: #8b949e; margin-bottom: 12px; line-height: 1.5; }
     .job-info strong { color: #f0f6fc; }
-    .saved-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: rgba(34,197,94,0.15); color: #4ade80;
-      border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600;
-    }
-    #view { display: none; }
-    #login { display: none; }
-    .spinner {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-top-color: #22d3ee; border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
+    .saved-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(34,197,94,0.15); color: #4ade80; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #22d3ee; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    #view { display: none; } #login { display: none; } #loading { text-align:center; padding:24px; }
   </style>
 </head>
 <body>
@@ -93,65 +68,61 @@
   </div>
 
   <div class="body">
-    <!-- Login view -->
+    <!-- Login -->
     <div id="login">
-      <div class="section">
-        <label>Username</label>
-        <input type="text" id="username" placeholder="Your ResumeX username" autocomplete="username" />
-      </div>
-      <div class="section">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-      </div>
+      <button class="btn-google" id="google-btn">
+        <svg width="16" height="16" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+        </svg>
+        Continue with Google
+      </button>
+      <div class="divider">or</div>
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
       <div id="login-error" class="error"></div>
-      <button class="btn-primary" id="login-btn">Connect to ResumeX</button>
+      <button class="btn-primary" id="login-btn">Sign in</button>
     </div>
 
-    <!-- Connected view -->
+    <!-- Connected -->
     <div id="view">
-      <div class="status-box" style="margin-bottom:12px;">
+      <div class="status-box">
         <div class="status-row">
-          <span class="status-label"><span class="dot"></span>Connected</span>
-          <span class="status-value" id="username-display"></span>
+          <span style="color:#8b949e"><span class="dot"></span>Connected</span>
+          <span style="font-weight:600" id="username-display"></span>
         </div>
       </div>
 
-      <div id="job-section" style="display:none;">
+      <div id="job-section" style="display:none">
         <div class="job-info" id="job-info"></div>
-
         <div id="score-section" style="display:none; margin-bottom:12px;">
-          <label>Match Score</label>
           <div class="status-box">
             <div class="status-row">
-              <span class="status-label">Your fit</span>
-              <span class="status-value" id="score-value"></span>
+              <span style="color:#8b949e">Match score</span>
+              <span style="font-weight:600" id="score-value"></span>
             </div>
             <div class="score-bar"><div class="score-fill" id="score-bar"></div></div>
-            <div id="score-gap" style="margin-top:8px; font-size:11px; color:#8b949e;"></div>
+            <div id="score-gap" style="margin-top:6px; font-size:11px; color:#8b949e;"></div>
           </div>
         </div>
-
-        <div id="save-section">
-          <div id="saved-badge" style="display:none; margin-bottom:8px;">
-            <span class="saved-badge">✓ Saved to tracker</span>
-          </div>
-          <button class="btn-primary" id="save-btn">Save to Tracker</button>
-        </div>
+        <div id="saved-badge" style="display:none"><span class="saved-badge">✓ Saved to tracker</span></div>
+        <button class="btn-primary" id="save-btn">Save to Tracker</button>
       </div>
 
-      <div id="no-job" style="color:#8b949e; font-size:12px; text-align:center; padding: 16px 0;">
-        Open a job posting to see your match score and save it.
+      <div id="no-job" style="color:#8b949e; font-size:12px; text-align:center; padding:16px 0; display:none">
+        Open a job posting to see your match score.
       </div>
 
       <button class="btn-secondary" id="open-tracker">Open Tracker →</button>
       <button class="btn-danger" id="logout-btn">Disconnect</button>
     </div>
 
-    <div id="loading" style="text-align:center; padding:24px;">
-      <span class="spinner"></span>
-    </div>
+    <div id="loading"><span class="spinner"></span></div>
   </div>
-
   <script src="popup.js"></script>
 </body>
 </html>

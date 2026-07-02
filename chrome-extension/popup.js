@@ -1,5 +1,4 @@
 const API = "https://resumex.talentxrecruiting.com";
-
 const $ = (id) => document.getElementById(id);
 
 async function init() {
@@ -9,46 +8,40 @@ async function init() {
 
   const { rxToken, rxUser } = await chrome.storage.local.get(["rxToken", "rxUser"]);
 
+  $("loading").style.display = "none";
+
   if (!rxToken) {
-    $("loading").style.display = "none";
     $("login").style.display = "block";
     return;
   }
 
   $("username-display").textContent = rxUser ?? "";
-  $("loading").style.display = "none";
   $("view").style.display = "block";
 
-  // Ask content script for current job info
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) return;
+  if (!tab?.id) { $("no-job").style.display = "block"; return; }
 
   try {
-    const response = await chrome.tabs.sendMessage(tab.id, { type: "GET_JOB" });
-    if (response?.title) {
-      showJob(response, rxToken);
+    const job = await chrome.tabs.sendMessage(tab.id, { type: "GET_JOB" });
+    if (job?.title) {
+      showJob(job, rxToken);
     } else {
       $("no-job").style.display = "block";
-      $("job-section").style.display = "none";
     }
   } catch {
     $("no-job").style.display = "block";
-    $("job-section").style.display = "none";
   }
 }
 
 function showJob(job, token) {
   $("no-job").style.display = "none";
   $("job-section").style.display = "block";
-  $("job-info").innerHTML = `<strong>${job.title}</strong> at <strong>${job.company}</strong><br>${job.location ?? ""}`;
-
+  $("job-info").innerHTML = `<strong>${job.title}</strong> at <strong>${job.company}</strong>`;
   fetchScore(job, token);
-
   $("save-btn").onclick = () => saveJob(job, token);
 }
 
 async function fetchScore(job, token) {
-  $("score-section").style.display = "none";
   try {
     const res = await fetch(`${API}/api/match-score`, {
       method: "POST",
@@ -58,7 +51,6 @@ async function fetchScore(job, token) {
     if (!res.ok) return;
     const data = await res.json();
     if (data.score == null) return;
-
     $("score-value").textContent = `${data.score}%`;
     const bar = $("score-bar");
     bar.style.width = `${data.score}%`;
@@ -90,39 +82,58 @@ async function saveJob(job, token) {
   }
 }
 
+// Email login
 $("login-btn").addEventListener("click", async () => {
-  const username = $("username").value.trim();
+  const email = $("email").value.trim();
   const password = $("password").value;
   $("login-error").textContent = "";
-
-  if (!username || !password) {
-    $("login-error").textContent = "Please enter your username and password.";
-    return;
-  }
-
-  $("login-btn").textContent = "Connecting…";
+  if (!email || !password) { $("login-error").textContent = "Please enter your email and password."; return; }
   $("login-btn").disabled = true;
-
+  $("login-btn").textContent = "Signing in…";
   try {
     const res = await fetch(`${API}/api/extension/token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
     if (!res.ok || !data.token) {
       $("login-error").textContent = data.error ?? "Login failed.";
-      $("login-btn").textContent = "Connect to ResumeX";
+      $("login-btn").textContent = "Sign in";
       $("login-btn").disabled = false;
       return;
     }
-    await chrome.storage.local.set({ rxToken: data.token, rxUser: username });
+    await chrome.storage.local.set({ rxToken: data.token, rxUser: data.name ?? email });
     init();
   } catch {
     $("login-error").textContent = "Could not connect. Try again.";
-    $("login-btn").textContent = "Connect to ResumeX";
+    $("login-btn").textContent = "Sign in";
     $("login-btn").disabled = false;
   }
+});
+
+// Google login — open extension-auth page and listen for token in URL hash
+$("google-btn").addEventListener("click", async () => {
+  const authUrl = `${API}/extension-auth`;
+  const tab = await chrome.tabs.create({ url: authUrl });
+
+  const listener = async (tabId, changeInfo, t) => {
+    if (tabId !== tab.id) return;
+    if (changeInfo.url && changeInfo.url.includes("rx-token=")) {
+      const hash = new URL(changeInfo.url).hash;
+      const token = hash.match(/rx-token=([^&]+)/)?.[1];
+      if (token) {
+        chrome.tabs.onUpdated.removeListener(listener);
+        chrome.tabs.remove(tabId).catch(() => {});
+        // Get display name
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        await chrome.storage.local.set({ rxToken: token, rxUser: payload.name ?? "Google user" });
+        init();
+      }
+    }
+  };
+
+  chrome.tabs.onUpdated.addListener(listener);
 });
 
 $("logout-btn").addEventListener("click", async () => {

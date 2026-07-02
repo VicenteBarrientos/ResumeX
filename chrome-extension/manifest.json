@@ -3,7 +3,7 @@
   "name": "ResumeX AutoApply",
   "version": "1.0.0",
   "description": "Auto-save jobs and see your match score on any job page.",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": [
     "https://resumex.talentxrecruiting.com/*",
     "https://*.lever.co/*",
@@ -13,6 +13,11 @@
     "https://*.workday.com/*",
     "https://*.myworkdayjobs.com/*"
   ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "ResumeX"
@@ -33,10 +38,5 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     }
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+  ]
 }
