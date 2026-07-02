@@ -59,6 +59,30 @@ async function init() {
     $("fill-btn").style.display = e.target.checked ? "block" : "none";
   });
 
+  // Show stored resume name if any
+  const { rxResumeName } = await chrome.storage.local.get("rxResumeName");
+  if (rxResumeName) {
+    $("resume-stored").textContent = `Resume: ${rxResumeName}`;
+    $("resume-stored").style.display = "block";
+    $("resume-label").textContent = "Replace resume";
+  }
+
+  // Handle resume file upload to extension storage
+  $("resume-file").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    $("resume-label").textContent = "Reading…";
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result;
+      await chrome.storage.local.set({ rxResumeB64: base64, rxResumeName: file.name });
+      $("resume-stored").textContent = `Resume: ${file.name}`;
+      $("resume-stored").style.display = "block";
+      $("resume-label").textContent = "Replace resume";
+    };
+    reader.readAsDataURL(file);
+  });
+
   $("fill-btn").addEventListener("click", async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;

@@ -154,19 +154,42 @@ async function autoFillForms(profile) {
   return filled;
 }
 
+function attachResume(base64, filename) {
+  const fileInput = document.querySelector('input[type="file"][accept*="pdf"], input[type="file"][name*="resume"], input[type="file"][name*="cv"], input[type="file"]');
+  if (!fileInput) return false;
+  try {
+    const byteString = atob(base64.split(",")[1] ?? base64);
+    const bytes = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+    const file = new File([bytes], filename ?? "resume.pdf", { type: "application/pdf" });
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+    fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    fileInput.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  } catch { return false; }
+}
+
 async function runAutoApply() {
   const { rxToken, autoApply } = await chrome.storage.local.get({ rxToken: null, autoApply: false });
   if (!rxToken || !autoApply) return 0;
 
   try {
-    // Fetch via background worker to bypass cross-origin restrictions
     const result = await chrome.runtime.sendMessage({ type: "FETCH_PROFILE", token: rxToken });
     if (!result?.ok) {
       showToast("ResumeX: could not load profile — are you signed in?");
       return 0;
     }
     const profile = result.data;
-    const filled = await autoFillForms(profile);
+    let filled = await autoFillForms(profile);
+
+    // Attach resume PDF if stored in extension
+    if (result.resumeB64) {
+      const attached = attachResume(result.resumeB64, result.resumeName);
+      if (attached) filled++;
+    }
+
     if (filled > 0) {
       showToast(`ResumeX filled ${filled} field${filled > 1 ? "s" : ""} ✓`);
     } else {

@@ -7,12 +7,14 @@ chrome.runtime.onInstalled.addListener(() => {
 // Proxy fetch requests from content scripts (they can't do cross-origin fetches)
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "FETCH_PROFILE") {
-    fetch(`${API}/api/profile`, {
-      headers: { Authorization: `Bearer ${msg.token}` },
-    })
-      .then((r) => r.json())
-      .then((data) => sendResponse({ ok: true, data }))
+    Promise.all([
+      fetch(`${API}/api/profile`, { headers: { Authorization: `Bearer ${msg.token}` } }).then((r) => r.json()),
+      chrome.storage.local.get(["rxResumeB64", "rxResumeName"]),
+    ])
+      .then(([profile, { rxResumeB64, rxResumeName }]) =>
+        sendResponse({ ok: true, data: profile, resumeB64: rxResumeB64 ?? null, resumeName: rxResumeName ?? null })
+      )
       .catch((e) => sendResponse({ ok: false, error: e.message }));
-    return true; // keep channel open for async response
+    return true;
   }
 });
