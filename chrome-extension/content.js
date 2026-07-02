@@ -72,11 +72,11 @@ function getJobInfo() {
 
 // ── Auto-Apply: fill form fields with profile data ──────────────────────────
 
-// Maps field patterns to profile keys
+// Maps field patterns to profile keys — ordered: specific before generic
 const FIELD_MAP = [
-  { key: "fullName",   patterns: [/full.?name|your.?name|first.?last/i] },
-  { key: "firstName",  patterns: [/first.?name|given.?name/i] },
-  { key: "lastName",   patterns: [/last.?name|family.?name|surname/i] },
+  { key: "firstName",  patterns: [/first.?name|given.?name|fname/i] },
+  { key: "lastName",   patterns: [/last.?name|family.?name|surname|lname/i] },
+  { key: "fullName",   patterns: [/full.?name|your.?name|first.?last|^name$|^full$/i] },
   { key: "email",      patterns: [/e.?mail/i], type: "email" },
   { key: "phone",      patterns: [/phone|mobile|cell|tel/i], type: "tel" },
   { key: "location",   patterns: [/city|location|address|where.?are.?you/i] },
@@ -85,7 +85,7 @@ const FIELD_MAP = [
 
 function getAttr(el, ...attrs) {
   for (const a of attrs) {
-    const v = el.getAttribute(a) ?? el.closest("label")?.textContent ?? "";
+    const v = el.getAttribute(a) ?? "";
     if (v) return v;
   }
   return "";
@@ -143,19 +143,28 @@ async function autoFillForms(profile) {
 
 async function runAutoApply() {
   const { rxToken, autoApply } = await chrome.storage.local.get({ rxToken: null, autoApply: false });
-  if (!rxToken || !autoApply) return;
+  if (!rxToken || !autoApply) return 0;
 
   try {
     const res = await fetch(`${API}/api/profile`, {
       headers: { Authorization: `Bearer ${rxToken}` },
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      showToast("ResumeX: could not load profile — are you signed in?");
+      return 0;
+    }
     const profile = await res.json();
     const filled = await autoFillForms(profile);
     if (filled > 0) {
-      showToast(`ResumeX filled ${filled} field${filled > 1 ? "s" : ""} for you`);
+      showToast(`ResumeX filled ${filled} field${filled > 1 ? "s" : ""} ✓`);
+    } else {
+      showToast("ResumeX: no matching fields found on this page");
     }
-  } catch {}
+    return filled;
+  } catch (e) {
+    showToast("ResumeX: fill failed — " + e.message);
+    return 0;
+  }
 }
 
 function showToast(msg) {
@@ -174,7 +183,7 @@ function showToast(msg) {
 // Listen for popup messages
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "GET_JOB") sendResponse(getJobInfo());
-  if (msg.type === "AUTO_APPLY") runAutoApply().then(() => sendResponse({ ok: true }));
+  if (msg.type === "AUTO_APPLY") runAutoApply().then((filled) => sendResponse({ ok: true, filled }));
   return true;
 });
 

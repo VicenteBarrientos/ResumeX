@@ -65,15 +65,18 @@ async function init() {
     $("fill-btn").textContent = "Filling…";
     $("fill-btn").disabled = true;
     try {
-      await chrome.tabs.sendMessage(tab.id, { type: "AUTO_APPLY" });
-      $("fill-btn").textContent = "Filled!";
+      const result = await chrome.tabs.sendMessage(tab.id, { type: "AUTO_APPLY" });
+      $("fill-btn").textContent = result?.filled > 0 ? `Filled ${result.filled} fields ✓` : "No fields matched";
       setTimeout(() => {
         $("fill-btn").textContent = "Fill Form with My Info";
         $("fill-btn").disabled = false;
-      }, 2000);
+      }, 2500);
     } catch {
-      $("fill-btn").textContent = "Fill Form with My Info";
-      $("fill-btn").disabled = false;
+      $("fill-btn").textContent = "Could not reach page — reload and try";
+      setTimeout(() => {
+        $("fill-btn").textContent = "Fill Form with My Info";
+        $("fill-btn").disabled = false;
+      }, 3000);
     }
   });
 
