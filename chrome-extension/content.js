@@ -5,12 +5,15 @@ const DETECTORS = [
   {
     match: () => location.hostname.includes("lever.co"),
     extract: () => {
-      const title = document.querySelector(".posting-headline h2")?.textContent?.trim()
-        ?? document.querySelector("h2")?.textContent?.trim();
-      const company = document.querySelector(".main-header-text .company-name")?.textContent?.trim()
+      const title = document.querySelector(".posting-headline h2, [data-qa='posting-name'], h2")?.textContent?.trim()
+        ?? document.title.split(" - ")[0].split(" at ")[0].trim();
+      // Company from page header, breadcrumb, or URL path segment
+      const company = document.querySelector(".main-header-text .company-name, .posting-header .company, [data-qa='posting-company']")?.textContent?.trim()
+        ?? document.querySelector(".posting-logo img")?.getAttribute("alt")?.trim()
+        ?? location.pathname.split("/")[1]  // e.g. /EnvisionRPO/uuid → "EnvisionRPO"
         ?? document.title.split(" at ").pop()?.trim();
-      const loc = document.querySelector(".posting-categories .location")?.textContent?.trim();
-      const description = document.querySelector(".posting-requirements, .section-wrapper")?.textContent?.trim();
+      const loc = document.querySelector(".posting-categories .location, [data-qa='posting-location'], .location")?.textContent?.trim();
+      const description = document.querySelector(".posting-requirements, .section-wrapper, .posting-description, [data-qa='posting-description']")?.textContent?.trim();
       return { title, company, location: loc, description, url: window.location.href };
     },
   },
