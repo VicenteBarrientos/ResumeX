@@ -89,7 +89,15 @@ export default function ProfilePage() {
       if (!res.ok) { setPdfError(data.error ?? "Upload failed."); }
       else {
         setResumeUploaded(true);
-        if (data.resumeText) setProfile((p) => ({ ...p, resumeText: data.resumeText }));
+        setProfile((p) => ({
+          ...p,
+          ...(data.resumeText ? { resumeText: data.resumeText } : {}),
+          ...(data.contact?.fullName ? { fullName: data.contact.fullName } : {}),
+          ...(data.contact?.email ? { email: data.contact.email } : {}),
+          ...(data.contact?.phone ? { phone: data.contact.phone } : {}),
+          ...(data.contact?.location ? { location: data.contact.location } : {}),
+          ...(data.contact?.linkedinUrl ? { linkedinUrl: data.contact.linkedinUrl } : {}),
+        }));
       }
     } catch {
       setPdfError("Upload failed — please try again.");

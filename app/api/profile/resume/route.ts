@@ -4,6 +4,44 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { extractTextFromPdf } from "@/lib/pdf";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+type ParsedContact = {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  linkedinUrl?: string;
+};
+
+async function parseContactFromResume(text: string): Promise<ParsedContact> {
+  try {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content: `Extract contact info from this resume. Return JSON only with keys: fullName, email, phone, location, linkedinUrl. Use null for missing fields. No markdown.`,
+        },
+        { role: "user", content: text.slice(0, 3000) },
+      ],
+    });
+    const raw = res.choices[0]?.message?.content ?? "{}";
+    const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    return {
+      fullName: parsed.fullName ?? undefined,
+      email: parsed.email ?? undefined,
+      phone: parsed.phone ?? undefined,
+      location: parsed.location ?? undefined,
+      linkedinUrl: parsed.linkedinUrl ?? undefined,
+    };
+  } catch {
+    return {};
+  }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,18 +78,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not extract text from this PDF. Try copy-pasting your resume text directly." }, { status: 422 });
   }
 
+  // Parse contact fields from resume text
+  const contact = await parseContactFromResume(resumeText);
+
   try {
     await db.profile.upsert({
       where: { userId: session.user.id },
-      create: { userId: session.user.id, resumeText },
-      update: { resumeText },
+      create: {
+        userId: session.user.id,
+        resumeText,
+        ...(contact.fullName && { fullName: contact.fullName }),
+        ...(contact.email && { email: contact.email }),
+        ...(contact.phone && { phone: contact.phone }),
+        ...(contact.location && { location: contact.location }),
+        ...(contact.linkedinUrl && { linkedinUrl: contact.linkedinUrl }),
+      },
+      update: {
+        resumeText,
+        ...(contact.fullName && { fullName: contact.fullName }),
+        ...(contact.email && { email: contact.email }),
+        ...(contact.phone && { phone: contact.phone }),
+        ...(contact.location && { location: contact.location }),
+        ...(contact.linkedinUrl && { linkedinUrl: contact.linkedinUrl }),
+      },
     });
   } catch (err) {
     console.error("[resume] DB upsert failed:", err);
     return NextResponse.json({ error: "Database error saving resume." }, { status: 500 });
   }
 
-  return NextResponse.json({ resumeText });
+  return NextResponse.json({ resumeText, contact });
 }
 
 export async function DELETE() {
