@@ -45,11 +45,36 @@ async function init() {
   $("view").style.display = "block";
 
   // Load toggle states
-  const { autoSave } = await chrome.storage.local.get({ autoSave: true });
+  const { autoSave, autoApply } = await chrome.storage.local.get({ autoSave: true, autoApply: false });
   $("toggle-autosave").checked = autoSave;
+  $("toggle-autoapply").checked = autoApply;
+  if (autoApply) $("fill-btn").style.display = "block";
 
   $("toggle-autosave").addEventListener("change", async (e) => {
     await chrome.storage.local.set({ autoSave: e.target.checked });
+  });
+
+  $("toggle-autoapply").addEventListener("change", async (e) => {
+    await chrome.storage.local.set({ autoApply: e.target.checked });
+    $("fill-btn").style.display = e.target.checked ? "block" : "none";
+  });
+
+  $("fill-btn").addEventListener("click", async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) return;
+    $("fill-btn").textContent = "Filling…";
+    $("fill-btn").disabled = true;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: "AUTO_APPLY" });
+      $("fill-btn").textContent = "Filled!";
+      setTimeout(() => {
+        $("fill-btn").textContent = "Fill Form with My Info";
+        $("fill-btn").disabled = false;
+      }, 2000);
+    } catch {
+      $("fill-btn").textContent = "Fill Form with My Info";
+      $("fill-btn").disabled = false;
+    }
   });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

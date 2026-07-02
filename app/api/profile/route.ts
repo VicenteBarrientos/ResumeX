@@ -2,12 +2,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getUserIdFromBearer } from "@/lib/extension-auth";
 
-export async function GET() {
+async function resolveUserId(req: Request): Promise<string | null> {
+  const fromBearer = await getUserIdFromBearer(req);
+  if (fromBearer) return fromBearer;
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return session?.user?.id ?? null;
+}
 
-  const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
+export async function GET(req: Request) {
+  const userId = await resolveUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const profile = await db.profile.findUnique({ where: { userId } });
   if (!profile) return NextResponse.json({});
 
   return NextResponse.json({
@@ -23,16 +31,16 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
   const { fullName, email, phone, location, linkedinUrl, resumeText, profileJson } = body;
 
   const profile = await db.profile.upsert({
-    where: { userId: session.user.id },
+    where: { userId },
     create: {
-      userId: session.user.id,
+      userId,
       fullName,
       email,
       phone,

@@ -1,3 +1,5 @@
+const API = "https://resumex.talentxrecruiting.com";
+
 // Job detectors per site
 const DETECTORS = [
   {
@@ -7,9 +9,9 @@ const DETECTORS = [
         ?? document.querySelector("h2")?.textContent?.trim();
       const company = document.querySelector(".main-header-text .company-name")?.textContent?.trim()
         ?? document.title.split(" at ").pop()?.trim();
-      const location = document.querySelector(".posting-categories .location")?.textContent?.trim();
+      const loc = document.querySelector(".posting-categories .location")?.textContent?.trim();
       const description = document.querySelector(".posting-requirements, .section-wrapper")?.textContent?.trim();
-      return { title, company, location, description, url: location.href };
+      return { title, company, location: loc, description, url: window.location.href };
     },
   },
   {
@@ -18,9 +20,9 @@ const DETECTORS = [
       const title = document.querySelector("h1.app-title, h1")?.textContent?.trim();
       const company = document.querySelector(".company-name, #header .company")?.textContent?.trim()
         ?? document.title.split(" at ").pop()?.trim();
-      const location = document.querySelector(".location")?.textContent?.trim();
+      const loc = document.querySelector(".location")?.textContent?.trim();
       const description = document.querySelector("#content")?.textContent?.trim();
-      return { title, company, location, description, url: window.location.href };
+      return { title, company, location: loc, description, url: window.location.href };
     },
   },
   {
@@ -28,9 +30,9 @@ const DETECTORS = [
     extract: () => {
       const title = document.querySelector(".job-details-jobs-unified-top-card__job-title, h1")?.textContent?.trim();
       const company = document.querySelector(".job-details-jobs-unified-top-card__company-name, .topcard__org-name-link")?.textContent?.trim();
-      const location = document.querySelector(".job-details-jobs-unified-top-card__bullet")?.textContent?.trim();
+      const loc = document.querySelector(".job-details-jobs-unified-top-card__bullet")?.textContent?.trim();
       const description = document.querySelector(".jobs-description__content, .description__text")?.textContent?.trim();
-      return { title, company, location, description, url: window.location.href };
+      return { title, company, location: loc, description, url: window.location.href };
     },
   },
   {
@@ -38,13 +40,12 @@ const DETECTORS = [
     extract: () => {
       const title = document.querySelector('[data-testid="jobsearch-JobInfoHeader-title"], h1')?.textContent?.trim();
       const company = document.querySelector('[data-testid="inlineHeader-companyName"], .jobsearch-InlineCompanyRating')?.textContent?.trim();
-      const location = document.querySelector('[data-testid="job-location"]')?.textContent?.trim();
+      const loc = document.querySelector('[data-testid="job-location"]')?.textContent?.trim();
       const description = document.querySelector("#jobDescriptionText")?.textContent?.trim();
-      return { title, company, location, description, url: window.location.href };
+      return { title, company, location: loc, description, url: window.location.href };
     },
   },
   {
-    // Generic fallback
     match: () => true,
     extract: () => {
       const title = document.querySelector("h1")?.textContent?.trim();
@@ -69,15 +70,115 @@ function getJobInfo() {
   };
 }
 
-// Listen for popup asking for job info
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg.type === "GET_JOB") {
-    sendResponse(getJobInfo());
+// ── Auto-Apply: fill form fields with profile data ──────────────────────────
+
+// Maps field patterns to profile keys
+const FIELD_MAP = [
+  { key: "fullName",   patterns: [/full.?name|your.?name|first.?last/i] },
+  { key: "firstName",  patterns: [/first.?name|given.?name/i] },
+  { key: "lastName",   patterns: [/last.?name|family.?name|surname/i] },
+  { key: "email",      patterns: [/e.?mail/i], type: "email" },
+  { key: "phone",      patterns: [/phone|mobile|cell|tel/i], type: "tel" },
+  { key: "location",   patterns: [/city|location|address|where.?are.?you/i] },
+  { key: "linkedinUrl",patterns: [/linkedin/i] },
+];
+
+function getAttr(el, ...attrs) {
+  for (const a of attrs) {
+    const v = el.getAttribute(a) ?? el.closest("label")?.textContent ?? "";
+    if (v) return v;
   }
+  return "";
+}
+
+function fillField(el, value) {
+  if (!value || el.value) return; // don't overwrite existing values
+  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
+    ?? Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+  if (nativeInputValueSetter) nativeInputValueSetter.call(el, value);
+  else el.value = value;
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  el.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function splitName(fullName) {
+  const parts = (fullName ?? "").trim().split(/\s+/);
+  return { first: parts[0] ?? "", last: parts.slice(1).join(" ") };
+}
+
+async function autoFillForms(profile) {
+  const inputs = document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]), textarea');
+  const { first, last } = splitName(profile.fullName);
+
+  const values = {
+    fullName: profile.fullName,
+    firstName: first,
+    lastName: last,
+    email: profile.email,
+    phone: profile.phone,
+    location: profile.location,
+    linkedinUrl: profile.linkedinUrl,
+  };
+
+  let filled = 0;
+  for (const input of inputs) {
+    const hint = [
+      getAttr(input, "name", "id", "placeholder", "aria-label", "autocomplete"),
+      input.closest("label")?.textContent ?? "",
+      input.previousElementSibling?.textContent ?? "",
+      input.closest('[class*="field"], [class*="form-group"]')?.querySelector("label")?.textContent ?? "",
+    ].join(" ").toLowerCase();
+
+    for (const { key, patterns, type } of FIELD_MAP) {
+      if (type && input.type && input.type !== type && input.type !== "text") continue;
+      if (patterns.some((p) => p.test(hint)) && values[key]) {
+        fillField(input, values[key]);
+        filled++;
+        break;
+      }
+    }
+  }
+  return filled;
+}
+
+async function runAutoApply() {
+  const { rxToken, autoApply } = await chrome.storage.local.get({ rxToken: null, autoApply: false });
+  if (!rxToken || !autoApply) return;
+
+  try {
+    const res = await fetch(`${API}/api/profile`, {
+      headers: { Authorization: `Bearer ${rxToken}` },
+    });
+    if (!res.ok) return;
+    const profile = await res.json();
+    const filled = await autoFillForms(profile);
+    if (filled > 0) {
+      showToast(`ResumeX filled ${filled} field${filled > 1 ? "s" : ""} for you`);
+    }
+  } catch {}
+}
+
+function showToast(msg) {
+  const el = document.createElement("div");
+  el.textContent = msg;
+  Object.assign(el.style, {
+    position: "fixed", bottom: "24px", right: "24px", zIndex: "999999",
+    background: "#0d1117", color: "#22d3ee", border: "1px solid rgba(34,211,238,0.3)",
+    borderRadius: "10px", padding: "10px 16px", fontSize: "13px", fontFamily: "system-ui, sans-serif",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.4)", pointerEvents: "none",
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// Listen for popup messages
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.type === "GET_JOB") sendResponse(getJobInfo());
+  if (msg.type === "AUTO_APPLY") runAutoApply().then(() => sendResponse({ ok: true }));
   return true;
 });
 
-// Watch for Apply button clicks and auto-save (respects autoSave toggle)
+// Watch for Apply button clicks
 function watchForApply() {
   document.addEventListener("click", async (e) => {
     const el = e.target.closest("button, a");
@@ -85,18 +186,31 @@ function watchForApply() {
     const text = el.textContent?.toLowerCase() ?? "";
     if (!/apply|submit application/.test(text)) return;
 
-    const { rxToken, autoSave } = await chrome.storage.local.get({ rxToken: null, autoSave: true });
-    if (!rxToken || !autoSave) return;
+    const { rxToken, autoSave, autoApply } = await chrome.storage.local.get({
+      rxToken: null, autoSave: true, autoApply: false,
+    });
+    if (!rxToken) return;
 
-    const job = getJobInfo();
-    if (!job) return;
+    if (autoApply) runAutoApply();
 
-    fetch("https://resumex.talentxrecruiting.com/api/tracker", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${rxToken}` },
-      body: JSON.stringify({ company: job.company, role: job.title, jobUrl: job.url, status: "Applied" }),
-    }).catch(() => {});
+    if (autoSave) {
+      const job = getJobInfo();
+      if (!job) return;
+      fetch(`${API}/api/tracker`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${rxToken}` },
+        body: JSON.stringify({ company: job.company, role: job.title, jobUrl: job.url, status: "Applied" }),
+      }).catch(() => {});
+    }
   }, true);
 }
+
+// Run auto-fill on page load if on an application page
+(async () => {
+  const { autoApply } = await chrome.storage.local.get({ autoApply: false });
+  if (autoApply && document.readyState !== "loading") {
+    setTimeout(runAutoApply, 1500); // wait for dynamic forms to render
+  }
+})();
 
 watchForApply();
