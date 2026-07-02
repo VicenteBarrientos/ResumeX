@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -77,7 +80,9 @@ const PRO_FEATURES = [
   "Priority Support",
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await getServerSession(authOptions);
+  if (session) redirect("/tracker");
   return (
     <div className="relative min-h-full overflow-hidden bg-white text-zinc-900 dark:bg-[#050816] dark:text-white">
       {/* Background blobs */}
