@@ -26,7 +26,7 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<Profile>({});
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [resumePdfUrl, setResumePdfUrl] = useState<string | null>(null);
+  const [resumeUploaded, setResumeUploaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function ProfilePage() {
     ]);
     const [p, a] = await Promise.all([pRes.json(), aRes.json()]);
     setProfile(p ?? {});
-    if (p?.resumePdfUrl) setResumePdfUrl(p.resumePdfUrl);
+    if (p?.resumeText) setResumeUploaded(true);
     setAnswers(Array.isArray(a) ? a : []);
     setLoading(false);
   }, []);
@@ -88,7 +88,7 @@ export default function ProfilePage() {
       const data = await res.json();
       if (!res.ok) { setPdfError(data.error ?? "Upload failed."); }
       else {
-        setResumePdfUrl(data.url);
+        setResumeUploaded(true);
         if (data.resumeText) setProfile((p) => ({ ...p, resumeText: data.resumeText }));
       }
     } catch {
@@ -100,7 +100,8 @@ export default function ProfilePage() {
 
   async function deletePdf() {
     await fetch("/api/profile/resume", { method: "DELETE" });
-    setResumePdfUrl(null);
+    setResumeUploaded(false);
+    setProfile((p) => ({ ...p, resumeText: undefined }));
   }
 
   async function addAnswer() {
@@ -228,12 +229,10 @@ export default function ProfilePage() {
         {/* PDF upload */}
         <div>
           <span className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Resume PDF</span>
-          {resumePdfUrl ? (
+          {resumeUploaded ? (
             <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-cyan-400/30 dark:bg-cyan-400/10">
-              <svg className="h-5 w-5 shrink-0 text-indigo-600 dark:text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              <a href={resumePdfUrl} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-sm font-medium text-indigo-700 underline dark:text-cyan-200">
-                View stored PDF ↗
-              </a>
+              <svg className="h-5 w-5 shrink-0 text-indigo-600 dark:text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span className="flex-1 text-sm font-medium text-indigo-700 dark:text-cyan-200">Resume uploaded — text extracted</span>
               <button type="button" onClick={deletePdf} className="shrink-0 text-xs text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400">Remove</button>
             </div>
           ) : (
