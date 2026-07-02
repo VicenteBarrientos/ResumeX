@@ -77,7 +77,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   return true;
 });
 
-// Watch for Apply button clicks and auto-save
+// Watch for Apply button clicks and auto-save (respects autoSave toggle)
 function watchForApply() {
   document.addEventListener("click", async (e) => {
     const el = e.target.closest("button, a");
@@ -85,13 +85,12 @@ function watchForApply() {
     const text = el.textContent?.toLowerCase() ?? "";
     if (!/apply|submit application/.test(text)) return;
 
+    const { rxToken, autoSave } = await chrome.storage.local.get({ rxToken: null, autoSave: true });
+    if (!rxToken || !autoSave) return;
+
     const job = getJobInfo();
     if (!job) return;
 
-    const { rxToken } = await chrome.storage.local.get("rxToken");
-    if (!rxToken) return;
-
-    // Fire and forget — save to tracker on apply click
     fetch("https://resumex.talentxrecruiting.com/api/tracker", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${rxToken}` },

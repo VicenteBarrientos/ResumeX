@@ -1,12 +1,38 @@
 const API = "https://resumex.talentxrecruiting.com";
 const $ = (id) => document.getElementById(id);
 
+async function tryAutoConnect() {
+  // If already logged into ResumeX in the browser, grab a token automatically
+  try {
+    const res = await fetch(`${API}/api/extension/google-token`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.token) return null;
+    const payload = JSON.parse(atob(data.token.split(".")[1]));
+    const name = payload.name ?? payload.email ?? "User";
+    await chrome.storage.local.set({ rxToken: data.token, rxUser: name });
+    return data.token;
+  } catch {
+    return null;
+  }
+}
+
 async function init() {
   $("loading").style.display = "block";
   $("login").style.display = "none";
   $("view").style.display = "none";
 
-  const { rxToken, rxUser } = await chrome.storage.local.get(["rxToken", "rxUser"]);
+  let { rxToken, rxUser } = await chrome.storage.local.get(["rxToken", "rxUser"]);
+
+  // Auto-connect from browser session if no token stored
+  if (!rxToken) {
+    rxToken = await tryAutoConnect();
+    const refreshed = await chrome.storage.local.get(["rxUser"]);
+    rxUser = refreshed.rxUser;
+  }
 
   $("loading").style.display = "none";
 
@@ -17,6 +43,14 @@ async function init() {
 
   $("username-display").textContent = rxUser ?? "";
   $("view").style.display = "block";
+
+  // Load toggle states
+  const { autoSave } = await chrome.storage.local.get({ autoSave: true });
+  $("toggle-autosave").checked = autoSave;
+
+  $("toggle-autosave").addEventListener("change", async (e) => {
+    await chrome.storage.local.set({ autoSave: e.target.checked });
+  });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) { $("no-job").style.display = "block"; return; }
@@ -117,7 +151,7 @@ $("google-btn").addEventListener("click", async () => {
   const authUrl = `${API}/extension-auth`;
   const tab = await chrome.tabs.create({ url: authUrl });
 
-  const listener = async (tabId, changeInfo, t) => {
+  const listener = async (tabId, changeInfo) => {
     if (tabId !== tab.id) return;
     if (changeInfo.url && changeInfo.url.includes("rx-token=")) {
       const hash = new URL(changeInfo.url).hash;
@@ -125,7 +159,6 @@ $("google-btn").addEventListener("click", async () => {
       if (token) {
         chrome.tabs.onUpdated.removeListener(listener);
         chrome.tabs.remove(tabId).catch(() => {});
-        // Get display name
         const payload = JSON.parse(atob(token.split(".")[1]));
         await chrome.storage.local.set({ rxToken: token, rxUser: payload.name ?? "Google user" });
         init();
