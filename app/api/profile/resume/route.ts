@@ -8,6 +8,7 @@ import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // POST — upload a new resume PDF, store in Blob, extract text, save URL to profile
 export async function POST(req: Request) {

@@ -60,7 +60,8 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account }) {
       if (user) token.id = user.id;
-      if (account?.provider === "google" && !token.id) {
+      // For Google sign-in, always resolve id from DB via email
+      if (account?.provider === "google") {
         const dbUser = await db.user.findFirst({ where: { email: token.email! } });
         if (dbUser) token.id = dbUser.id;
       }
