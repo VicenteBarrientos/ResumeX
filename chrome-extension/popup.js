@@ -174,8 +174,15 @@ $("logout-btn").addEventListener("click", async () => {
   init();
 });
 
-$("open-tracker").addEventListener("click", () => {
-  chrome.tabs.create({ url: `${API}/tracker` });
+$("open-tracker").addEventListener("click", async () => {
+  // Focus existing ResumeX tab if one is already open
+  const existing = await chrome.tabs.query({ url: `${API}/*` });
+  if (existing.length > 0) {
+    await chrome.tabs.update(existing[0].id, { active: true, url: `${API}/tracker` });
+    await chrome.windows.update(existing[0].windowId, { focused: true });
+  } else {
+    chrome.tabs.create({ url: `${API}/tracker` });
+  }
 });
 
 init();
