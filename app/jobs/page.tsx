@@ -50,7 +50,7 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  }, [query, country, remoteOnly]);
+  }, [query, remoteOnly]);
 
   async function saveToTracker(job: Job) {
     if (!session) {
