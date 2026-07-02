@@ -74,34 +74,35 @@ function getJobInfo() {
 
 // Maps field patterns to profile keys — ordered: specific before generic
 const FIELD_MAP = [
-  { key: "firstName",   patterns: [/^first.?name$|^given.?name$|^fname$/i] },
-  { key: "lastName",    patterns: [/^last.?name$|^family.?name$|^surname$|^lname$/i] },
-  { key: "fullName",    patterns: [/^name$|^full.?name$|^your.?name$|^applicant.?name$/i] },
-  { key: "email",       patterns: [/^email$|^e.?mail/i], type: "email" },
-  { key: "phone",       patterns: [/^phone$|^mobile$|^cell$|^telephone$/i], type: "tel" },
-  { key: "location",    patterns: [/^city$|^location$|^address$/i] },
+  { key: "firstName",   patterns: [/^first\s*name$|^given\s*name$|^fname$/i] },
+  { key: "lastName",    patterns: [/^last\s*name$|^family\s*name$|^surname$|^lname$/i] },
+  { key: "fullName",    patterns: [/^name$|^full\s*name$|^your\s*name$|^applicant\s*name$|^candidate\s*name$/i] },
+  { key: "email",       patterns: [/^email(s)?$|^e.?mail/i], type: "email" },
+  { key: "phone",       patterns: [/^phone$|^mobile$|^cell$|^telephone$|^phone\s*number$/i], type: "tel" },
+  { key: "location",    patterns: [/^city$|^location$|^address$|^current\s*location$|^where\s*are\s*you/i] },
   { key: "linkedinUrl", patterns: [/linkedin/i] },
 ];
 
+// Clean a hint string — strip required markers, extra whitespace
+function cleanHint(s) {
+  return s.replace(/[✱*✦•◆▪]/g, "").replace(/\s+/g, " ").trim();
+}
+
 // Collect all meaningful hints from a single input element
 function getHints(input) {
-  const hints = [
+  const raw = [
     input.getAttribute("name"),
     input.getAttribute("id"),
     input.getAttribute("placeholder"),
     input.getAttribute("aria-label"),
     input.getAttribute("autocomplete"),
-    // label[for=id]
-    input.id ? document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent?.trim() : null,
-    // wrapping label
-    input.closest("label")?.textContent?.trim(),
-    // sibling label above
-    input.previousElementSibling?.textContent?.trim(),
-    // label inside nearest field wrapper
-    input.closest('[class*="field"],[class*="form-group"],[class*="input-wrap"]')
-      ?.querySelector("label, legend")?.textContent?.trim(),
-  ].filter(Boolean).map(s => s.trim());
-  return hints;
+    input.id ? document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent : null,
+    input.closest("label")?.textContent,
+    input.previousElementSibling?.textContent,
+    input.closest('[class*="field"],[class*="form-group"],[class*="input-wrap"],[class*="application"]')
+      ?.querySelector("label, legend, .label")?.textContent,
+  ];
+  return raw.filter(Boolean).map(s => cleanHint(s)).filter(s => s.length > 0);
 }
 
 function fillField(el, value) {
