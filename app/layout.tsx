@@ -28,11 +28,12 @@ export const metadata: Metadata = {
   title: "ResumeX — AI-Powered Job Search Platform",
   description:
     "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place. Free to start.",
-  metadataBase: new URL("https://resumex.talentxrecruiting.com"),
+  metadataBase: new URL(
+    process.env.NEXTAUTH_URL ?? "https://resumex.talentxrecruiting.com"
+  ),
   openGraph: {
     title: "ResumeX — AI-Powered Job Search Platform",
     description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
-    url: "https://resumex.talentxrecruiting.com",
     siteName: "ResumeX",
     type: "website",
   },

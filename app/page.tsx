@@ -59,24 +59,6 @@ const STEPS = [
   { n: "4", title: "Track everything", body: "See your full pipeline — Applied, Interview, Offer — and export to CSV anytime." },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: "I went from 0 to 3 interviews in a week. The cover letter generator alone saved me hours.",
-    name: "Sofia M.",
-    role: "Marketing Manager",
-  },
-  {
-    quote: "AutoApply is insane. I applied to 20 jobs in the time it used to take me to apply to 2.",
-    name: "Carlos R.",
-    role: "Software Engineer",
-  },
-  {
-    quote: "The match score tells me exactly where my resume falls short. No other tool does this.",
-    name: "Ana P.",
-    role: "Product Designer",
-  },
-];
-
 const FREE_FEATURES = [
   "CV Formatter",
   "Job Search",
@@ -184,31 +166,6 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
-              Job seekers love it
-            </h2>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]"
-              >
-                <p className="mb-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">{t.name}</p>
-                  <p className="text-xs text-zinc-400">{t.role}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
