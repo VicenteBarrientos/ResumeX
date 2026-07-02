@@ -123,13 +123,22 @@ function splitName(fullName) {
   return { first: parts[0] ?? "", last: parts.slice(1).join(" ") };
 }
 
-async function autoFillForms(profile) {
-  const inputs = Array.from(document.querySelectorAll(
-    'input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea'
-  ));
-  const { first, last } = splitName(profile.fullName);
+// Get a human-readable label for any form element
+function getFieldLabel(el) {
+  const hints = [
+    el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`)?.textContent : null,
+    el.closest("label")?.textContent,
+    el.getAttribute("aria-label"),
+    el.getAttribute("placeholder"),
+    el.previousElementSibling?.textContent,
+    el.closest('[class*="field"],[class*="form-group"],[class*="application"]')?.querySelector("label,legend,.label")?.textContent,
+  ];
+  return hints.filter(Boolean).map(s => cleanHint(s)).find(s => s.length > 1) ?? "";
+}
 
-  const values = {
+async function autoFillForms(profile, savedAnswers = []) {
+  const { first, last } = splitName(profile.fullName);
+  const profileValues = {
     fullName: profile.fullName,
     firstName: first,
     lastName: last,
@@ -139,19 +148,127 @@ async function autoFillForms(profile) {
     linkedinUrl: profile.linkedinUrl,
   };
 
+  // Build answer lookup: normalized question → answer text
+  const answerMap = {};
+  for (const { question, answer } of savedAnswers) {
+    answerMap[question.toLowerCase().trim()] = answer;
+  }
+
   let filled = 0;
-  for (const input of inputs) {
+
+  // 1. Fill text/email/tel/textarea inputs from profile
+  const textInputs = Array.from(document.querySelectorAll(
+    'input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea'
+  ));
+  for (const input of textInputs) {
     const hints = getHints(input);
+
+    // Try profile fields first
+    let profileFilled = false;
     for (const { key, patterns, type } of FIELD_MAP) {
       if (type && input.type !== type && input.type !== "text") continue;
-      const matched = hints.some(hint => patterns.some(p => p.test(hint)));
-      if (matched && values[key]) {
-        if (fillField(input, values[key])) filled++;
+      if (hints.some(h => patterns.some(p => p.test(h))) && profileValues[key]) {
+        if (fillField(input, profileValues[key])) { filled++; profileFilled = true; }
         break;
       }
     }
+    if (profileFilled) continue;
+
+    // Try saved answers
+    const label = getFieldLabel(input).toLowerCase();
+    if (label && answerMap[label] && !input.value) {
+      if (fillField(input, answerMap[label])) filled++;
+    }
   }
+
+  // 2. Fill selects from saved answers
+  for (const select of document.querySelectorAll("select")) {
+    const label = getFieldLabel(select).toLowerCase();
+    const answer = label && answerMap[label];
+    if (!answer || select.value) continue;
+    const option = Array.from(select.options).find(o => cleanHint(o.textContent).toLowerCase() === answer.toLowerCase());
+    if (option) {
+      select.value = option.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      filled++;
+    }
+  }
+
+  // 3. Fill radio groups from saved answers
+  const radioGroups = {};
+  for (const radio of document.querySelectorAll('input[type="radio"]')) {
+    const name = radio.getAttribute("name") ?? getFieldLabel(radio);
+    if (!radioGroups[name]) radioGroups[name] = [];
+    radioGroups[name].push(radio);
+  }
+  for (const [, radios] of Object.entries(radioGroups)) {
+    if (radios.some(r => r.checked)) continue; // already selected
+    const groupLabel = getFieldLabel(radios[0]).toLowerCase() || cleanHint(
+      radios[0].closest('fieldset, [role="group"], [class*="field"]')?.querySelector("legend,label")?.textContent ?? ""
+    ).toLowerCase();
+    const answer = groupLabel && answerMap[groupLabel];
+    if (!answer) continue;
+    const match = radios.find(r => {
+      const rLabel = cleanHint(
+        document.querySelector(`label[for="${CSS.escape(r.id)}"]`)?.textContent ??
+        r.closest("label")?.textContent ??
+        r.nextElementSibling?.textContent ?? ""
+      ).toLowerCase();
+      return rLabel === answer.toLowerCase();
+    });
+    if (match) {
+      match.checked = true;
+      match.dispatchEvent(new Event("change", { bubbles: true }));
+      match.click();
+      filled++;
+    }
+  }
+
   return filled;
+}
+
+// Capture what the user answered on the form before submitting
+async function captureAnswers(token) {
+  const captured = [];
+
+  // Text inputs & textareas
+  for (const input of document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea')) {
+    if (!input.value.trim()) continue;
+    const label = getFieldLabel(input);
+    if (!label || label.length < 3) continue;
+    // Skip profile fields (we already know those)
+    const isProfile = FIELD_MAP.some(({ patterns }) => getHints(input).some(h => patterns.some(p => p.test(h))));
+    if (isProfile) continue;
+    captured.push({ question: label, answer: input.value.trim() });
+  }
+
+  // Selects
+  for (const select of document.querySelectorAll("select")) {
+    const selected = select.options[select.selectedIndex];
+    if (!selected || !selected.value) continue;
+    const label = getFieldLabel(select);
+    if (!label || label.length < 3) continue;
+    captured.push({ question: label, answer: cleanHint(selected.textContent) });
+  }
+
+  // Radio groups
+  for (const radio of document.querySelectorAll('input[type="radio"]:checked')) {
+    const groupLabel = cleanHint(
+      radio.closest('fieldset,[role="group"],[class*="field"]')?.querySelector("legend,label")?.textContent ?? ""
+    );
+    const optionLabel = cleanHint(
+      document.querySelector(`label[for="${CSS.escape(radio.id)}"]`)?.textContent ??
+      radio.closest("label")?.textContent ??
+      radio.nextElementSibling?.textContent ?? ""
+    );
+    if (!groupLabel || groupLabel.length < 3 || !optionLabel) continue;
+    captured.push({ question: groupLabel, answer: optionLabel });
+  }
+
+  // Send each novel answer to the API
+  for (const { question, answer } of captured) {
+    chrome.runtime.sendMessage({ type: "SAVE_ANSWER", token, question, answer });
+  }
 }
 
 function attachResume(base64, filename) {
@@ -182,7 +299,7 @@ async function runAutoApply() {
       return 0;
     }
     const profile = result.data;
-    let filled = await autoFillForms(profile);
+    let filled = await autoFillForms(profile, result.answers ?? []);
 
     // Attach resume PDF if stored in extension
     if (result.resumeB64) {
@@ -235,7 +352,10 @@ function watchForApply() {
     });
     if (!rxToken) return;
 
-    if (autoApply) runAutoApply();
+    if (autoApply) {
+      await captureAnswers(rxToken); // learn what the user answered
+      runAutoApply();
+    }
 
     if (autoSave) {
       const job = getJobInfo();
