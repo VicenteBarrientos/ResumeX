@@ -126,7 +126,7 @@ async function saveJob(job, token) {
     const res = await fetch(`${API}/api/tracker`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ company: job.company, role: job.title, jobUrl: job.url, status: "Applied" }),
+      body: JSON.stringify({ company: job.company, role: job.title, jobUrl: job.url, status: "Saved" }),
     });
     if (res.ok) {
       $("saved-badge").style.display = "block";
