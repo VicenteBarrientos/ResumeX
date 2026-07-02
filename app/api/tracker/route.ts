@@ -2,29 +2,33 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import { getUserIdFromBearer } from "@/lib/extension-auth";
 
-export async function GET() {
+async function resolveUserId(req: Request): Promise<string | null> {
+  const fromBearer = await getUserIdFromBearer(req);
+  if (fromBearer) return fromBearer;
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  return session?.user?.id ?? null;
+}
+
+export async function GET(req: Request) {
+  const userId = await resolveUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const applications = await db.application.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 
   return NextResponse.json(applications);
 }
 
-export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function POST(req: Request) {
+  const userId = await resolveUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { company, role, jobUrl, status, matchScore, notes } = await request.json();
+    const { company, role, jobUrl, status, matchScore, notes } = await req.json();
 
     if (!company?.trim() || !role?.trim()) {
       return NextResponse.json({ error: "Company and role are required." }, { status: 400 });
@@ -32,7 +36,7 @@ export async function POST(request: Request) {
 
     const app = await db.application.create({
       data: {
-        userId: session.user.id,
+        userId,
         company: company.trim(),
         role: role.trim(),
         jobUrl: jobUrl?.trim() || null,

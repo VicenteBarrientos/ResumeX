@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import { getUserIdFromBearer } from "@/lib/extension-auth";
 import OpenAI from "openai";
 
 function getOpenAI() {
@@ -15,12 +16,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ score: null, error: "No job description provided." });
   }
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const userId = (await getUserIdFromBearer(req)) ?? (await getServerSession(authOptions))?.user?.id;
+  if (!userId) {
     return NextResponse.json({ score: null, error: "Sign in to get match scores." });
   }
 
-  const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
+  const profile = await db.profile.findUnique({ where: { userId } });
   if (!profile?.resumeText) {
     return NextResponse.json({ score: null, error: "Upload your resume first." });
   }
@@ -39,7 +40,7 @@ Respond ONLY with valid JSON, no markdown.`,
         },
         {
           role: "user",
-          content: `Job: ${jobTitle ?? ""}${company ? ` at ${company}` : ""}\n\nJob Description:\n${jobDescription.slice(0, 3000)}\n\nCandidate Resume:\n${profile.resumeText.slice(0, 3000)}`,
+          content: `Job: ${jobTitle ?? ""}${company ? ` at ${company}` : ""}\n\nJob Description:\n${jobDescription.slice(0, 3000)}\n\nCandidate Resume:\n${profile.resumeText!.slice(0, 3000)}`,
         },
       ],
       max_tokens: 150,
