@@ -36,6 +36,8 @@ export async function POST(req: Request) {
 
   // Upload to Vercel Blob
   const buffer = Buffer.from(await file.arrayBuffer());
+  console.log("[resume] userId:", session.user.id, "file:", file.name, "size:", file.size);
+  console.log("[resume] BLOB_READ_WRITE_TOKEN present:", !!process.env.BLOB_READ_WRITE_TOKEN);
   const blob = await put(`resumes/${session.user.id}/${file.name}`, buffer, {
     access: "public",
     contentType: "application/pdf",
