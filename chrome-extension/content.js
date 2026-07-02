@@ -159,14 +159,13 @@ async function runAutoApply() {
   if (!rxToken || !autoApply) return 0;
 
   try {
-    const res = await fetch(`${API}/api/profile`, {
-      headers: { Authorization: `Bearer ${rxToken}` },
-    });
-    if (!res.ok) {
+    // Fetch via background worker to bypass cross-origin restrictions
+    const result = await chrome.runtime.sendMessage({ type: "FETCH_PROFILE", token: rxToken });
+    if (!result?.ok) {
       showToast("ResumeX: could not load profile — are you signed in?");
       return 0;
     }
-    const profile = await res.json();
+    const profile = result.data;
     const filled = await autoFillForms(profile);
     if (filled > 0) {
       showToast(`ResumeX filled ${filled} field${filled > 1 ? "s" : ""} ✓`);
