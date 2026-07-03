@@ -22,6 +22,7 @@ export default function AppNav() {
     { href: "/cover-letter", label: "Cover Letter" },
     { href: "/autoapply", label: "AutoApply" },
     { href: "/tracker", label: "Tracker" },
+    { href: "/upgrade", label: "⭐ Go Pro — $5/mo" },
   ];
 
   useEffect(() => {
