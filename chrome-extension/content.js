@@ -5,19 +5,20 @@ const DETECTORS = [
   {
     match: () => location.hostname.includes("lever.co"),
     extract: () => {
-      // document.title on Lever is reliably "Job Title at Company" or "Job Title - Company"
-      const titleParts = document.title.split(/ at | - /);
-      const titleFromMeta = titleParts[0]?.trim();
-      const companyFromMeta = titleParts[1]?.trim() ?? location.pathname.split("/")[1];
-
-      const title = document.querySelector(".posting-headline h2, [data-qa='posting-name'], h2, h1")?.textContent?.trim()
-        || titleFromMeta;
-      const company = document.querySelector(".main-header-text .company-name, [data-qa='posting-company']")?.textContent?.trim()
-        || document.querySelector(".posting-logo img")?.getAttribute("alt")?.trim()
-        || companyFromMeta;
+      const tp = document.title.split(/ at | - /);
+      const companySlug = location.pathname.split("/")[1] ?? "";
+      const title = document.querySelector("[data-qa='posting-name']")?.textContent?.trim()
+        || document.querySelector(".posting-headline h2")?.textContent?.trim()
+        || document.querySelector("h2")?.textContent?.trim()
+        || document.querySelector("h1")?.textContent?.trim()
+        || tp[0]?.trim()
+        || "Job Posting";
+      const company = companySlug
+        || document.querySelector(".main-header-text .company-name")?.textContent?.trim()
+        || tp[1]?.trim();
       const loc = document.querySelector(".posting-categories .location, [data-qa='posting-location'], .location")?.textContent?.trim();
-      const description = document.querySelector(".posting-requirements, .section-wrapper, .posting-description, [data-qa='posting-description'], main")?.textContent?.trim();
-      return { title, company, location: loc, description, url: window.location.href };
+      const description = document.querySelector(".posting-requirements, .section-wrapper, .posting-description, main")?.textContent?.trim();
+      return { title, company: company || "Unknown", location: loc, description, url: window.location.href };
     },
   },
   {
@@ -52,6 +53,18 @@ const DETECTORS = [
     },
   },
   {
+    match: () => location.hostname.includes("workday.com") || location.hostname.includes("myworkdayjobs.com"),
+    extract: () => {
+      const title = document.querySelector("[data-automation-id='jobPostingHeader'] h2,[data-automation-id='jobPostingHeader'] h1,h1")?.textContent?.trim();
+      const company = document.querySelector("[data-automation-id='company-name'],.css-1r3zy5o")?.textContent?.trim()
+        || document.title.split(" - ").pop()?.trim()
+        || location.hostname.split(".")[0];
+      const loc = document.querySelector("[data-automation-id='locations'] dd,[data-automation-id='location']")?.textContent?.trim();
+      const description = document.querySelector("[data-automation-id='job-posting-details'],main")?.textContent?.trim();
+      return { title, company, location: loc, description, url: window.location.href };
+    },
+  },
+  {
     match: () => true,
     extract: () => {
       const title = document.querySelector("h1")?.textContent?.trim();
@@ -66,7 +79,7 @@ function getJobInfo() {
   const detector = DETECTORS.find((d) => d.match());
   if (!detector) return null;
   const job = detector.extract();
-  if (!job?.title) return null;
+  if (!job?.title && !location.hostname.includes("lever.co") && !location.hostname.includes("greenhouse.io")) return null;
   return {
     title: job.title,
     company: job.company ?? "Unknown Company",

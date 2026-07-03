@@ -50,13 +50,13 @@ async function init() {
   $("toggle-autoapply").checked = autoApply;
   if (autoApply) $("fill-btn").style.display = "block";
 
-  $("toggle-autosave").addEventListener("change", async (e) => {
+  $("toggle-autosave")?.addEventListener("change", async (e) => {
     await chrome.storage.local.set({ autoSave: e.target.checked });
   });
 
-  $("toggle-autoapply").addEventListener("change", async (e) => {
+  $("toggle-autoapply")?.addEventListener("change", async (e) => {
     await chrome.storage.local.set({ autoApply: e.target.checked });
-    $("fill-btn").style.display = e.target.checked ? "block" : "none";
+    if ($("fill-btn")) $("fill-btn").style.display = e.target.checked ? "block" : "none";
   });
 
   // Show stored resume name if any
@@ -68,7 +68,7 @@ async function init() {
   }
 
   // Handle resume file upload to extension storage
-  $("resume-file").addEventListener("change", async (e) => {
+  $("resume-file")?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     $("resume-label").textContent = "Reading…";
@@ -108,7 +108,56 @@ async function init() {
   if (!tab?.id) { $("no-job").style.display = "block"; return; }
 
   try {
-    const job = await chrome.tabs.sendMessage(tab.id, { type: "GET_JOB" });
+    // Inject extractor directly — works even if content script isn't loaded
+    const [{ result: job }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const host = location.hostname;
+        let title, company, loc, description;
+
+        if (host.includes("lever.co")) {
+          const tp = document.title.split(/ at | - /);
+          const companySlug = location.pathname.split("/")[1] ?? "";
+          title = document.querySelector("[data-qa='posting-name']")?.textContent?.trim()
+            || document.querySelector(".posting-headline h2")?.textContent?.trim()
+            || document.querySelector("h2")?.textContent?.trim()
+            || document.querySelector("h1")?.textContent?.trim()
+            || tp[0]?.trim()
+            || "Job Posting";
+          company = companySlug
+            || document.querySelector(".main-header-text .company-name")?.textContent?.trim()
+            || document.querySelector("[data-qa='posting-company']")?.textContent?.trim()
+            || tp[1]?.trim();
+          loc = document.querySelector(".posting-categories .location,.location,[data-qa='posting-location']")?.textContent?.trim();
+          description = document.querySelector(".posting-requirements,.section-wrapper,.posting-description,main")?.textContent?.trim();
+        } else if (host.includes("greenhouse.io")) {
+          title = document.querySelector("h1.app-title,h1")?.textContent?.trim();
+          company = document.querySelector(".company-name")?.textContent?.trim() || document.title.split(" - ").pop()?.trim();
+          loc = document.querySelector(".location")?.textContent?.trim();
+          description = document.querySelector("#content")?.textContent?.trim();
+        } else if (host.includes("linkedin.com")) {
+          title = document.querySelector(".job-details-jobs-unified-top-card__job-title,h1")?.textContent?.trim();
+          company = document.querySelector(".job-details-jobs-unified-top-card__company-name")?.textContent?.trim();
+          loc = document.querySelector(".job-details-jobs-unified-top-card__bullet")?.textContent?.trim();
+          description = document.querySelector(".jobs-description__content")?.textContent?.trim();
+        } else if (host.includes("indeed.com")) {
+          title = document.querySelector('[data-testid="jobsearch-JobInfoHeader-title"],h1')?.textContent?.trim();
+          company = document.querySelector('[data-testid="inlineHeader-companyName"]')?.textContent?.trim();
+          loc = document.querySelector('[data-testid="job-location"]')?.textContent?.trim();
+          description = document.querySelector("#jobDescriptionText")?.textContent?.trim();
+        } else {
+          title = document.querySelector("h1")?.textContent?.trim();
+          company = document.querySelector('[class*="company"],[class*="employer"]')?.textContent?.trim();
+          description = document.querySelector("main,[class*='description']")?.textContent?.trim();
+        }
+
+        // On known job boards, always show Save even with partial info
+        const knownBoard = host.includes("lever.co") || host.includes("greenhouse.io") || host.includes("linkedin.com") || host.includes("indeed.com");
+        if (!title && !knownBoard) return null;
+        return { title: title || "Job Posting", company: company || host, location: loc || "", description: (description || "").slice(0, 3000), url: location.href };
+      },
+    });
+
     if (job?.title) {
       showJob(job, rxToken);
     } else {
@@ -169,7 +218,7 @@ async function saveJob(job, token) {
 }
 
 // Email login
-$("login-btn").addEventListener("click", async () => {
+$("login-btn")?.addEventListener("click", async () => {
   const email = $("email").value.trim();
   const password = $("password").value;
   $("login-error").textContent = "";
@@ -199,7 +248,7 @@ $("login-btn").addEventListener("click", async () => {
 });
 
 // Google login — open extension-auth page and listen for token in URL hash
-$("google-btn").addEventListener("click", async () => {
+$("google-btn")?.addEventListener("click", async () => {
   const authUrl = `${API}/extension-auth`;
   const tab = await chrome.tabs.create({ url: authUrl });
 
@@ -221,12 +270,12 @@ $("google-btn").addEventListener("click", async () => {
   chrome.tabs.onUpdated.addListener(listener);
 });
 
-$("logout-btn").addEventListener("click", async () => {
+$("logout-btn")?.addEventListener("click", async () => {
   await chrome.storage.local.remove(["rxToken", "rxUser"]);
   init();
 });
 
-$("open-tracker").addEventListener("click", async () => {
+$("open-tracker")?.addEventListener("click", async () => {
   // Focus existing ResumeX tab if one is already open
   const existing = await chrome.tabs.query({ url: `${API}/*` });
   if (existing.length > 0) {
