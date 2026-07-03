@@ -1,5 +1,6 @@
 import { extractText, getDocumentProxy } from "unpdf";
 import { cleanExtractedText, type CleanTextResult } from "@/lib/clean-text";
+import { debugError, debugLog, isResumeXDebugEnabled } from "@/lib/debug-log";
 
 const MIN_SUCCESSFUL_TEXT_LENGTH = 100;
 const isDev = process.env.NODE_ENV === "development";
@@ -20,7 +21,15 @@ function logExtractionError(
   context: PdfExtractionContext,
   buffer: Buffer,
 ): void {
-  console.error("[ResumeX] PDF extraction error:", {
+  if (!isResumeXDebugEnabled()) {
+    console.error(
+      "[ResumeX] PDF extraction error:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return;
+  }
+
+  debugError("[ResumeX] PDF extraction error:", {
     fileName: context.fileName ?? "(unknown)",
     fileSize: context.fileSize ?? null,
     bufferLength: buffer.length,
@@ -29,9 +38,9 @@ function logExtractionError(
   });
 
   if (error instanceof Error) {
-    console.error("[ResumeX] PDF extraction error message:", error.message);
-    if (error.stack) console.error("[ResumeX] PDF extraction stack:", error.stack);
-    if (error.cause) console.error("[ResumeX] PDF extraction cause:", error.cause);
+    debugError("[ResumeX] PDF extraction error message:", error.message);
+    if (error.stack) debugError("[ResumeX] PDF extraction stack:", error.stack);
+    if (error.cause) debugError("[ResumeX] PDF extraction cause:", error.cause);
   }
 }
 
@@ -74,7 +83,7 @@ export async function extractTextFromPdfWithDebug(
     throw error;
   }
 
-  console.log("[ResumeX] PDF extraction start:", {
+  debugLog("[ResumeX] PDF extraction start:", {
     fileName: context.fileName ?? "(unknown)",
     fileSize: context.fileSize ?? null,
     bufferLength: buffer.length,
@@ -89,30 +98,18 @@ export async function extractTextFromPdfWithDebug(
     const { text: pages } = await extractText(pdf, { mergePages: false });
     const rawJoined = joinPages(pages as string[]);
 
-    if (isDev) {
-      // Log a 500-char preview of the raw text before any cleanup.
-      console.log("[ResumeX] PDF raw extracted text (first 500 chars):");
-      console.log(rawJoined.slice(0, 500));
-    }
-
     const cleanResult = cleanExtractedText(rawJoined);
 
-    if (isDev) {
-      console.log("[ResumeX] PDF cleanup result:", {
-        rawLength: cleanResult.raw.length,
-        cleanedLength: cleanResult.cleaned.length,
-        wasCorrupted: cleanResult.wasCorrupted,
-        charSpacingFixed: cleanResult.charSpacingFixed,
-      });
-      if (cleanResult.charSpacingFixed) {
-        console.log("[ResumeX] PDF cleaned text (first 500 chars):");
-        console.log(cleanResult.cleaned.slice(0, 500));
-      }
-    }
+    debugLog("[ResumeX] PDF cleanup result:", {
+      rawLength: cleanResult.raw.length,
+      cleanedLength: cleanResult.cleaned.length,
+      wasCorrupted: cleanResult.wasCorrupted,
+      charSpacingFixed: cleanResult.charSpacingFixed,
+    });
 
     const text = cleanResult.cleaned;
 
-    console.log("[ResumeX] PDF extraction complete:", {
+    debugLog("[ResumeX] PDF extraction complete:", {
       fileName: context.fileName ?? "(unknown)",
       pageCount: (pages as string[]).length,
       rawLength: rawJoined.length,

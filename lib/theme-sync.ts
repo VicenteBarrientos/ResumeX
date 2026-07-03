@@ -14,9 +14,16 @@ export function getThemeFromSearch(search: string): ThemeMode | null {
 }
 
 export function appendThemeToUrl(url: string, theme: ThemeMode): string {
-  const parsed = new URL(url);
-  parsed.searchParams.set(THEME_PARAM, theme);
-  return parsed.toString();
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return url;
+  }
+
+  const hashIndex = url.indexOf("#");
+  const beforeHash = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
+  const hash = hashIndex >= 0 ? url.slice(hashIndex) : "";
+  const separator = beforeHash.includes("?") ? "&" : "?";
+  return `${beforeHash}${separator}${THEME_PARAM}=${encodeURIComponent(theme)}${hash}`;
 }
 
 export function syncThemeToUrl(theme: ThemeMode) {

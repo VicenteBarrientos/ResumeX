@@ -1,8 +1,8 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
+import { useClientMounted } from "@/components/useClientMounted";
 import { appendSyncParams } from "@/lib/sync-url";
 import { isThemeMode, type ThemeMode } from "@/lib/theme-sync";
 
@@ -19,19 +19,24 @@ export default function ThemedExternalLink({
 }: ThemedExternalLinkProps) {
   const { resolvedTheme } = useTheme();
   const { locale, mounted: localeMounted } = useLocale();
-  const [themeMounted, setThemeMounted] = useState(false);
-
-  useEffect(() => {
-    setThemeMounted(true);
-  }, []);
+  const themeMounted = useClientMounted();
 
   const theme =
     themeMounted && isThemeMode(resolvedTheme) ? resolvedTheme : fallbackTheme;
   const syncedLocale = localeMounted ? locale : "en";
+  let syncedHref = href || "#";
+
+  if (themeMounted && localeMounted) {
+    try {
+      syncedHref = appendSyncParams(href, { theme, locale: syncedLocale }) || syncedHref;
+    } catch {
+      syncedHref = href || "#";
+    }
+  }
 
   return (
     <a
-      href={appendSyncParams(href, { theme, locale: syncedLocale })}
+      href={syncedHref}
       {...props}
     >
       {children}

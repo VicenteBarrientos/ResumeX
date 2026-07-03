@@ -255,7 +255,7 @@ export default function TrackerPage() {
               </tbody>
             </table>
             {filtered.length === 0 && (
-              <p className="py-10 text-center text-sm text-zinc-400">No results for "{filter}"</p>
+              <p className="py-10 text-center text-sm text-zinc-400">No results for &quot;{filter}&quot;</p>
             )}
           </div>
         </>

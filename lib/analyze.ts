@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { debugLog } from "@/lib/debug-log";
 import { buildTokenUsage, logTokenUsage } from "@/lib/token-usage";
 import type {
   AnalysisResult,
@@ -122,18 +123,15 @@ export interface AnalyzeResumeResponse {
   usage: TokenUsage;
 }
 
-const isDev = process.env.NODE_ENV === "development";
-
 export async function analyzeResume(
   resume: string,
   jobDescription: string,
   apiKey: string,
 ): Promise<AnalyzeResumeResponse> {
-  if (isDev) {
-    console.log("[ResumeX] analyzeResume — resume input (first 400 chars):");
-    console.log(resume.slice(0, 400));
-    console.log("[ResumeX] analyzeResume — resume length:", resume.length);
-  }
+  debugLog("[ResumeX] analyzeResume input lengths:", {
+    resumeLength: resume.length,
+    jobDescriptionLength: jobDescription.length,
+  });
 
   const openai = new OpenAI({ apiKey });
 
@@ -183,7 +181,8 @@ export async function analyzeResume(
   try {
     parsed = JSON.parse(content) as AnalysisResult;
   } catch (error) {
-    console.error("Failed to parse OpenAI JSON response:", content);
+    console.error("Failed to parse OpenAI JSON response.");
+    debugLog("[ResumeX] analyzeResume response length:", content.length);
     throw error;
   }
 

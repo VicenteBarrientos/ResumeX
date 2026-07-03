@@ -182,7 +182,7 @@ export default async function LandingPage() {
                 Simple pricing
               </h2>
               <p className="mt-3 text-base text-zinc-500 dark:text-zinc-400">
-                Start free. Upgrade when you're ready.
+                Start free. Upgrade when you&apos;re ready.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">

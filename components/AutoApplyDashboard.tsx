@@ -35,13 +35,14 @@ export default function AutoApplyDashboard() {
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load from localStorage first (instant)
-    try {
-      const storedApps = localStorage.getItem(STORAGE_KEYS.applications);
-      if (storedApps) setApplications(JSON.parse(storedApps));
-      const storedProfile = localStorage.getItem(STORAGE_KEYS.profile);
-      if (storedProfile) setProfile(JSON.parse(storedProfile));
-    } catch {}
+    queueMicrotask(() => {
+      try {
+        const storedApps = localStorage.getItem(STORAGE_KEYS.applications);
+        if (storedApps) setApplications(JSON.parse(storedApps));
+        const storedProfile = localStorage.getItem(STORAGE_KEYS.profile);
+        if (storedProfile) setProfile(JSON.parse(storedProfile));
+      } catch {}
+    });
 
     // Hydrate profile from DB
     fetch("/api/profile")

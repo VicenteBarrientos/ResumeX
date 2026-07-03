@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { getResumeXMessages, type ResumeXMessages } from "@/lib/i18n/resumex";
@@ -25,6 +25,26 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+const localeChangedEvent = "resumex:locale_changed";
+
+function subscribeToLocale(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(localeChangedEvent, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(localeChangedEvent, callback);
+  };
+}
+
+function subscribeToMounted() {
+  return () => {};
+}
+
+function getStoredLocale(defaultLocale: Locale) {
+  const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+  return isLocale(stored) ? stored : defaultLocale;
+}
+
 export default function LocaleProvider({
   children,
   defaultLocale = "en",
@@ -32,22 +52,23 @@ export default function LocaleProvider({
   children: ReactNode;
   defaultLocale?: Locale;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale);
-  const [mounted, setMounted] = useState(false);
+  const locale = useSyncExternalStore(
+    subscribeToLocale,
+    () => getStoredLocale(defaultLocale),
+    () => defaultLocale,
+  );
+  const mounted = useSyncExternalStore(subscribeToMounted, () => true, () => false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    const initial = isLocale(stored) ? stored : defaultLocale;
-    setLocaleState(initial);
-    document.documentElement.lang = initial;
-    setMounted(true);
-  }, [defaultLocale]);
+    document.documentElement.lang = locale;
+    syncLocaleToCookie(locale);
+  }, [locale]);
 
   const setLocale = (nextLocale: Locale) => {
-    setLocaleState(nextLocale);
     localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
     document.documentElement.lang = nextLocale;
     syncLocaleToCookie(nextLocale);
+    window.dispatchEvent(new Event(localeChangedEvent));
   };
 
   const value = useMemo(

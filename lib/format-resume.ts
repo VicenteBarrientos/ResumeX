@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { debugLog } from "@/lib/debug-log";
 import { buildTokenUsage, logTokenUsage } from "@/lib/token-usage";
 import type {
   CertificationEntry,
@@ -27,7 +28,7 @@ FIELD RULES:
 - contact.title: a short professional title/headline only if present or clearly stated; otherwise ""
 - contact.email, contact.phone, contact.location, contact.linkedin, contact.website: only if present, else ""
 - summary: a 2-4 sentence professional summary. Use the candidate's existing summary if present; otherwise compose a faithful summary strictly from facts in the resume. If there is not enough information, return "".
-- experience: array, most recent first. Each entry: company, role, location (or ""), dates (e.g. "Mar 2021 – Present", or ""), bullets (string[] of accomplishments/responsibilities).
+- experience: array, most recent first. Each entry: company, role, location (or ""), dates (e.g. "Mar 2021 - Present", or ""), bullets (string[] of accomplishments/responsibilities).
 - education: array. Each entry: institution, degree, location (or ""), dates (or ""), details (string[] for honors/GPA/coursework if present, else []).
 - skills: string[] of individual skills (deduplicated, concise). [] if none.
 - projects: array. Each entry: name, description (or ""), bullets (string[] or []). [] if none.
@@ -148,17 +149,11 @@ export interface FormatResumeResponse {
   usage: TokenUsage;
 }
 
-const isDev = process.env.NODE_ENV === "development";
-
 export async function formatResume(
   resume: string,
   apiKey: string,
 ): Promise<FormatResumeResponse> {
-  if (isDev) {
-    console.log("[ResumeX] formatResume — OpenAI input (first 600 chars):");
-    console.log(resume.slice(0, 600));
-    console.log("[ResumeX] formatResume — total input length:", resume.length);
-  }
+  debugLog("[ResumeX] formatResume input length:", resume.length);
 
   const openai = new OpenAI({ apiKey });
 
@@ -226,7 +221,8 @@ export async function formatResume(
   try {
     parsed = JSON.parse(content);
   } catch (error) {
-    console.error("Failed to parse OpenAI JSON response:", content);
+    console.error("Failed to parse OpenAI JSON response.");
+    debugLog("[ResumeX] formatResume response length:", content.length);
     throw error;
   }
 
@@ -243,11 +239,6 @@ export async function formatResume(
   );
 
   logTokenUsage(FORMAT_MODEL, usage);
-
-  if (isDev) {
-    console.log("[ResumeX] formatResume — OpenAI output (first 600 chars):");
-    console.log(content.slice(0, 600));
-  }
 
   return { result, usage };
 }

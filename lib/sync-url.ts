@@ -5,10 +5,17 @@ export function appendSyncParams(
   url: string,
   params: { theme: ThemeMode; locale: Locale },
 ) {
-  let next = appendThemeToUrl(url, params.theme);
-  const parsed = new URL(next);
-  parsed.searchParams.set("lang", params.locale);
-  return parsed.toString();
+  const next = appendThemeToUrl(url, params.theme);
+  const trimmed = next.trim();
+  if (!trimmed) {
+    return next;
+  }
+
+  const hashIndex = next.indexOf("#");
+  const beforeHash = hashIndex >= 0 ? next.slice(0, hashIndex) : next;
+  const hash = hashIndex >= 0 ? next.slice(hashIndex) : "";
+  const separator = beforeHash.includes("?") ? "&" : "?";
+  return `${beforeHash}${separator}lang=${encodeURIComponent(params.locale)}${hash}`;
 }
 
 export function resolveSyncParams(

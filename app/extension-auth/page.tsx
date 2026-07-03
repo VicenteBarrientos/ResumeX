@@ -4,8 +4,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export default function ExtensionAuthPage() {
-  const { data: session, status } = useSession();
-  const [token, setToken] = useState<string | null>(null);
+  const { status } = useSession();
   const [done, setDone] = useState(false);
 
   useEffect(() => {
@@ -14,7 +13,6 @@ export default function ExtensionAuthPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.token) {
-          setToken(d.token);
           // Send token to extension via URL hash — popup detects this
           window.location.hash = `rx-token=${d.token}`;
           setDone(true);

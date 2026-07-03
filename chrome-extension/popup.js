@@ -171,7 +171,11 @@ async function init() {
 function showJob(job, token) {
   $("no-job").style.display = "none";
   $("job-section").style.display = "block";
-  $("job-info").innerHTML = `<strong>${job.title}</strong> at <strong>${job.company}</strong>`;
+  const title = document.createElement("strong");
+  title.textContent = job.title;
+  const company = document.createElement("strong");
+  company.textContent = job.company;
+  $("job-info").replaceChildren(title, " at ", company);
   fetchScore(job, token);
   $("save-btn").onclick = () => saveJob(job, token);
 }

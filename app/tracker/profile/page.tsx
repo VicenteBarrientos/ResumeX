@@ -59,7 +59,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") fetchAll();
+    if (status === "authenticated") queueMicrotask(fetchAll);
   }, [status, fetchAll]);
 
   async function saveProfile(e: React.FormEvent) {

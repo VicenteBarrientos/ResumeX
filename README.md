@@ -1,39 +1,47 @@
 # ResumeX
 
-ResumeX is an AI-powered resume match analyzer. Upload a PDF or paste your resume, add a target job description, and get a structured analysis with match score, keyword gaps, strengths, gaps, suggestions, and interview questions.
+ResumeX is the TalentX resume workspace: AI resume formatting, resume/job match analysis, cover letters, application tracking, job search, profile-backed autoapply data, and a Chrome extension that can score and save jobs from job boards.
 
-All processing runs server-side — your OpenAI API key never reaches the browser.
+## Core Stack
 
-## Features
+- Next.js 16 App Router
+- React 19
+- Prisma with PostgreSQL
+- NextAuth credentials and optional Google OAuth
+- OpenAI for resume analysis, formatting, parsing, match scoring, and cover letters
+- Stripe for the optional Pro plan
+- Vercel cron for job digest emails
 
-- PDF upload or pasted resume text
-- Match score and recruiter-style recommendation
-- Must-have / nice-to-have criteria with evidence
-- Matched and missing keywords
-- Actionable suggestions and phone-screen questions
-- Copy full summary or download a PDF report
+## Local Setup
 
-## Local development
-
-1. Install dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Configure your API key:
+Copy the example env file:
 
 ```bash
-cp .env.local.example .env.local
+copy .env.local.example .env.local
 ```
 
-Add your OpenAI key to `.env.local`:
+Prisma CLI loads `.env` by default, so keep `DATABASE_URL` available there too when running Prisma commands:
 
-```
-OPENAI_API_KEY=sk-your-openai-api-key-here
+```bash
+copy .env.local.example .env
 ```
 
-3. Start the dev server:
+At minimum, set:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="replace-with-a-long-random-secret"
+OPENAI_API_KEY="sk-your-openai-api-key-here"
+```
+
+Run local development:
 
 ```bash
 npm run dev
@@ -41,13 +49,41 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Production build
+## Database Commands
+
+Generate Prisma client and build:
 
 ```bash
 npm run build
-npm start
 ```
 
-## Deploy on Vercel
+Apply checked-in migrations to a configured database:
 
-See [VERCEL.md](./VERCEL.md) for step-by-step deployment instructions, environment variables, and troubleshooting.
+```bash
+npm run db:migrate
+```
+
+Create a new development migration after schema edits:
+
+```bash
+npm run db:migrate:dev
+```
+
+`npm run db:push` is kept for deliberate prototyping only. Do not use it in production deploys.
+
+## Verification
+
+```bash
+npm run lint
+npm run build
+```
+
+For Prisma validation, make sure `DATABASE_URL` is a PostgreSQL URL in `.env`:
+
+```bash
+npx prisma validate
+```
+
+## Deployment
+
+See [VERCEL.md](./VERCEL.md) for the Vercel environment checklist, migration rollout notes, and recovery steps for databases that were previously updated with `prisma db push`.

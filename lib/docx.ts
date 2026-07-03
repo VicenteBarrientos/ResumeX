@@ -1,4 +1,5 @@
 import mammoth from "mammoth";
+import { debugError, isResumeXDebugEnabled } from "@/lib/debug-log";
 
 const MIN_SUCCESSFUL_TEXT_LENGTH = 100;
 
@@ -12,7 +13,15 @@ function logExtractionError(
   context: DocxExtractionContext,
   buffer: Buffer,
 ): void {
-  console.error("[ResumeX] DOCX extraction error:", {
+  if (!isResumeXDebugEnabled()) {
+    console.error(
+      "[ResumeX] DOCX extraction error:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return;
+  }
+
+  debugError("[ResumeX] DOCX extraction error:", {
     fileName: context.fileName ?? "(unknown)",
     fileSize: context.fileSize ?? null,
     bufferLength: buffer.length,
@@ -21,7 +30,7 @@ function logExtractionError(
   });
 
   if (error instanceof Error && error.stack) {
-    console.error("[ResumeX] DOCX extraction stack:", error.stack);
+    debugError("[ResumeX] DOCX extraction stack:", error.stack);
   }
 }
 

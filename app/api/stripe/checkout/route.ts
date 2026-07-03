@@ -1,15 +1,16 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
-import { stripe, PLANS } from "@/lib/stripe";
+import { getStripe, getStripeProPriceId } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXTAUTH_URL ?? "https://resumex.talentxrecruiting.com";
+const BASE_URL = process.env.NEXTAUTH_URL || "https://resumex.talentxrecruiting.com";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const stripe = getStripe();
   const { type } = await req.json(); // "pro" | "donation"
   const user = await db.user.findUnique({ where: { id: session.user.id } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
-    line_items: [{ price: PLANS.pro.priceId, quantity: 1 }],
+    line_items: [{ price: getStripeProPriceId(), quantity: 1 }],
     subscription_data: { metadata: { userId: user.id } },
     success_url: `${BASE_URL}/upgrade?success=pro`,
     cancel_url: `${BASE_URL}/upgrade`,

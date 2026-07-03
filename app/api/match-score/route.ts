@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import { getOpenAiApiKey } from "@/lib/env";
 import { getUserIdFromBearer } from "@/lib/extension-auth";
 import OpenAI from "openai";
 
 function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const apiKey = getOpenAiApiKey();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is required for match scoring.");
+  }
+
+  return new OpenAI({ apiKey });
 }
 
 export async function POST(req: Request) {

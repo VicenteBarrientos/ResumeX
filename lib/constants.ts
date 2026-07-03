@@ -6,10 +6,10 @@ export const MAX_PDF_SIZE_LABEL = "4 MB";
 export const MAX_TEXT_LENGTH = 15000;
 
 export const RESUMEX_URL =
-  process.env.NEXT_PUBLIC_RESUMEX_URL ?? "https://resume-x-rose.vercel.app";
+  process.env.NEXT_PUBLIC_RESUMEX_URL || "https://resume-x-rose.vercel.app";
 
 export const TALENTX_URL =
-  process.env.NEXT_PUBLIC_TALENTX_URL ?? "https://talentx-website.vercel.app";
+  process.env.NEXT_PUBLIC_TALENTX_URL || "https://talentx-website.vercel.app";
 
 export const TALENTX_LINKEDIN = "https://www.linkedin.com/company/talentxrecruiting";
 

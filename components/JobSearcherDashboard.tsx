@@ -164,9 +164,11 @@ export default function JobSearcherDashboard() {
   }, [greenhouseBoards, leverBoards]);
 
   useEffect(() => {
-    refresh();
-    setBackendUrl(getBackendUrl());
-    setBackendSecret(getBackendSecret());
+    queueMicrotask(() => {
+      refresh();
+      setBackendUrl(getBackendUrl());
+      setBackendSecret(getBackendSecret());
+    });
 
     const onJobsUpdated = (e: Event) => {
       setJobs((e as CustomEvent<Job[]>).detail ?? loadJobs());

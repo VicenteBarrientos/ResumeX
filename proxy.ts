@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { isLocale } from "@/lib/locale-sync";
 import { isThemeMode } from "@/lib/theme-sync";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const theme = request.nextUrl.searchParams.get("theme");
   const lang = request.nextUrl.searchParams.get("lang");
 

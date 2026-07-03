@@ -4,9 +4,9 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { extractTextFromPdf } from "@/lib/pdf";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
+import { debugError } from "@/lib/debug-log";
+import { getOpenAiApiKey } from "@/lib/env";
 import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 type ParsedContact = {
   fullName?: string;
@@ -17,7 +17,13 @@ type ParsedContact = {
 };
 
 async function parseContactFromResume(text: string): Promise<ParsedContact> {
+  const apiKey = getOpenAiApiKey();
+  if (!apiKey) {
+    return {};
+  }
+
   try {
+    const openai = new OpenAI({ apiKey });
     const res = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0,
@@ -71,7 +77,8 @@ export async function POST(req: Request) {
   try {
     resumeText = await extractTextFromPdf(buffer, { fileName: file.name, fileSize: file.size });
   } catch (err) {
-    console.error("[resume] PDF extraction failed:", err);
+    console.error("[resume] PDF extraction failed.");
+    debugError("[resume] PDF extraction failure detail:", err);
   }
 
   if (!resumeText?.trim()) {
@@ -103,7 +110,8 @@ export async function POST(req: Request) {
       },
     });
   } catch (err) {
-    console.error("[resume] DB upsert failed:", err);
+    console.error("[resume] DB upsert failed.");
+    debugError("[resume] DB upsert failure detail:", err);
     return NextResponse.json({ error: "Database error saving resume." }, { status: 500 });
   }
 

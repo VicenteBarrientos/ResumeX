@@ -1,4 +1,5 @@
 import type { TokenUsage } from "@/lib/types";
+import { debugLog } from "@/lib/debug-log";
 
 export type { TokenUsage };
 
@@ -37,7 +38,7 @@ function estimateCost(
 }
 
 export function logTokenUsage(model: string, usage: TokenUsage): void {
-  console.log("[ResumeX] Token usage:", {
+  debugLog("[ResumeX] Token usage:", {
     model,
     promptTokens: usage.promptTokens,
     completionTokens: usage.completionTokens,

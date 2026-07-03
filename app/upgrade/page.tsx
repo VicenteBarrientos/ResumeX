@@ -57,7 +57,7 @@ function UpgradeContent() {
       {/* Success banners */}
       {success === "pro" && (
         <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
-          🎉 <strong>You're now a ResumeX Pro member!</strong> Thank you — enjoy all features.
+          🎉 <strong>You&apos;re now a ResumeX Pro member!</strong> Thank you — enjoy all features.
         </div>
       )}
       {success === "donation" && (
@@ -124,7 +124,7 @@ function UpgradeContent() {
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
           <h2 className="mb-1 text-lg font-bold text-zinc-900 dark:text-white">Make a Donation ❤️</h2>
           <p className="mb-4 text-sm text-zinc-500">
-            Love what we're building? A one-time contribution goes a long way.
+            Love what we&apos;re building? A one-time contribution goes a long way.
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
             {[3, 5, 10, 25].map((amt) => (

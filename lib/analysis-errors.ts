@@ -5,6 +5,7 @@ import {
   NotFoundError,
   RateLimitError,
 } from "openai";
+import { debugError } from "@/lib/debug-log";
 
 export class AnalysisError extends Error {
   readonly code: string;
@@ -162,11 +163,14 @@ export function logAnalysisError(error: unknown): void {
     code: normalized.code,
     status: normalized.status,
     message: normalized.message,
+  });
+
+  debugError("Analysis failure detail:", {
     detail: getUnderlyingMessage(normalized.cause ?? normalized),
     error: normalized.cause ?? error,
   });
 
   if (error instanceof Error && error.stack) {
-    console.error(error.stack);
+    debugError(error.stack);
   }
 }

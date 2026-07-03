@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
+const nextAuthUrl =
+  process.env.NEXTAUTH_URL ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXTAUTH_URL: nextAuthUrl,
+  },
   // Keep unpdf (PDF.js) external so the bundler (Turbopack/webpack) does not try to
   // inline PDF.js's dynamic worker import. Bundling it breaks the worker resolution
   // ("Setting up fake worker failed: Cannot find module pdf.worker.mjs"). Leaving it

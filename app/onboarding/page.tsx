@@ -83,7 +83,7 @@ export default function OnboardingPage() {
                 Welcome to ResumeX{session?.user?.name ? `, ${session.user.name}` : ""}!
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                Let's get you set up in 2 minutes. You'll upload your resume once and every tool — the analyzer, cover letter generator, and AutoApply — will use it automatically.
+                Let&apos;s get you set up in 2 minutes. You&apos;ll upload your resume once and every tool — the analyzer, cover letter generator, and AutoApply — will use it automatically.
               </p>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-4 text-4xl">📄</div>
               <h2 className="mb-2 text-xl font-bold text-zinc-900 dark:text-white">Upload your resume</h2>
               <p className="mb-6 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                Upload your resume PDF once and we'll extract your information automatically. Every tool will use it from here on.
+                Upload your resume PDF once and we&apos;ll extract your information automatically. Every tool will use it from here on.
               </p>
               <Link
                 href="/tracker/profile"
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="text-center">
               <div className="mx-auto mb-4 text-5xl">🎉</div>
-              <h2 className="mb-2 text-xl font-bold text-zinc-900 dark:text-white">You're all set!</h2>
+              <h2 className="mb-2 text-xl font-bold text-zinc-900 dark:text-white">You&apos;re all set!</h2>
               <p className="mb-6 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
                 Your account is ready. Start by searching for jobs, analyzing a job description, or tracking your first application.
               </p>

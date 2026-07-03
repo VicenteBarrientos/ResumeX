@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import { getOpenAiApiKey } from "@/lib/env";
 import OpenAI from "openai";
 
 function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const apiKey = getOpenAiApiKey();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is required for cover letter generation.");
+  }
+
+  return new OpenAI({ apiKey });
 }
 
 export async function POST(req: Request) {
@@ -36,16 +42,23 @@ export async function POST(req: Request) {
 
   const userPrompt = `Job Description:\n${jobDescription.slice(0, 4000)}${company ? `\n\nCompany: ${company}` : ""}${role ? `\nRole: ${role}` : ""}`;
 
-  const completion = await getOpenAI().chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    max_tokens: 800,
-    temperature: 0.7,
-  });
+  try {
+    const completion = await getOpenAI().chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: 800,
+      temperature: 0.7,
+    });
 
-  const letter = completion.choices[0]?.message?.content ?? "";
-  return NextResponse.json({ letter });
+    const letter = completion.choices[0]?.message?.content ?? "";
+    return NextResponse.json({ letter });
+  } catch {
+    return NextResponse.json(
+      { error: "Cover letter generation failed." },
+      { status: 500 },
+    );
+  }
 }

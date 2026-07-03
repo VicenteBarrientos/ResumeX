@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db as prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
-
-const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET ?? "");
+import { signExtensionToken } from "@/lib/extension-token";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,10 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
-    const token = await new SignJWT({ sub: user.id, type: "extension" })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("90d")
-      .sign(SECRET);
+    const token = await signExtensionToken(user.id);
 
     return NextResponse.json({ token, name: user.username });
   } catch {

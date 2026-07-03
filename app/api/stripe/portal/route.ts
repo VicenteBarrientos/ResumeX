@@ -1,15 +1,16 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXTAUTH_URL ?? "https://resumex.talentxrecruiting.com";
+const BASE_URL = process.env.NEXTAUTH_URL || "https://resumex.talentxrecruiting.com";
 
 export async function POST() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const stripe = getStripe();
   const user = await db.user.findUnique({ where: { id: session.user.id } });
   if (!user?.stripeCustomerId) return NextResponse.json({ error: "No billing account" }, { status: 404 });
 

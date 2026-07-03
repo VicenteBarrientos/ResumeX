@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useClientMounted } from "@/components/useClientMounted";
 
 function SunIcon({ className }: { className?: string }) {
   return (
@@ -36,11 +36,7 @@ function MoonIcon({ className }: { className?: string }) {
 
 export default function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useClientMounted();
 
   const isDark = resolvedTheme === "dark";
 
