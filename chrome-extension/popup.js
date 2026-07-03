@@ -1,6 +1,38 @@
 const API = "https://resumex.talentxrecruiting.com";
 const $ = (id) => document.getElementById(id);
 
+function canScriptTab(tab) {
+  return /^https?:\/\//i.test(tab?.url ?? "");
+}
+
+async function pingContentScript(tabId) {
+  try {
+    const result = await chrome.tabs.sendMessage(tabId, { type: "RESUMEX_PING" });
+    return result?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureContentScript(tab) {
+  if (!tab?.id || !canScriptTab(tab)) {
+    throw new Error("UNSCRIPTABLE_TAB");
+  }
+
+  if (await pingContentScript(tab.id)) {
+    return;
+  }
+
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["content.js"],
+  });
+
+  if (!(await pingContentScript(tab.id))) {
+    throw new Error("CONTENT_SCRIPT_UNREACHABLE");
+  }
+}
+
 async function tryAutoConnect() {
   // If already logged into ResumeX in the browser, grab a token automatically
   try {
@@ -86,17 +118,20 @@ async function init() {
   $("fill-btn").addEventListener("click", async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;
-    $("fill-btn").textContent = "Filling…";
+    $("fill-btn").textContent = "Filling...";
     $("fill-btn").disabled = true;
     try {
+      await ensureContentScript(tab);
       const result = await chrome.tabs.sendMessage(tab.id, { type: "AUTO_APPLY" });
-      $("fill-btn").textContent = result?.filled > 0 ? `Filled ${result.filled} fields ✓` : "No fields matched";
+      $("fill-btn").textContent = result?.filled > 0 ? `Filled ${result.filled} fields` : "No fields matched";
       setTimeout(() => {
         $("fill-btn").textContent = "Fill Form with My Info";
         $("fill-btn").disabled = false;
       }, 2500);
-    } catch {
-      $("fill-btn").textContent = "Could not reach page — reload and try";
+    } catch (error) {
+      $("fill-btn").textContent = error?.message === "UNSCRIPTABLE_TAB"
+        ? "Open a job application page first"
+        : "Could not reach page - reload and try";
       setTimeout(() => {
         $("fill-btn").textContent = "Fill Form with My Info";
         $("fill-btn").disabled = false;

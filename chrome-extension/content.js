@@ -353,6 +353,11 @@ function showToast(msg) {
 
 // Listen for popup messages
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.type === "RESUMEX_PING") {
+    sendResponse({ ok: true });
+    return true;
+  }
+
   if (msg.type === "GET_JOB") {
     // Try immediately, then retry after a short wait for React pages
     const job = getJobInfo();

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ResumeX AutoApply",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auto-save jobs and see your match score on any job page.",
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": [
