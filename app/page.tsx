@@ -116,10 +116,10 @@ export default async function LandingPage() {
               Get started free
             </Link>
             <Link
-              href="/analyzer"
+              href="/login?callbackUrl=%2Fanalyzer"
               className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-cyan-400/50"
             >
-              Try the analyzer →
+              Sign in to tools →
             </Link>
           </div>
         </section>
@@ -138,7 +138,7 @@ export default async function LandingPage() {
             {FEATURES.map((f) => (
               <Link
                 key={f.href}
-                href={f.href}
+                href={`/login?callbackUrl=${encodeURIComponent(f.href)}`}
                 className="group flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-cyan-400/30"
               >
                 <span className="mb-3 text-2xl text-indigo-600 dark:text-cyan-400">{f.icon}</span>

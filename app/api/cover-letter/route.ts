@@ -15,6 +15,11 @@ function getOpenAI() {
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { jobDescription, company, role } = await req.json();
 
   if (!jobDescription?.trim()) {
@@ -22,18 +27,15 @@ export async function POST(req: Request) {
   }
 
   let profileContext = "";
-  const session = await getServerSession(authOptions);
-  if (session?.user?.id) {
-    const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
-    if (profile) {
-      const parts: string[] = [];
-      if (profile.fullName) parts.push(`Name: ${profile.fullName}`);
-      if (profile.email) parts.push(`Email: ${profile.email}`);
-      if (profile.location) parts.push(`Location: ${profile.location}`);
-      if (profile.linkedinUrl) parts.push(`LinkedIn: ${profile.linkedinUrl}`);
-      if (profile.resumeText) parts.push(`\nResume:\n${profile.resumeText.slice(0, 3000)}`);
-      profileContext = parts.join("\n");
-    }
+  const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
+  if (profile) {
+    const parts: string[] = [];
+    if (profile.fullName) parts.push(`Name: ${profile.fullName}`);
+    if (profile.email) parts.push(`Email: ${profile.email}`);
+    if (profile.location) parts.push(`Location: ${profile.location}`);
+    if (profile.linkedinUrl) parts.push(`LinkedIn: ${profile.linkedinUrl}`);
+    if (profile.resumeText) parts.push(`\nResume:\n${profile.resumeText.slice(0, 3000)}`);
+    profileContext = parts.join("\n");
   }
 
   const systemPrompt = profileContext

@@ -2,6 +2,8 @@
 
 ResumeX is the TalentX resume workspace: AI resume formatting, resume/job match analysis, cover letters, application tracking, job search, profile-backed autoapply data, and a Chrome extension that can score and save jobs from job boards.
 
+**Access model:** The marketing homepage, login, and register are public. All tools (CV, Analyzer, Jobs, Cover Letter, AutoApply, Tracker, Upgrade) and their AI APIs require a signed-in account (NextAuth session). The Chrome extension uses a Bearer token from `/api/extension/token`.
+
 ## Core Stack
 
 - Next.js 16 App Router

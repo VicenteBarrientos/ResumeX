@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
 import { extractTextFromPdf } from "@/lib/pdf";
+import { requireSession } from "@/lib/require-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,9 @@ function getPdfExtractionErrorMessage(error: unknown): string {
 
 /** POST /api/autoapply/extract-resume — PDF to text only (no OpenAI required) */
 export async function POST(request: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const contentType = request.headers.get("content-type") ?? "";
 
   if (!contentType.includes("multipart/form-data")) {

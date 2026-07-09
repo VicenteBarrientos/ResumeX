@@ -2,11 +2,19 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/tracker";
+  return raw;
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,7 +36,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid username or password.");
     } else {
-      router.push("/tracker");
+      router.push(callbackUrl);
       router.refresh();
     }
   }
@@ -41,18 +49,18 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
-            ResumeX Tracker
+            ResumeX
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-zinc-500">Sign in to your account</p>
+          <p className="mt-2 text-sm text-zinc-500">Sign in to access your tools</p>
         </div>
 
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/tracker" })}
+            onClick={() => signIn("google", { callbackUrl })}
             className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
@@ -120,11 +128,28 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-sm text-zinc-500">
           No account?{" "}
-          <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-400 dark:hover:text-cyan-300">
+          <Link
+            href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+          >
             Register
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center text-sm text-zinc-500">
+          Loading…
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

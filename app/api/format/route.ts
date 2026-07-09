@@ -9,6 +9,7 @@ import { extractTextFromDocx } from "@/lib/docx";
 import { getOpenAiApiKey } from "@/lib/env";
 import { formatResume } from "@/lib/format-resume";
 import { extractTextFromPdfWithDebug } from "@/lib/pdf";
+import { requireSession } from "@/lib/require-auth";
 import type { CleanTextResult } from "@/lib/clean-text";
 import type { FormatRequest } from "@/lib/types";
 
@@ -115,6 +116,9 @@ async function resolveResumeFromJson(request: Request): Promise<{
 }
 
 export async function POST(request: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const apiKey = getOpenAiApiKey();
 
   if (!apiKey) {

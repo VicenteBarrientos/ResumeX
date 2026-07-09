@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireSession } from "@/lib/require-auth";
 
 interface JobResult {
   id: string;
@@ -76,6 +77,9 @@ async function fetchJSearch(query: string): Promise<JobResult[]> {
 }
 
 export async function GET(req: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("q") || "software engineer";
   const country = searchParams.get("country") || "us";

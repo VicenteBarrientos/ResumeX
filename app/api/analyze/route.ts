@@ -8,6 +8,7 @@ import {
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
 import { getOpenAiApiKey } from "@/lib/env";
 import { extractTextFromPdf } from "@/lib/pdf";
+import { requireSession } from "@/lib/require-auth";
 import type { AnalyzeRequest } from "@/lib/types";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -107,6 +108,9 @@ async function resolveResumeFromJson(request: Request): Promise<{
 }
 
 export async function POST(request: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const apiKey = getOpenAiApiKey();
 
   if (!apiKey) {

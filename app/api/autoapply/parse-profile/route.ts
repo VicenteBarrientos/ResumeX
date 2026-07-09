@@ -8,6 +8,7 @@ import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/c
 import { getOpenAiApiKey } from "@/lib/env";
 import { parseProfileFromResume } from "@/lib/parse-profile";
 import { extractTextFromPdf } from "@/lib/pdf";
+import { requireSession } from "@/lib/require-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -80,6 +81,9 @@ async function resolveResumeFromJson(request: Request): Promise<{
 }
 
 export async function POST(request: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const apiKey = getOpenAiApiKey();
   if (!apiKey) {
     return NextResponse.json(

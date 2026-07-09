@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getOpenAiApiKey } from "@/lib/env";
+import { requireSession } from "@/lib/require-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 15;
 
 export async function POST(req: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
+
   const apiKey = getOpenAiApiKey();
   if (!apiKey) return NextResponse.json({ company: "", role: "" });
 

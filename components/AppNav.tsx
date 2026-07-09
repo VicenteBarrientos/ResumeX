@@ -15,15 +15,20 @@ export default function AppNav() {
   const ref = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
-  const links = [
-    { href: "/cv", label: t.nav.cvFormatter },
-    { href: "/analyzer", label: t.nav.analyzer },
-    { href: "/jobs", label: "Job Search" },
-    { href: "/cover-letter", label: "Cover Letter" },
-    { href: "/autoapply", label: "AutoApply" },
-    { href: "/tracker", label: "Tracker" },
-    { href: "/upgrade", label: "⭐ Go Pro — $5/mo" },
-  ];
+  const links = session
+    ? [
+        { href: "/cv", label: t.nav.cvFormatter },
+        { href: "/analyzer", label: t.nav.analyzer },
+        { href: "/jobs", label: "Job Search" },
+        { href: "/cover-letter", label: "Cover Letter" },
+        { href: "/autoapply", label: "AutoApply" },
+        { href: "/tracker", label: "Tracker" },
+        { href: "/upgrade", label: "⭐ Go Pro — $5/mo" },
+      ]
+    : [
+        { href: "/login", label: "Sign in" },
+        { href: "/register", label: "Get started" },
+      ];
 
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -126,12 +131,20 @@ export default function AppNav() {
           )}
         </div>
       ) : (
-        <Link
-          href="/login"
-          className="ml-auto rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
-        >
-          Sign in
-        </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <Link
+            href="/login"
+            className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/register"
+            className="rounded-full border border-indigo-500 bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-500 dark:border-cyan-400/50 dark:bg-cyan-500/20 dark:text-cyan-100 dark:hover:bg-cyan-400/30"
+          >
+            Get started
+          </Link>
+        </div>
       )}
     </div>
   );
