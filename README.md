@@ -1,91 +1,146 @@
 # ResumeX
 
-ResumeX is the TalentX resume workspace: AI resume formatting, resume/job match analysis, cover letters, application tracking, job search, profile-backed autoapply data, and a Chrome extension that can score and save jobs from job boards.
+<p align="center">
+  <strong>An AI-assisted workspace for the full job-search workflow.</strong><br />
+  Format a CV, compare it with a role, draft a cover letter, discover jobs, save applications, and keep one reusable candidate profile.
+</p>
 
-**Access model:** The marketing homepage, login, and register are public. All tools (CV, Analyzer, Jobs, Cover Letter, AutoApply, Tracker, Upgrade) and their AI APIs require a signed-in account (NextAuth session). The Chrome extension uses a Bearer token from `/api/extension/token`.
+<p align="center">
+  <a href="https://resumex.talentxrecruiting.com"><strong>Open the live product</strong></a>
+  ·
+  <a href="#run-locally">Run locally</a>
+  ·
+  <a href="./VERCEL.md">Deployment guide</a>
+</p>
 
-## Core Stack
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-111111?logo=nextdotjs" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL and Prisma" />
+</p>
 
-- Next.js 16 App Router
-- React 19
+![ResumeX product preview](./docs/product-preview.png)
+
+> [!NOTE]
+> ResumeX is under active development. The landing page is public; the workspace and AI-backed routes require an account. AI output should always be reviewed before it is used in an application.
+
+## What it does
+
+| Workspace | Purpose |
+| --- | --- |
+| CV formatter | Turns an uploaded resume into a structured CV and exports PDF or DOCX. |
+| Resume analyzer | Compares resume content with a job description and returns match insights, gaps, and interview-prep prompts. |
+| Cover letters | Produces an editable first draft from the candidate profile and role context. |
+| Job search | Queries configured job providers and saves selected roles to the tracker. |
+| Application tracker | Stores role, company, status, match score, notes, and dates in one pipeline. |
+| AutoApply bridge | Shares the saved profile and application log with the companion Chrome extension. |
+
+The tools use a single authenticated profile so information entered once can support later analysis, documents, and applications.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser["Next.js workspace"] --> Auth["NextAuth session"]
+  Browser --> Routes["App Router API routes"]
+  Routes --> AI["OpenAI"]
+  Routes --> Jobs["Job-search providers"]
+  Routes --> DB["Prisma + PostgreSQL"]
+  Routes --> Files["Vercel Blob"]
+  Routes --> Billing["Stripe"]
+  Extension["Chrome extension"] --> Routes
+```
+
+## Stack
+
+- Next.js 16 App Router, React 19, TypeScript, and Tailwind CSS 4
 - Prisma with PostgreSQL
-- NextAuth credentials and optional Google OAuth
-- OpenAI for resume analysis, formatting, parsing, match scoring, and cover letters
-- Stripe for the optional Pro plan
-- Vercel cron for job digest emails
+- NextAuth credentials with optional Google OAuth
+- OpenAI for analysis, formatting, profile parsing, and cover-letter drafts
+- Stripe for optional billing, Resend for email, and Vercel Blob for stored files
+- Chrome Extension Manifest V3 integration
 
-## Local Setup
+## Run locally
 
-Install dependencies:
+Prerequisites: Node.js 20+, npm, and a PostgreSQL database.
 
 ```bash
+git clone https://github.com/VicenteBarrientos/ResumeX.git
+cd ResumeX
 npm install
 ```
 
-Copy the example env file:
+Copy the example environment file. On Windows PowerShell:
 
-```bash
-copy .env.local.example .env.local
+```powershell
+Copy-Item .env.local.example .env.local
+Copy-Item .env.local.example .env
 ```
 
-Prisma CLI loads `.env` by default, so keep `DATABASE_URL` available there too when running Prisma commands:
+On macOS or Linux:
 
 ```bash
-copy .env.local.example .env
+cp .env.local.example .env.local
+cp .env.local.example .env
 ```
 
-At minimum, set:
+At minimum, configure:
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-long-random-secret"
-OPENAI_API_KEY="sk-your-openai-api-key-here"
+OPENAI_API_KEY="replace-with-your-key"
 ```
 
-Run local development:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Database Commands
-
-Generate Prisma client and build:
-
-```bash
-npm run build
-```
-
-Apply checked-in migrations to a configured database:
+Then apply the checked-in migrations and start the app:
 
 ```bash
 npm run db:migrate
+npm run dev
 ```
 
-Create a new development migration after schema edits:
+Open <http://localhost:3000>.
 
-```bash
-npm run db:migrate:dev
-```
+## Useful commands
 
-`npm run db:push` is kept for deliberate prototyping only. Do not use it in production deploys.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local development server. |
+| `npm run lint` | Run ESLint. |
+| `npm run build` | Generate Prisma Client and create a production build. |
+| `npm run db:migrate` | Apply checked-in migrations. |
+| `npm run db:migrate:dev` | Create and apply a development migration. |
+| `npx prisma validate` | Validate the Prisma schema and database URL. |
 
-## Verification
+`npm run db:push` is retained for deliberate prototyping only; production deploys should use migrations.
 
-```bash
-npm run lint
-npm run build
-```
+## Chrome extension
 
-For Prisma validation, make sure `DATABASE_URL` is a PostgreSQL URL in `.env`:
+The `chrome-extension/` directory contains the unpacked extension source. To try it locally:
 
-```bash
-npx prisma validate
-```
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Choose **Load unpacked** and select `chrome-extension/`.
+4. Sign in to ResumeX and pair the extension from the AutoApply workspace.
 
-## Deployment
+Review generated answers and any pre-filled form before submitting an application. Job-board markup changes frequently, so selectors can require maintenance.
 
-See [VERCEL.md](./VERCEL.md) for the Vercel environment checklist, migration rollout notes, and recovery steps for databases that were previously updated with `prisma db push`.
+## Configuration and deployment
+
+`.env.local.example` documents required and optional variables for authentication, AI, job providers, email, storage, and billing. Never commit real credentials.
+
+For Vercel environment setup, database migrations, and rollout recovery, see [VERCEL.md](./VERCEL.md).
+
+## Related projects
+
+- [TalentX Recruiting](https://talentxrecruiting.com) — recruiting website and portfolio
+- [AutoApply](https://github.com/VicenteBarrientos/autoapply) — Chrome extension and backend
+- [ResumeX Sourcing Copilot](https://github.com/VicenteBarrientos/resumex-sourcing-copilot) — recruiter sourcing prototype
+
+## Current limitations
+
+- AI output is assistive, not authoritative; candidates should verify every generated claim.
+- External job-board and provider integrations depend on third-party APIs and changing page structures.
+- A production deployment needs strong secrets, protected webhook endpoints, database backups, and provider-specific rate limits.
