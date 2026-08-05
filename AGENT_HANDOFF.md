@@ -18,7 +18,8 @@
 
 ### Trabajo en vuelo
 
-Audit-fix sprint en curso local (sin commit): evidence adjacent bug, authorship credit, entitlements/UsageEvent, CI, security hardening. Pendiente deploy + verificar Stripe env en Vercel.
+Nada en vuelo crítico. Producción en `065e2e1`. Pendiente humano: configurar Stripe env vars y smoke del free-tier analyzer.
+
 
 ## Protocolo para agentes
 
@@ -445,4 +446,12 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - Register honra `callbackUrl`; tracker muestra error real; upgrade muestra errores de checkout; `/api/stripe/health`; OpenAlex deadline 55s + stop en rate-limit con parciales; max 12 queries; CI `.github/workflows/ci.yml`; `robots.ts`/`sitemap.ts`; TrackedLink en CTA Talent del home.
 - **Validaciones:** `npm test` 73 passed; `npm run lint` clean. `prisma generate` puede fallar localmente si el DLL está locked por un proceso; la migración corre en el próximo `npm run build` / deploy.
 - **Siguiente paso:** desplegar (aplica UsageEvent), verificar Stripe env vars en Vercel, luego T-7.1 o retirar `/career/jobsearcher`.
+
+### 2026-08-05 19:50 — Audit-fix shipped to production
+
+- **Objetivo:** commit + deploy del audit-fix; recuperar migración UsageEvent fallida.
+- **Estado:** completado en prod. Deploy `dpl_7NUCcA2dvYX23KvVASvAzdT5pfBM` (`065e2e1`) READY.
+- **Commits:** `8a694a9` (audit fixes), `b8a481c`/`994735d`/`065e2e1` (migración BOM + recovery P3009).
+- **Ops:** `CRON_SECRET` añadido en Vercel Production. **Stripe sigue sin vars** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID` ausentes en `vercel env ls`) — checkout Pro no puede funcionar hasta configurarlas.
+- **Siguiente paso:** pegar las tres keys de Stripe en Vercel Production y verificar `GET /api/stripe/health` en true; smoke humano del analyzer free-tier 402.
 
