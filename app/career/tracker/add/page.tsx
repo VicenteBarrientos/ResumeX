@@ -61,14 +61,14 @@ function AddForm() {
       return;
     }
 
-    router.push("/tracker");
+    router.push("/career/tracker");
   }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <Link
-          href="/tracker"
+          href="/career/tracker"
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900 dark:hover:text-white"
         >
           ← Back to dashboard
@@ -179,7 +179,7 @@ function AddForm() {
               {loading ? "Saving…" : "Save Application"}
             </button>
             <Link
-              href="/tracker"
+              href="/career/tracker"
               className="rounded-full border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-300 dark:border-white/15 dark:text-zinc-400 dark:hover:border-white/30"
             >
               Cancel

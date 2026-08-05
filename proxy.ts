@@ -4,20 +4,18 @@ import type { NextRequest } from "next/server";
 import { isLocale } from "@/lib/locale-sync";
 import { isThemeMode } from "@/lib/theme-sync";
 
-/** Tool and account routes — require sign-in. Marketing, auth, and webhooks stay public. */
+/**
+ * Tool and account routes — require sign-in. Marketing, auth, and webhooks stay public.
+ *
+ * Whole-product prefixes, except that `/talent` is a public landing page and only
+ * the tool under it is gated. The old flat routes are 308'd into these segments by
+ * `next.config.ts`, and those redirects run before this proxy.
+ */
 const PROTECTED_PREFIXES = [
-  "/cv",
-  "/analyzer",
-  "/autoapply",
-  "/jobs",
-  "/jobsearcher",
-  "/cover-letter",
-  "/tracker",
-  "/onboarding",
+  "/career",
+  "/talent/mapper",
   "/extension-auth",
-  "/formatter",
   "/upgrade",
-  "/talent-mapper",
 ];
 
 function isProtectedPath(pathname: string): boolean {

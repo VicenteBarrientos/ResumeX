@@ -6,19 +6,19 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 13:46:51 -04:00 — America/Santiago
-- **Versión del handoff:** 1.0
-- **Estado:** ResumeX opera como un solo producto con 7 tools. Seis son de candidato (CV Formatter, Analyzer, Cover Letter, Job Search, Tracker, AutoApply) y una es de reclutador (Talent Mapper, completo: OpenAlex live + demo snapshot, agregación por autor, scoring 0–100 explicable, evidencia por paper, outreach, CSV, tests Vitest). Se decide separarlo en dos productos con marca propia sobre una misma base de código: **ResumeX Career** y **ResumeX Talent**. La separación aún **no está implementada** — las rutas siguen planas.
-- **Próximo hito:** ejecutar la Fase 1 del plan de separación (segmentos `/career` y `/talent` con layout y navegación propios, redirects desde las rutas planas). No tocar el kernel compartido todavía.
-- **Bloqueos conocidos:** ninguno técnico. Pendiente de decisión humana: si la landing `/` bifurca explícitamente entre los dos productos o lidera con uno.
+- **Última actualización:** 2026-08-05 14:35 -04:00 — America/Santiago
+- **Versión del handoff:** 1.1
+- **Estado:** **Fase 1 completa.** ResumeX opera como dos productos sobre una base de código: **ResumeX Career** en `/career/*` y **ResumeX Talent** en `/talent/*`, cada uno con su `layout.tsx`, su metadata y su navegación. Las rutas planas viejas siguen vivas como 308 permanentes. `lib/products.ts` es la fuente única de nombres, rutas y nav. `lib/` no fue tocado (R-009 intacto).
+- **Próximo hito:** Fase 2 — partir `AnalysisResult` según R-008 (salida de mejora para Career, salida de decisión para Talent).
+- **Bloqueos conocidos:** ninguno. La decisión pendiente sobre la landing quedó resuelta en R-016.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
 - **Prod:** https://resume-x-yixz.vercel.app
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
-### Trabajo en vuelo (sin commitear en `main`)
+### Trabajo en vuelo
 
-`\.env.local.example`, `README.md`, `app/api/auth/register/route.ts`, `app/page.tsx`, `components/AppNav.tsx`, `package.json`, `package-lock.json`, `proxy.ts`, `tsconfig.json`, y `.cursor/` sin trackear. Revisar y commitear antes de empezar la separación, para que el diff del split quede limpio.
+Ninguno. El árbol quedó limpio el 2026-08-05: el Talent Mapper completo, el handoff y la Fase 1 están commiteados en `main` (`f0b4652`, `f017748`, `2a26369` y el commit de la Fase 1). **Nada pusheado todavía** — revisar y `git push` cuando corresponda.
 
 ## Protocolo para agentes
 
@@ -81,6 +81,15 @@
 | R-014 | Precisión sobre recall en resultados de sourcing. Ante la duda, mostrar menos candidatos y declarar lo que no se sabe. | Un experto de dominio detecta un mal candidato al instante y cada falso positivo cuesta credibilidad. Los campos `unknowns` y `possibleConcerns` existen para eso. | Vigente |
 | R-015 | Nunca secretos en el repo, el handoff ni el wiki: sólo nombres de variables y su ubicación. Las keys de OpenAI y OpenAlex son server-side exclusivamente. | — | Vigente |
 
+### Superficie y navegación (Fase 1)
+
+| ID | Decisión | Motivo | Estado |
+|---|---|---|---|
+| R-016 | **La landing `/` lidera con ResumeX Career.** Talent no compite por el hero: entra por una banda dedicada bajo la grilla de features que lleva a `/talent`, su propia landing pública. | Decisión humana del 2026-08-05. Bifurcar en dos puertas es más honesto pero mete un click antes de cualquier pitch, y ResumeX no tiene reconocimiento de marca que sostenga ese costo. Career además concentra hoy la superficie y el funnel. Revisar si Talent empieza a traer clientes empresariales. | Vigente |
+| R-017 | Las páginas se namespacean por producto; **las APIs siguen planas** (`/api/talent-mapper/*`, `/api/tracker`, …). | La extensión Chrome ya desplegada y los emails salientes llevan URLs de API absolutas. Mover las rutas sin versionado rompe clientes que no controlamos. Se hará cuando exista versionado de API. | Vigente |
+| R-018 | Toda ruta de página que se mueva o renombre deja un 308 permanente en `PRODUCT_SEGMENT_REDIRECTS` (`next.config.ts`). `redirects` corre **antes** de `proxy.ts`, así que el `callbackUrl` de login queda apuntando a la ruta nueva. | Bookmarks, URLs indexadas, builds viejos de la extensión y links de email siguen funcionando sin tocar al cliente. | Vigente |
+| R-019 | `lib/products.ts` es la fuente única de nombres, `basePath`, `home` y navegación de cada producto. Ninguna superficie hardcodea `"ResumeX Talent"` ni `/talent/mapper`. | Es lo que hace cumplible R-003: si el nombre vive en un solo archivo, ninguna superficie puede inventar su variante. | Vigente |
+
 ## Arquitectura de producto
 
 Un motor, dos productos, dos usuarios distintos:
@@ -90,15 +99,19 @@ ResumeX Career   CV → Job    → ¿cómo consigo esta entrevista?
 ResumeX Talent   Job → Persona → ¿a quién contacto y por qué?
 ```
 
-### Superficie actual (rutas planas, pre-separación)
+### Superficie actual (post Fase 1)
 
-| Producto | Páginas | APIs |
+| Producto | Páginas | APIs (siguen planas, R-017) |
 |---|---|---|
-| **Career** | `/cv`, `/formatter`, `/analyzer`, `/cover-letter`, `/jobs`, `/jobsearcher`, `/tracker`, `/autoapply`, `/onboarding` | `analyze`, `format`, `cover-letter`, `extract-job`, `jobs`, `match-score`, `profile`, `profile/resume`, `tracker`, `tracker/[id]`, `answers`, `answers/[id]`, `autoapply/*`, `extension/*`, `cron/job-digest` |
-| **Talent** | `/talent-mapper` | `talent-mapper/{search, extract-criteria, outreach, status}` |
-| **Compartido** | `/`, `/login`, `/register`, `/upgrade`, `/extension-auth` | `auth/*`, `stripe/*` |
+| **Career** | `/career` (→ home), `/career/cv`, `/career/analyzer`, `/career/cover-letter`, `/career/jobs`, `/career/jobsearcher`, `/career/tracker{,/add,/profile,/[id]}`, `/career/autoapply`, `/career/onboarding` | `analyze`, `format`, `cover-letter`, `extract-job`, `jobs`, `match-score`, `profile`, `profile/resume`, `tracker`, `tracker/[id]`, `answers`, `answers/[id]`, `autoapply/*`, `extension/*`, `cron/job-digest` |
+| **Talent** | `/talent` (landing pública), `/talent/mapper` | `talent-mapper/{search, extract-criteria, outreach, status}` |
+| **Compartido** | `/` (landing Career, R-016), `/login`, `/register`, `/upgrade`, `/extension-auth` | `auth/*`, `stripe/*` |
 
-Career tiene nueve superficies y Talent una. El desbalance es real y está bien: Talent es el producto nuevo y más caro por usuario.
+Career tiene diez superficies y Talent dos. El desbalance es real y está bien: Talent es el producto nuevo y más caro por usuario.
+
+Rutas planas viejas → 308 permanente al segmento correspondiente (R-018). `/formatter`, que ya era un alias, ahora apunta a `/career/cv` en vez de a `/`.
+
+Protegido por `proxy.ts`: `/career`, `/talent/mapper`, `/upgrade`, `/extension-auth`. Público: `/`, `/talent`, `/login`, `/register`.
 
 ### Destino
 
@@ -128,7 +141,7 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Plan de separación
 
-**Fase 1 — Rutas y marca.** Segmentos `/career` y `/talent` con `layout.tsx` propio y navegación separada. Redirects permanentes desde las rutas planas. Nombres R-003 en metadata, nav y copy. Sin tocar `lib/`. Es la fase que hace visible la decisión.
+**Fase 1 — Rutas y marca. ✅ Completada el 2026-08-05.** Segmentos `/career` y `/talent` con `layout.tsx` propio y navegación separada. Redirects permanentes desde las rutas planas. Nombres R-003 en metadata, nav y copy. `lib/` intacto salvo el `lib/products.ts` nuevo. Pendiente respecto del destino: `app/api/career|talent` (diferido por R-017) y `talent/candidates|shortlists` (llegan en la Fase 4).
 
 **Fase 2 — Salidas separadas.** Partir `AnalysisResult` según R-008. Career recibe la salida de mejora; Talent la de decisión. Mismo motor debajo.
 
@@ -150,11 +163,24 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Próximas tareas recomendadas
 
-1. Revisar y commitear el trabajo en vuelo de `main` para que el diff de la Fase 1 quede limpio.
-2. Ejecutar Fase 1 completa, incluidos los redirects desde rutas planas.
-3. Definir con decisión humana el comportamiento de la landing `/`.
+1. **Pushear `main`.** Hay cuatro commits locales sin subir (Talent Mapper, log de registro, handoff, Fase 1). Verificar que Vercel tenga `DATABASE_URL` al día antes: el build ahora corre `prisma migrate deploy`.
+2. Revisar en prod que los 308 respondan como en local, sobre todo `/talent-mapper` (URL que puede estar compartida) y `/tracker` (la que abre la extensión Chrome).
+3. Fase 2: partir `AnalysisResult` según R-008.
 4. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
-5. Correr el smoke E2E (`npm run test:e2e:talent-mapper`) tras la Fase 1 para confirmar que el cambio de rutas no rompió el flujo de demo.
+5. Alinear el precio de Pro: la landing dice **$15/mo** y la nav dice **$5/mo**. Inconsistencia previa a la Fase 1, visible al usuario.
+6. Publicar la landing `/talent` a un dominio o path que un recruiter pueda recibir por link, y medir si la banda de `/` convierte (R-016 se revisa con datos, no con opinión).
+
+## Ideas rescatadas de la copia archivada
+
+La rama `archive/cs50-clerk-2026-08-05` (en la copia CS50) contenía un rediseño de tipos del Talent Mapper que nunca se implementó. El canónico ya cubre lo sustancial —`unknowns`, `possibleConcerns`, manejo de retractions con aviso previo al outreach, dedupe de works y de evidencia—. Sólo tres ideas no existen acá y valen la pena:
+
+| Idea | Qué aportaría |
+|---|---|
+| `suggestedScreeningQuestions` | Preguntas de screening por candidato, derivadas de sus gaps y unknowns. Convierte el brief en algo accionable en la primera llamada. |
+| `criterionKind` | Tipar la categoría del criterio (técnica, organismo, área, geografía) en vez de tratarlos como strings equivalentes. Permite pesos y copy por tipo. |
+| `aiInferred` / `aiSummarized` | Marcar explícitamente qué infirió la IA y qué dice el texto literal, a nivel de match y de resumen. Refuerza R-007 y es lo que hace auditable el resultado ante un experto. |
+
+No hay código que portar: eran declaraciones de tipo sin implementación. Tratarlas como backlog, no como migración.
 
 ## Bitácora de cambios
 
@@ -171,3 +197,25 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 - **Validaciones realizadas:** comparación de ambas copias (rutas, `package.json`, `lib/talent-mapper/`, remotes, fechas de commit); confirmado que la agregación por autor, el scoring y la UI del Talent Mapper existen completos sólo en el repo canónico; confirmada la deprecación de `middleware` a favor de `proxy` en los docs de Next 16 incluidos en `node_modules`.
 - **Riesgos o bloqueos:** la landing `/` requiere decisión humana antes de la Fase 1.
 - **Siguiente paso:** commitear el trabajo en vuelo de `main`, luego ejecutar la Fase 1 del plan de separación.
+
+### 2026-08-05 14:35 — Fase 1: separación en `/career` y `/talent`
+
+- **Objetivo:** commitear el trabajo en vuelo y ejecutar la Fase 1 del plan de separación.
+- **Estado:** completado.
+- **Cambios:**
+  - Commits previos al split: `f0b4652` Talent Mapper completo, `f017748` log de error en `/api/auth/register`, `2a26369` handoff + `AGENTS.md` + `.cursor/`.
+  - `lib/products.ts`: **nuevo.** Fuente única de nombres R-003, `basePath`, `home` y nav de cada producto, más `productForPath()` y `otherProduct()`.
+  - `app/(marketing)/page.tsx`: la landing (antes `app/page.tsx`) movida al route group. Talent Mapper sale de la grilla de features de Career y entra como banda propia hacia `/talent`. Vuelve a ser honesto el "seis tools".
+  - `app/career/`: `layout.tsx` con metadata propia y template de título; `page.tsx` que resuelve a `/career/tracker`; `cv`, `analyzer`, `cover-letter`, `jobs`, `jobsearcher`, `tracker/**`, `autoapply`, `onboarding` movidos con `git mv`.
+  - `app/talent/`: `layout.tsx` propio, `page.tsx` con la landing pública de ResumeX Talent (incluye la sección "What this does not tell you", R-007/R-014), y `mapper/` desde `app/talent-mapper/`.
+  - `app/formatter/`: eliminado. Era un alias que redirigía a `/`; ahora es un 308 hacia `/career/cv`.
+  - `next.config.ts`: `PRODUCT_SEGMENT_REDIRECTS`, diez 308 permanentes desde las rutas planas.
+  - `proxy.ts`: `PROTECTED_PREFIXES` pasa de doce rutas planas a cuatro prefijos. `/talent` queda público y sólo se protege `/talent/mapper`.
+  - `components/AppNav.tsx`: la nav se deriva de `productForPath(pathname)` y muestra los links del producto activo más un cruce al otro. El wordmark sólo nombra un producto cuando estás dentro de uno.
+  - Links internos reescritos en 15 archivos, incluidos los que no son UI: email de bienvenida (`api/auth/register`), digest de cron, `chrome-extension/popup.js` y el script E2E.
+  - `README.md`, `AGENTS.md`: documentada la superficie de dos productos y las reglas nuevas.
+  - `.claude/launch.json`: config de preview para levantar el dev server.
+- **Decisiones:** R-016 (landing lidera con Career — decisión humana), R-017 (APIs siguen planas), R-018 (todo movimiento de ruta deja 308), R-019 (`lib/products.ts` como fuente única).
+- **Validaciones realizadas:** `npm run typecheck`, `npm run lint`, `npm test` (30 tests) y `next build` en verde — el árbol de rutas del build coincide con el destino. Verificados por HTTP los códigos de las 13 rutas relevantes: `/` y `/talent` 200, herramientas 307 a login con el `callbackUrl` nuevo, rutas planas 308 al segmento. Renderizado real de `/` y `/talent` revisado en el navegador. `npm run test:e2e:talent-mapper` pasa contra las rutas nuevas: login → `/talent/mapper` → demo → shortlist → CSV, sin errores de consola ni requests fallidos.
+- **Riesgos o bloqueos:** ninguno. Los 308 sólo existen en local hasta que se pushee; los clientes desplegados (extensión, emails viejos) dependen de que ese deploy ocurra.
+- **Siguiente paso:** pushear `main` y confirmar los redirects en prod. Después, Fase 2 (R-008).

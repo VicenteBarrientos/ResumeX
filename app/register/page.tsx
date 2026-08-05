@@ -40,7 +40,7 @@ export default function RegisterPage() {
     }
 
     await signIn("credentials", { username, password, redirect: false });
-    router.push("/onboarding");
+    router.push("/career/onboarding");
     router.refresh();
   }
 
@@ -63,7 +63,7 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
+            onClick={() => signIn("google", { callbackUrl: "/career/onboarding" })}
             className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">

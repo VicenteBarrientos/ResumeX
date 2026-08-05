@@ -51,7 +51,7 @@ async function main() {
   await page.getByRole("button", { name: /sign in/i }).click();
   await page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 25000 });
 
-  await page.goto(`${BASE}/talent-mapper`);
+  await page.goto(`${BASE}/talent/mapper`);
   await page.getByRole("heading", { name: /talent mapper/i }).waitFor({ timeout: 15000 });
 
   await page.getByRole("button", { name: /load scientific sourcing demo/i }).click();

@@ -388,7 +388,7 @@ export default function ResumeAnalyzer() {
               {t.results.title}
             </h2>
             <a
-              href={`/tracker/add?score=${result.matchScore}${company ? `&company=${encodeURIComponent(company)}` : ""}${jobTitle ? `&role=${encodeURIComponent(jobTitle)}` : ""}`}
+              href={`/career/tracker/add?score=${result.matchScore}${company ? `&company=${encodeURIComponent(company)}` : ""}${jobTitle ? `&role=${encodeURIComponent(jobTitle)}` : ""}`}
               className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
             >
               + Save to Tracker

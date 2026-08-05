@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import AutoApplyDashboard from "@/components/AutoApplyDashboard";
+import TalentMapperWorkspace from "@/components/talent-mapper/TalentMapperWorkspace";
 
 export const metadata: Metadata = {
-  title: "ResumeX — AutoApply Dashboard",
-  description: "Track your job applications, manage your candidate profile, and review AI-generated answers.",
+  title: "Talent Mapper",
+  description:
+    "Find potential candidates through public evidence of their work. Evidence-based candidate discovery beyond LinkedIn.",
 };
 
-export default function AutoApplyPage() {
+export default function TalentMapperPage() {
   return (
     <div className="relative min-h-full flex-1 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white text-zinc-900 dark:bg-[#050816] dark:bg-none dark:text-white">
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden dark:block">
@@ -15,7 +16,7 @@ export default function AutoApplyPage() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <AutoApplyDashboard />
+        <TalentMapperWorkspace />
       </div>
     </div>
   );

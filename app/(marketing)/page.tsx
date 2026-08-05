@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { CAREER, TALENT } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "ResumeX — Your AI-Powered Job Search Platform",
@@ -15,50 +16,42 @@ const FEATURES = [
     icon: "✦",
     title: "CV Formatter",
     description: "Turn any messy resume into a polished, professional CV in one click. Export to PDF or DOCX.",
-    href: "/cv",
+    href: "/career/cv",
     cta: "Format my CV",
   },
   {
     icon: "◎",
     title: "Resume Analyzer",
     description: "Paste a job description and get an instant AI match score, gaps analysis, and interview prep questions.",
-    href: "/analyzer",
+    href: "/career/analyzer",
     cta: "Analyze my resume",
-  },
-  {
-    icon: "◈",
-    title: "Talent Mapper",
-    description:
-      "Discover potential scientific candidates through public research evidence — beyond LinkedIn job titles.",
-    href: "/talent-mapper",
-    cta: "Open Talent Mapper",
   },
   {
     icon: "⚡",
     title: "AutoApply",
     description: "Chrome extension that auto-fills job applications using your saved profile. Apply 10× faster.",
-    href: "/autoapply",
+    href: "/career/autoapply",
     cta: "Set up AutoApply",
   },
   {
     icon: "◈",
     title: "Application Tracker",
     description: "Track every application in one dashboard. Pipeline view, CSV export, and status updates.",
-    href: "/tracker",
+    href: "/career/tracker",
     cta: "Open tracker",
   },
   {
     icon: "✉",
     title: "Cover Letter Generator",
     description: "AI writes a tailored cover letter using your profile and the job description. Edit and copy instantly.",
-    href: "/cover-letter",
+    href: "/career/cover-letter",
     cta: "Generate cover letter",
   },
   {
     icon: "⊕",
     title: "Job Search",
     description: "Search thousands of live job postings and save them directly to your tracker with one click.",
-    href: "/jobs",
+    href: "/career/jobs",
     cta: "Search jobs",
   },
 ];
@@ -90,7 +83,7 @@ const PRO_FEATURES = [
 
 export default async function LandingPage() {
   const session = await getServerSession(authOptions);
-  if (session) redirect("/tracker");
+  if (session) redirect(CAREER.home);
   return (
     <div className="relative min-h-full overflow-hidden bg-white text-zinc-900 dark:bg-[#050816] dark:text-white">
       {/* Background blobs */}
@@ -124,7 +117,7 @@ export default async function LandingPage() {
               Get started free
             </Link>
             <Link
-              href="/login?callbackUrl=%2Fanalyzer"
+              href="/login?callbackUrl=%2Fcareer%2Fanalyzer"
               className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-cyan-400/50"
             >
               Sign in to tools →
@@ -157,6 +150,31 @@ export default async function LandingPage() {
                 </span>
               </Link>
             ))}
+          </div>
+        </section>
+
+        {/* Cross-product band: the recruiter side of ResumeX (R-003) */}
+        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-8 sm:flex-row sm:items-center sm:justify-between dark:border-emerald-400/20 dark:bg-emerald-400/[0.06]">
+            <div className="max-w-xl">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-300">
+                Hiring instead?
+              </p>
+              <h2 className="mb-2 text-xl font-bold text-zinc-900 dark:text-white">
+                {TALENT.name}
+              </h2>
+              <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                Source hard-to-fill scientific roles from public research: every candidate
+                comes with paper-level evidence and an explainable relevance score, so you can
+                tell a real match from a keyword match.
+              </p>
+            </div>
+            <Link
+              href={TALENT.basePath}
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400"
+            >
+              See {TALENT.name} →
+            </Link>
           </div>
         </section>
 

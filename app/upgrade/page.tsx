@@ -169,7 +169,7 @@ function UpgradeContent() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link href="/tracker" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+        <Link href="/career/tracker" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
           ← Back to tracker
         </Link>
       </div>

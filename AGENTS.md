@@ -32,6 +32,9 @@ Los nombres son exactos y van así en UI, copy, metadata y comentarios. Talent M
 - **Prisma es la capa de datos.** `localStorage` sólo como caché de UI y contrato con la extensión.
 - **`proxy.ts`, nunca `middleware.ts`** — deprecado en Next 16.
 - **Un solo root layout.** `/career` y `/talent` son segmentos con su propio `layout.tsx`. No múltiples root layouts.
+- **`lib/products.ts` es la fuente única de los nombres, rutas y navegación de cada producto.** No hardcodear `"ResumeX Career"` ni `/talent/mapper` en una superficie nueva: importarlo de ahí.
+- **Ruta nueva = ruta dentro de un producto.** Toda página de herramienta cuelga de `/career/*` o `/talent/*`. Si mueves o renombras una, agregar el 308 en `PRODUCT_SEGMENT_REDIRECTS` (`next.config.ts`): la extensión Chrome y los emails salientes llevan URLs viejas.
+- **Las APIs siguen planas** (`/api/talent-mapper/*`, `/api/tracker`, …). Namespacearlas rompe el contrato de la extensión desplegada; se hará cuando haya versionado.
 - **Sin secretos** en el repo ni en el wiki. Keys de OpenAI y OpenAlex son server-side.
 
 ## Antes de tocar scoring

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 function safeCallbackUrl(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/tracker";
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/career/tracker";
   return raw;
 }
 

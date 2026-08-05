@@ -1,8 +1,17 @@
 # ResumeX
 
-ResumeX is the TalentX resume workspace: AI resume formatting, resume/job match analysis, cover letters, application tracking, job search, profile-backed autoapply data, a Chrome extension that can score and save jobs from job boards, and **Talent Mapper** for evidence-based scientific candidate discovery from public scholarly data.
+ResumeX ships **two products on one codebase**, one deployment and one database:
 
-**Access model:** The marketing homepage, login, and register are public. All tools (CV, Analyzer, Talent Mapper, Jobs, Cover Letter, AutoApply, Tracker, Upgrade) and their AI APIs require a signed-in account (NextAuth session). The Chrome extension uses a Bearer token from `/api/extension/token`.
+| Product | Users | Lives at | What it does |
+|---|---|---|---|
+| **ResumeX Career** | Job seekers | `/career/*` | AI resume formatting, resume/job match analysis, cover letters, job search, application tracking, and profile-backed AutoApply with a Chrome extension. |
+| **ResumeX Talent** | Recruiters and hiring teams | `/talent/*` | **Talent Mapper**: evidence-based scientific candidate discovery from public scholarly data. |
+
+The names are exact and belong in UI, copy and metadata; Talent Mapper is a feature inside ResumeX Talent, not a brand. `lib/products.ts` is the single source for both. See [`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md) for the decisions behind the split.
+
+**Routing:** `/` is the ResumeX Career landing, `/talent` the ResumeX Talent landing. The old flat routes (`/cv`, `/tracker`, `/talent-mapper`, …) 308-redirect into their segment, so bookmarks, indexed URLs and shipped extension builds keep working.
+
+**Access model:** Both landings, login, and register are public. Every tool (`/career/*`, `/talent/mapper`, `/upgrade`, `/extension-auth`) and their AI APIs require a signed-in account (NextAuth session). The Chrome extension uses a Bearer token from `/api/extension/token`.
 
 ## Talent Mapper
 
@@ -37,7 +46,7 @@ Obtain an OpenAlex key (free) from [openalex.org/settings/api](https://openalex.
 
 ### Demo snapshot (interview-friendly)
 
-1. Sign in and open [/talent-mapper](http://localhost:3000/talent-mapper)
+1. Sign in and open [/talent/mapper](http://localhost:3000/talent/mapper)
 2. Click **Load scientific sourcing demo**
 3. Review criteria → continue to strategy → **Run demo snapshot**
 4. Inspect a researcher, draft outreach, shortlist, export CSV
@@ -67,7 +76,7 @@ This registers a local test user (default `tm_e2e_demo`), signs in, runs the ful
 
 ### Architecture (high level)
 
-- UI: `app/talent-mapper/` + `components/talent-mapper/`
+- UI: `app/talent/mapper/` + `components/talent-mapper/`
 - APIs: `app/api/talent-mapper/{extract-criteria,search,outreach,status}`
 - Core: `lib/talent-mapper/` (OpenAlex client, evidence, scoring, aggregation, CSV)
 - Fixture: `data/talent-mapper-demo.json`

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import CvFormatter from "@/components/CvFormatter";
+import AutoApplyDashboard from "@/components/AutoApplyDashboard";
 
 export const metadata: Metadata = {
-  title: "ResumeX — CV Formatter",
-  description: "Turn any resume into a polished, professional CV in one click.",
+  title: "AutoApply",
+  description: "Track your job applications, manage your candidate profile, and review AI-generated answers.",
 };
 
-export default function CvPage() {
+export default function AutoApplyPage() {
   return (
     <div className="relative min-h-full flex-1 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white text-zinc-900 dark:bg-[#050816] dark:bg-none dark:text-white">
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden dark:block">
@@ -15,7 +15,7 @@ export default function CvPage() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <CvFormatter />
+        <AutoApplyDashboard />
       </div>
     </div>
   );

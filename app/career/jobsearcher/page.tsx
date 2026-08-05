@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import ResumeAnalyzer from "@/components/ResumeAnalyzer";
+import JobSearcherDashboard from "@/components/JobSearcherDashboard";
 
 export const metadata: Metadata = {
-  title: "ResumeX — AI Resume Match Analyzer",
-  description:
-    "Compare your resume to any job description. Get match scores, keyword gaps, and tailored suggestions.",
+  title: "Job Searcher",
+  description: "Discover jobs, analyze match scores, and queue roles for AutoApply.",
 };
 
-export default function AnalyzerPage() {
+export default function JobSearcherPage() {
   return (
     <div className="relative min-h-full flex-1 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white text-zinc-900 dark:bg-[#050816] dark:bg-none dark:text-white">
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden dark:block">
@@ -16,7 +15,7 @@ export default function AnalyzerPage() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <ResumeAnalyzer />
+        <JobSearcherDashboard />
       </div>
     </div>
   );

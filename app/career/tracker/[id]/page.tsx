@@ -45,7 +45,7 @@ export default function DetailPage() {
     if (!id || status !== "authenticated") return;
     fetch(`/api/tracker/${id}`)
       .then((r) => {
-        if (!r.ok) { router.push("/tracker"); return null; }
+        if (!r.ok) { router.push("/career/tracker"); return null; }
         return r.json();
       })
       .then((data) => {
@@ -91,7 +91,7 @@ export default function DetailPage() {
     if (!confirm("Delete this application?")) return;
     setDeleting(true);
     await fetch(`/api/tracker/${id}`, { method: "DELETE" });
-    router.push("/tracker");
+    router.push("/career/tracker");
   }
 
   if (!app) {
@@ -106,7 +106,7 @@ export default function DetailPage() {
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <Link
-          href="/tracker"
+          href="/career/tracker"
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900 dark:hover:text-white"
         >
           ← Back to dashboard

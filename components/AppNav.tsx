@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useLocale } from "@/components/LocaleProvider";
+import { CAREER, otherProduct, productForPath } from "@/lib/products";
 
 export default function AppNav() {
   const { t } = useLocale();
@@ -15,16 +16,21 @@ export default function AppNav() {
   const ref = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
+  // The wordmark only names a product when we are actually inside one — the
+  // landing and the auth pages stay plain "ResumeX".
+  const activeProduct = productForPath(pathname);
+  // Shared surfaces (/upgrade, /extension-auth) fall back to Career for the menu:
+  // it leads the funnel and owns most of the tool surface.
+  const product = activeProduct ?? CAREER;
+  const sibling = otherProduct(product);
+
   const links = session
     ? [
-        { href: "/cv", label: t.nav.cvFormatter },
-        { href: "/analyzer", label: t.nav.analyzer },
-        { href: "/talent-mapper", label: "Talent Mapper" },
-        { href: "/jobs", label: "Job Search" },
-        { href: "/cover-letter", label: "Cover Letter" },
-        { href: "/autoapply", label: "AutoApply" },
-        { href: "/tracker", label: "Tracker" },
-        { href: "/upgrade", label: "⭐ Go Pro — $5/mo" },
+        ...product.nav.map((link) => ({
+          href: link.href,
+          label: link.localeKey ? t.nav[link.localeKey] : link.label,
+        })),
+        { href: sibling.home, label: `${sibling.name} →` },
       ]
     : [
         { href: "/login", label: "Sign in" },
@@ -45,12 +51,20 @@ export default function AppNav() {
   return (
     <div className="flex items-center gap-3">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 select-none">
+      <Link
+        href={activeProduct ? activeProduct.home : "/"}
+        className="flex items-center gap-2 select-none"
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0d1117] text-xs font-bold text-cyan-400 dark:bg-white/10">
           RX
         </div>
         <span className="hidden text-sm font-bold text-zinc-900 dark:text-white sm:block">
           Resume<span className="text-indigo-600 dark:text-cyan-400">X</span>
+          {activeProduct && (
+            <span className="ml-1 font-semibold text-zinc-500 dark:text-zinc-400">
+              {activeProduct.suffix}
+            </span>
+          )}
         </span>
       </Link>
 
@@ -118,7 +132,7 @@ export default function AppNav() {
                 <p className="mt-0.5 truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">{displayName}</p>
               </div>
               <div className="p-1">
-                <Link href="/tracker/profile" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-white/5">
+                <Link href="/career/tracker/profile" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-white/5">
                   Profile
                 </Link>
                 <button

@@ -72,7 +72,7 @@ export async function GET(req: Request) {
           <h2 style="margin:0 0 4px;font-size:20px">Hi ${profile.fullName ?? profile.user.username} 👋</h2>
           <p style="color:#6b7280;margin:0 0 24px">Here are this week's top job picks for you:</p>
           <table style="width:100%;border-collapse:collapse">${jobRows}</table>
-          <a href="https://resumex.talentxrecruiting.com/jobs" style="display:inline-block;margin-top:24px;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">
+          <a href="https://resumex.talentxrecruiting.com/career/jobs" style="display:inline-block;margin-top:24px;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">
             See all jobs →
           </a>
           <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">

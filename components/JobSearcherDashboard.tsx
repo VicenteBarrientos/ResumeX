@@ -403,7 +403,7 @@ export default function JobSearcherDashboard() {
           {!profile && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
               No candidate profile found. Open{" "}
-              <a href="/autoapply" className="font-medium underline">
+              <a href="/career/autoapply" className="font-medium underline">
                 AutoApply → My Profile
               </a>{" "}
               to set one up first.

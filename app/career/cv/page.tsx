@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import TalentMapperWorkspace from "@/components/talent-mapper/TalentMapperWorkspace";
+import CvFormatter from "@/components/CvFormatter";
 
 export const metadata: Metadata = {
-  title: "ResumeX Talent Mapper",
-  description:
-    "Find potential candidates through public evidence of their work. Evidence-based candidate discovery beyond LinkedIn.",
+  title: "CV Formatter",
+  description: "Turn any resume into a polished, professional CV in one click.",
 };
 
-export default function TalentMapperPage() {
+export default function CvPage() {
   return (
     <div className="relative min-h-full flex-1 overflow-hidden bg-gradient-to-b from-indigo-50/80 via-white to-white text-zinc-900 dark:bg-[#050816] dark:bg-none dark:text-white">
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden dark:block">
@@ -16,7 +15,7 @@ export default function TalentMapperPage() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <TalentMapperWorkspace />
+        <CvFormatter />
       </div>
     </div>
   );

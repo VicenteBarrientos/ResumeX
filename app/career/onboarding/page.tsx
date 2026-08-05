@@ -32,7 +32,7 @@ export default function OnboardingPage() {
   async function handleNext() {
     if (step === 1) await saveProfile();
     if (step === STEPS.length - 1) {
-      router.push("/tracker");
+      router.push("/career/tracker");
       return;
     }
     setStep((s) => s + 1);
@@ -40,7 +40,7 @@ export default function OnboardingPage() {
 
   function skip() {
     if (step === STEPS.length - 1) {
-      router.push("/tracker");
+      router.push("/career/tracker");
       return;
     }
     setStep((s) => s + 1);
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
                 Upload your resume PDF once and we&apos;ll extract your information automatically. Every tool will use it from here on.
               </p>
               <Link
-                href="/tracker/profile"
+                href="/career/tracker/profile"
                 className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816]"
               >
                 Go to profile page to upload →
@@ -180,19 +180,19 @@ export default function OnboardingPage() {
               </p>
               <div className="grid grid-cols-1 gap-3">
                 <Link
-                  href="/jobs"
+                  href="/career/jobs"
                   className="rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816]"
                 >
                   Search for jobs →
                 </Link>
                 <Link
-                  href="/analyzer"
+                  href="/career/analyzer"
                   className="rounded-full border border-zinc-300 px-6 py-3 text-sm font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-300"
                 >
                   Analyze a job description
                 </Link>
                 <Link
-                  href="/tracker"
+                  href="/career/tracker"
                   className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                 >
                   Go to my tracker
