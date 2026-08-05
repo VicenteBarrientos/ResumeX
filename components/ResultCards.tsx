@@ -10,8 +10,6 @@ interface ResultCardsProps {
   result: CareerAnalysis;
 }
 
-const API_MISSING_EVIDENCE = "Not found in resume.";
-
 function ScoreRing({ score, matchLabel }: { score: number; matchLabel: string }) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
@@ -58,13 +56,15 @@ function CriteriaChecklist({
   title,
   items,
   accent,
-  missingEvidenceLabel,
+  insufficientLabel,
+  inferredLabel,
   emptyMessage,
 }: {
   title: string;
   items: CriteriaItem[];
   accent: "indigo" | "zinc";
-  missingEvidenceLabel: string;
+  insufficientLabel: string;
+  inferredLabel: string;
   emptyMessage: string;
 }) {
   const borderClass =
@@ -79,41 +79,53 @@ function CriteriaChecklist({
       </h3>
       {items.length > 0 ? (
         <ul className="space-y-3">
-          {items.map((item) => (
-            <li
-              key={item.criterion}
-              className="rounded-xl border border-zinc-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
-            >
-              <div className="flex items-start gap-3">
-                <span
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    item.met
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200"
-                      : "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200"
-                  }`}
-                  aria-hidden="true"
-                >
-                  {item.met ? "✓" : "✕"}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">
-                    {item.criterion}
-                  </p>
-                  <p
-                    className={`mt-1 text-xs leading-relaxed ${
-                      item.evidence === API_MISSING_EVIDENCE
-                        ? "italic text-zinc-500"
-                        : "text-zinc-600 dark:text-zinc-400"
-                    }`}
+          {items.map((item) => {
+            const icon =
+              item.status === "met" ? "✓" : item.status === "not_met" ? "✕" : "?";
+            const iconClass =
+              item.status === "met"
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200"
+                : item.status === "not_met"
+                  ? "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200"
+                  : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200";
+
+            return (
+              <li
+                key={item.criterion}
+                className="rounded-xl border border-zinc-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${iconClass}`}
+                    aria-hidden="true"
                   >
-                    {item.evidence === API_MISSING_EVIDENCE
-                      ? missingEvidenceLabel
-                      : item.evidence}
-                  </p>
+                    {icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                      {item.criterion}
+                    </p>
+                    {item.quote ? (
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                        <span className="text-zinc-500">“</span>
+                        {item.quote}
+                        <span className="text-zinc-500">”</span>
+                        {item.aiInferred ? (
+                          <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-400/20 dark:text-amber-200">
+                            {inferredLabel}
+                          </span>
+                        ) : null}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs italic leading-relaxed text-zinc-500">
+                        {insufficientLabel}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p className="text-sm text-zinc-500">{emptyMessage}</p>
@@ -239,14 +251,16 @@ export default function ResultCards({ result }: ResultCardsProps) {
           title={t.results.mustHave}
           items={result.mustHaveCriteria}
           accent="indigo"
-          missingEvidenceLabel={t.results.missingEvidence}
+          insufficientLabel={t.results.insufficientEvidence}
+          inferredLabel={t.results.inferredBadge}
           emptyMessage={t.results.noCriteria}
         />
         <CriteriaChecklist
           title={t.results.niceToHave}
           items={result.niceToHaveCriteria}
           accent="zinc"
-          missingEvidenceLabel={t.results.missingEvidence}
+          insufficientLabel={t.results.insufficientEvidence}
+          inferredLabel={t.results.inferredBadge}
           emptyMessage={t.results.noCriteria}
         />
       </div>

@@ -76,7 +76,9 @@ const en = {
     noMatchedKeywords: "No clear keyword overlap found.",
     noMissingKeywords: "No major gaps detected.",
     noSuggestions: "No suggestions available.",
-    missingEvidence: "Not found in resume.",
+    missingEvidence: "Not stated in resume.",
+    insufficientEvidence: "Not stated in resume.",
+    inferredBadge: "Inferred",
   },
   concernLevels: {
     Low: "Low",
@@ -258,7 +260,9 @@ const es = {
     noMatchedKeywords: "No se encontró coincidencia clara de keywords.",
     noMissingKeywords: "No se detectaron brechas importantes.",
     noSuggestions: "No hay sugerencias disponibles.",
-    missingEvidence: "No encontrado en el currículum.",
+    missingEvidence: "No consta en el currículum.",
+    insufficientEvidence: "No consta en el currículum.",
+    inferredBadge: "Inferido",
   },
   concernLevels: {
     Low: "Baja",

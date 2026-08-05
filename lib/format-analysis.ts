@@ -1,14 +1,18 @@
 import type { CareerAnalysis, CriteriaItem, TalentAssessment } from "@/lib/types";
+import { formatCriterionStatusLabel } from "@/lib/criteria-evidence";
 
 function formatCriteriaList(title: string, items: CriteriaItem[]): string {
   if (items.length === 0) {
     return `${title}\nNone identified.`;
   }
 
-  const lines = items.map(
-    (item) =>
-      `${item.met ? "[Met]" : "[Not met]"} ${item.criterion}\n  Evidence: ${item.evidence}`,
-  );
+  const lines = items.map((item) => {
+    const status = formatCriterionStatusLabel(item.status);
+    const quoteLine = item.quote
+      ? `  Quote: "${item.quote}"${item.aiInferred ? " (inferred)" : ""}`
+      : "  Quote: (none — not stated in resume)";
+    return `[${status}] ${item.criterion}\n${quoteLine}`;
+  });
 
   return `${title}\n${lines.join("\n")}`;
 }

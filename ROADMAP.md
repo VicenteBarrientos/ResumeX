@@ -166,51 +166,60 @@ Los campos `TalentAssessment` existen pero **ningún consumidor de Talent los us
 
 # Fase 3 — Kernel compartido
 
-**Objetivo.** Extraer `lib/evidence/` y `lib/roles/` con los dos consumidores ya funcionando, y migrar la evidencia de Career al modelo con procedencia de R-007.
+**Objetivo.** Migrar la evidencia de Career/Assess al modelo con procedencia de R-007 (T-3.4). Extraer `lib/roles/` si sigue justificado (T-3.3). **No** subir el matcher de Talent Mapper a `lib/evidence/` (T-3.2 cancelada por T-3.1).
 
 **Por qué después de la 2.** R-009: se extrae al segundo uso real. Antes de la Fase 2, `lib/talent-mapper/evidence.ts` tiene un solo consumidor. Diseñar el kernel ahí es diseñar para un caso y descubrir en el segundo que la abstracción no servía.
 
 **Precondiciones.** Fase 2 ✅, incluida T-2.7 opción A (o aceptación explícita de arrancar con un consumidor y medio).
 
-### ⬜ T-3.1 — Comparar los dos modelos de evidencia
+### ✅ T-3.1 — Comparar los dos modelos de evidencia
 
 Antes de extraer, escribir en el handoff qué tienen en común de verdad.
 
-- **Talent** (`lib/talent-mapper/types.ts`): `EvidenceMatch { criterion, matchType: exact|adjacent|inferred, workTitle, year, snippet, doi, openAlexUrl, confidence: direct|strong_adjacent|possible, workId }`.
-- **Career** (`lib/types.ts:14`): `CriteriaItem { criterion, met: boolean, evidence: string }`.
+- **Talent Mapper** (`lib/talent-mapper/types.ts`): `EvidenceMatch { criterion, matchType: exact|adjacent|inferred, workTitle, year, snippet, doi, openAlexUrl, confidence: direct|strong_adjacent|possible, workId }`.
+- **Career / Talent Assess** (`lib/types.ts:14`): `CriteriaItem { criterion, met: boolean, evidence: string }` — mismo tipo en `AnalysisBase`.
 
-La diferencia no es de forma, es de honestidad: Talent apunta al documento fuente y declara su confianza; Career devuelve un string que el modelo redactó. Un `met: boolean` tampoco distingue "lo cumple" de "no encontré evidencia".
+La diferencia no es de forma, es de honestidad: Talent Mapper apunta al documento fuente y declara su confianza; Career/Assess devuelven un string que el modelo redactó. Un `met: boolean` tampoco distingue "lo cumple" de "no encontré evidencia".
 
-**Terminado cuando:** hay una tabla en el handoff con qué campos son genuinamente comunes y cuáles son específicos del sujeto. Si la respuesta honesta es "casi nada es común", eso también es un resultado válido y cancela T-3.2.
+**Resultado (2026-08-05):** tabla completa en `AGENT_HANDOFF.md` § "Comparación de evidencia (T-3.1)". Único campo idéntico: `criterion`. **Casi nada es común a nivel de tipo** → T-3.2 cancelada.
 
-### ⬜ T-3.2 — Extraer `lib/evidence/`
+**Terminado cuando:** hay una tabla en el handoff con qué campos son genuinamente comunes y cuáles son específicos del sujeto. Si la respuesta honesta es "casi nada es común", eso también es un resultado válido y cancela T-3.2. ✅
 
-Sólo si T-3.1 lo justifica.
+### ❌ T-3.2 — Extraer `lib/evidence/` — CANCELADA
 
-- Tipos comunes: criterio, match, nivel de confianza, procedencia.
-- La procedencia es obligatoria: extracto real, fuente identificable, confianza, y marca de si lo infirió la IA (R-007).
-- `lib/talent-mapper/evidence.ts` (319 líneas) pasa a consumir el kernel sin cambiar comportamiento. **Sus tests existentes deben pasar sin modificarse** — si hay que tocarlos, cambiaste comportamiento.
+Cancelada por T-3.1. `matchEvidence()` no tiene segundo consumidor: Career/Assess no operan sobre `ScholarlyWork`. Subir el matcher a `lib/evidence/` violaría R-009 y la regla de frontera.
+
+Un contrato tipado delgado para veredictos LLM (`CriteriaItem` con procedencia) puede aparecer dentro de **T-3.4**, compartido por Career y Assess. No se unifica con `EvidenceMatch`.
+
+~~Sólo si T-3.1 lo justifica.~~
+
+~~- Tipos comunes: criterio, match, nivel de confianza, procedencia.~~
+~~- La procedencia es obligatoria: extracto real, fuente identificable, confianza, y marca de si lo infirió la IA (R-007).~~
+~~- `lib/talent-mapper/evidence.ts` (319 líneas) pasa a consumir el kernel sin cambiar comportamiento. **Sus tests existentes deben pasar sin modificarse** — si hay que tocarlos, cambiaste comportamiento.~~
 
 ### ⬜ T-3.3 — Extraer `lib/roles/`
 
-Job description → criterios. Hoy vive en `lib/talent-mapper/criteria.ts` y en el prompt de `lib/analyze.ts`, duplicado conceptualmente.
+Job description → criterios. Hoy vive en `lib/talent-mapper/criteria.ts` y en el prompt de `lib/analyze.ts`, duplicado conceptualmente. Independiente de T-3.4.
 
-### ⬜ T-3.4 — Migrar la evidencia de Career a procedencia
+### ✅ T-3.4 — Migrar la evidencia de Career a procedencia
 
-La tarea que le da sentido a la fase. `CriteriaItem.evidence: string` pasa a llevar el extracto literal del CV, con offset o cita verificable, y una marca de si la IA lo infirió.
+La tarea que le da sentido a la fase. `CriteriaItem` ahora usa `status: met | not_met | insufficient`, `quote` (extracto literal) y `aiInferred`. Aplica a Talent Assess (mismo `AnalysisBase`) y a `StrongMatch`.
 
-- `met: boolean` pasa a un enum de tres estados: cumple / no cumple / **sin evidencia suficiente**.
-- La UI tiene que mostrar el tercer estado como tercer estado, no colapsarlo en "no cumple". Un candidato merece saber que su CV no dice algo, que es distinto de que no lo tenga.
+- Normalización server-side en `lib/criteria-evidence.ts`: si el quote no aparece en el CV, se descarta.
+- UI con tres estados visibles (✓ / ✕ / ?), no colapsa insufficient en "no cumple".
 
-**Terminado cuando:** ningún campo de evidencia mostrado al usuario en Career es texto libre del modelo sin fuente.
+**Hecho (2026-08-05):** tipos, prompts, UI Career+Assess, formatters, i18n, tests (59).
+
+**Terminado cuando:** ningún campo de evidencia mostrado al usuario en Career (ni en Talent Assess) es texto libre del modelo sin fuente. ✅
 
 ### Riesgos de la Fase 3
 
 | Riesgo | Mitigación |
 |---|---|
-| Extraer una abstracción que no existe | T-3.1 puede cancelar T-3.2. Está permitido |
-| Romper scoring de Talent al mover evidencia | R-012 + los 30 tests existentes deben pasar sin editarse |
+| Extraer una abstracción que no existe | T-3.1 canceló T-3.2. ✅ |
+| Romper scoring de Talent al mover evidencia | R-012 + los 30 tests existentes; T-3.2 cancelada evita el riesgo |
 | El kernel se convierte en un cajón | Regla de frontera del handoff: si sólo lo importa un producto, no es kernel |
+| El modelo sigue parafraseando en `quote` | Normalización descarta citas no presentes en el CV |
 
 ---
 
@@ -364,6 +373,8 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 ## Bitácora de este archivo
 
+- **2026-08-05** — T-3.4: `CriteriaItem`/`StrongMatch` con procedencia; normalización server-side; UI de tres estados.
+- **2026-08-05** — T-3.1: casi nada en común entre `CriteriaItem` y `EvidenceMatch`; T-3.2 cancelada; siguiente = T-3.4.
 - **2026-08-05** — T-2.7 opción A: `/talent/assess` + `/api/talent-assess`. Fase 2 cerrada.
 - **2026-08-05** — T-2.5 y T-2.6: consumidores migrados a CareerAnalysis; PDF es de Career; AnalysisResult retirado del código.
 - **2026-08-05** — T-2.3 y T-2.4: `analyzeForCareer` / `assessForTalent` con prompts y schemas por audiencia; `analyzeResume` queda como puente legacy; tests fijan summaries de mejora vs decisión.

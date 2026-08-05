@@ -11,15 +11,35 @@ export type RecommendedNextStep =
   | "Interview"
   | "Strongly recommend";
 
+/**
+ * Ternary criterion verdict (T-3.4 / R-007).
+ * - met: resume clearly supports the criterion
+ * - not_met: resume contradicts or falls short (quote shows the shortfall when available)
+ * - insufficient: resume does not address the criterion
+ */
+export type CriterionStatus = "met" | "not_met" | "insufficient";
+
+/**
+ * Criterion with provenance. `quote` must be a verbatim resume excerpt when
+ * non-empty; never model paraphrase presented as evidence (R-007).
+ */
 export interface CriteriaItem {
   criterion: string;
-  met: boolean;
-  evidence: string;
+  status: CriterionStatus;
+  /** Verbatim resume excerpt. Empty when status is "insufficient". */
+  quote: string;
+  /**
+   * True when the verdict rests on implication rather than an explicit statement.
+   * The quote, if present, must still be verbatim.
+   */
+  aiInferred: boolean;
 }
 
 export interface StrongMatch {
   match: string;
-  evidence: string;
+  /** Verbatim resume excerpt supporting the match. */
+  quote: string;
+  aiInferred: boolean;
 }
 
 interface AnalysisBase {

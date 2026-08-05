@@ -1,4 +1,9 @@
 import OpenAI from "openai";
+import {
+  normalizeCareerEvidence,
+  normalizeTalentEvidence,
+  isCriterionStatus,
+} from "@/lib/criteria-evidence";
 import { debugLog } from "@/lib/debug-log";
 import { buildTokenUsage, logTokenUsage } from "@/lib/token-usage";
 import type {
@@ -22,17 +27,22 @@ const RECOMMENDED_NEXT_STEPS: RecommendedNextStep[] = [
   "Strongly recommend",
 ];
 
-const MISSING_EVIDENCE = "Not found in resume.";
-
-const EVIDENCE_RULES = `Critical evidence rules:
+const EVIDENCE_RULES = `Critical evidence rules (provenance required):
 - Never invent experience, skills, or accomplishments not supported by the resume.
-- For every evidence field, quote or paraphrase only what appears in the resume.
-- If support is missing, unclear, or only implied, set evidence to exactly: "Not found in resume."
-- If met is false for a criterion, evidence must be "Not found in resume." unless partial support exists.`;
+- For every criterion, set status to exactly one of: "met", "not_met", "insufficient".
+  - "met": the resume clearly supports the criterion.
+  - "not_met": the resume contradicts the criterion or falls short (e.g. years below the requirement).
+  - "insufficient": the resume does not address the criterion at all.
+- quote must be a verbatim substring copied from the resume. Never paraphrase inside quote.
+- When status is "insufficient", quote must be exactly "".
+- When status is "met" or "not_met", quote should be the best supporting or contradicting verbatim excerpt; if you cannot find one, use status "insufficient" and quote "".
+- aiInferred: true only when the verdict is implied rather than stated explicitly; the quote must still be verbatim when non-empty.
+- Do not use the phrase "Not found in resume." — use status "insufficient" with an empty quote instead.
+- Strong matches (Talent only): each needs a short label and a verbatim quote from the resume.`;
 
 const SHARED_FIELD_RULES = `- matchScore: integer 0-100 reflecting overall fit
-- mustHaveCriteria: 4-8 must-have requirements from the job; each with criterion, met (boolean), evidence
-- niceToHaveCriteria: 3-6 nice-to-have requirements; each with criterion, met (boolean), evidence`;
+- mustHaveCriteria: 4-8 must-have requirements from the job; each with criterion, status, quote, aiInferred
+- niceToHaveCriteria: 3-6 nice-to-have requirements; each with criterion, status, quote, aiInferred`;
 
 const CAREER_SYSTEM_PROMPT = `You are ResumeX Career, an expert resume coach helping a job seeker improve their fit for a role.
 Compare the candidate's resume against the job description and return structured JSON only.
@@ -64,14 +74,21 @@ ${SHARED_FIELD_RULES}
 - summary: 2-3 sentences for the recruiter — what risk they assume by advancing, and what to validate next to reduce that risk. Do not write coaching advice for the candidate.
 - concernLevel: exactly one of "Low", "Medium", "High" (risk of mis-hire or red flags)
 - recommendedNextStep: exactly one of "Reject", "Screen", "Interview", "Strongly recommend"
-- strongMatches: 3-5 areas of strong alignment; each with match (short label) and evidence from resume
+- strongMatches: 3-5 areas of strong alignment; each with match (short label), quote (verbatim from resume), aiInferred
 - phoneScreenQuestions: exactly 5 targeted phone-screen questions based on gaps or validation needs
 - clientFacingBullets: exactly 3 concise bullets suitable for a client submittal email
 - sendoutBlurb: 1 short paragraph (2-4 sentences) for a recruiter sendout; factual, no hype
 
 Be specific, honest, and decision-oriented.`;
 
-const CRITERIA_SCHEMA = [{ criterion: "string", met: "boolean", evidence: "string" }];
+const CRITERIA_SCHEMA = [
+  {
+    criterion: "string",
+    status: "met | not_met | insufficient",
+    quote: "string (verbatim resume excerpt, or empty)",
+    aiInferred: "boolean",
+  },
+];
 
 const CAREER_RESPONSE_SCHEMA = {
   matchScore: "number",
@@ -92,7 +109,9 @@ const TALENT_RESPONSE_SCHEMA = {
   recommendedNextStep: "Reject | Screen | Interview | Strongly recommend",
   mustHaveCriteria: CRITERIA_SCHEMA,
   niceToHaveCriteria: CRITERIA_SCHEMA,
-  strongMatches: [{ match: "string", evidence: "string" }],
+  strongMatches: [
+    { match: "string", quote: "string", aiInferred: "boolean" },
+  ],
   phoneScreenQuestions: "string[5]",
   clientFacingBullets: "string[3]",
   sendoutBlurb: "string",
@@ -106,8 +125,9 @@ function isCriteriaItem(value: unknown): value is CriteriaItem {
   const item = value as CriteriaItem;
   return (
     typeof item.criterion === "string" &&
-    typeof item.met === "boolean" &&
-    typeof item.evidence === "string"
+    isCriterionStatus(item.status) &&
+    typeof item.quote === "string" &&
+    typeof item.aiInferred === "boolean"
   );
 }
 
@@ -117,7 +137,11 @@ function isStrongMatch(value: unknown): value is StrongMatch {
   }
 
   const item = value as StrongMatch;
-  return typeof item.match === "string" && typeof item.evidence === "string";
+  return (
+    typeof item.match === "string" &&
+    typeof item.quote === "string" &&
+    typeof item.aiInferred === "boolean"
+  );
 }
 
 function isSuggestion(value: unknown): value is Suggestion {
@@ -194,7 +218,7 @@ function clampMatchScore(score: number): number {
   return Math.min(100, Math.max(0, Math.round(score)));
 }
 
-interface AnalysisRequestConfig<T> {
+interface AnalysisRequestConfig<T extends { matchScore: number }> {
   label: string;
   resume: string;
   jobDescription: string;
@@ -202,6 +226,7 @@ interface AnalysisRequestConfig<T> {
   systemPrompt: string;
   responseSchema: Record<string, unknown>;
   validate: (parsed: unknown) => parsed is T;
+  normalize: (result: T, resume: string) => T;
 }
 
 async function runStructuredAnalysis<T extends { matchScore: number }>(
@@ -225,7 +250,6 @@ async function runStructuredAnalysis<T extends { matchScore: number }>(
           resume: config.resume,
           jobDescription: config.jobDescription,
           responseSchema: config.responseSchema,
-          missingEvidenceFallback: MISSING_EVIDENCE,
         }),
       },
     ],
@@ -260,11 +284,13 @@ async function runStructuredAnalysis<T extends { matchScore: number }>(
 
   logTokenUsage(ANALYSIS_MODEL, usage);
 
+  const withScore = {
+    ...parsed,
+    matchScore: clampMatchScore(parsed.matchScore),
+  };
+
   return {
-    result: {
-      ...parsed,
-      matchScore: clampMatchScore(parsed.matchScore),
-    },
+    result: config.normalize(withScore, config.resume),
     usage,
   };
 }
@@ -292,6 +318,7 @@ export async function analyzeForCareer(
     systemPrompt: CAREER_SYSTEM_PROMPT,
     responseSchema: CAREER_RESPONSE_SCHEMA,
     validate: validateCareerAnalysis,
+    normalize: normalizeCareerEvidence,
   });
 }
 
@@ -308,6 +335,7 @@ export async function assessForTalent(
     systemPrompt: TALENT_SYSTEM_PROMPT,
     responseSchema: TALENT_RESPONSE_SCHEMA,
     validate: validateTalentAssessment,
+    normalize: normalizeTalentEvidence,
   });
 }
 

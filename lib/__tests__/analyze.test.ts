@@ -45,15 +45,28 @@ vi.mock("openai", async (importOriginal) => {
   return { ...actual, default: MockOpenAI };
 });
 
+const SAMPLE_RESUME =
+  "Built TypeScript services. Led API delivery for two products. Mentored junior engineers.";
+
 const VALID_CAREER: CareerAnalysis = {
   matchScore: 82,
   summary:
     "You already show TypeScript delivery. PostgreSQL is missing from the resume, so add concrete database work before you apply.",
   mustHaveCriteria: [
-    { criterion: "TypeScript", met: true, evidence: "Built TypeScript services." },
+    {
+      criterion: "TypeScript",
+      status: "met",
+      quote: "Built TypeScript services.",
+      aiInferred: false,
+    },
   ],
   niceToHaveCriteria: [
-    { criterion: "PostgreSQL", met: false, evidence: "Not found in resume." },
+    {
+      criterion: "PostgreSQL",
+      status: "insufficient",
+      quote: "",
+      aiInferred: false,
+    },
   ],
   strengths: ["Relevant TypeScript experience"],
   gaps: ["No PostgreSQL evidence"],
@@ -71,13 +84,27 @@ const VALID_TALENT: TalentAssessment = {
   concernLevel: "Low",
   recommendedNextStep: "Interview",
   mustHaveCriteria: [
-    { criterion: "TypeScript", met: true, evidence: "Built TypeScript services." },
+    {
+      criterion: "TypeScript",
+      status: "met",
+      quote: "Built TypeScript services.",
+      aiInferred: false,
+    },
   ],
   niceToHaveCriteria: [
-    { criterion: "PostgreSQL", met: false, evidence: "Not found in resume." },
+    {
+      criterion: "PostgreSQL",
+      status: "insufficient",
+      quote: "",
+      aiInferred: false,
+    },
   ],
   strongMatches: [
-    { match: "Backend delivery", evidence: "Led API delivery for two products." },
+    {
+      match: "Backend delivery",
+      quote: "Led API delivery for two products.",
+      aiInferred: false,
+    },
   ],
   phoneScreenQuestions: [
     "How did you structure the TypeScript services?",
@@ -125,7 +152,7 @@ describe("analyzeForCareer", () => {
     mockCompletion(JSON.stringify(VALID_CAREER));
 
     const response = await analyzeForCareer(
-      "Resume text",
+      SAMPLE_RESUME,
       "Job description text",
       "server-api-key",
     );
@@ -139,14 +166,23 @@ describe("analyzeForCareer", () => {
     expect(request.temperature).toBe(0.3);
     expect(request.messages[0].content).toBe(ANALYSIS_PROMPTS.career);
     expect(JSON.parse(request.messages[1].content)).toMatchObject({
-      resume: "Resume text",
+      resume: SAMPLE_RESUME,
       jobDescription: "Job description text",
-      missingEvidenceFallback: "Not found in resume.",
       responseSchema: expect.objectContaining({
         strengths: "string[]",
         suggestions: expect.any(Array),
+        mustHaveCriteria: expect.arrayContaining([
+          expect.objectContaining({
+            status: "met | not_met | insufficient",
+            quote: expect.any(String),
+            aiInferred: "boolean",
+          }),
+        ]),
       }),
     });
+    expect(JSON.parse(request.messages[1].content)).not.toHaveProperty(
+      "missingEvidenceFallback",
+    );
     expect(JSON.parse(request.messages[1].content).responseSchema).not.toHaveProperty(
       "recommendedNextStep",
     );
@@ -166,7 +202,7 @@ describe("analyzeForCareer", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     mockCompletion("{not valid json");
 
-    const thrown = await analyzeForCareer("resume", "job", "key").catch(
+    const thrown = await analyzeForCareer(SAMPLE_RESUME, "job", "key").catch(
       (error) => error,
     );
 
@@ -180,7 +216,7 @@ describe("analyzeForCareer", () => {
   it("rejects responses with missing or malformed fields", async () => {
     mockCompletion(JSON.stringify({ ...VALID_CAREER, suggestions: undefined }));
 
-    await expect(analyzeForCareer("resume", "job", "key")).rejects.toThrow(
+    await expect(analyzeForCareer(SAMPLE_RESUME, "job", "key")).rejects.toThrow(
       "MALFORMED_ANALYSIS",
     );
   });
@@ -192,7 +228,7 @@ describe("analyzeForCareer", () => {
   ])("rounds and clamps matchScore %s to %s", async (matchScore, expected) => {
     mockCompletion(JSON.stringify({ ...VALID_CAREER, matchScore }));
 
-    const response = await analyzeForCareer("resume", "job", "key");
+    const response = await analyzeForCareer(SAMPLE_RESUME, "job", "key");
 
     expect(response.result.matchScore).toBe(expected);
   });
@@ -200,7 +236,7 @@ describe("analyzeForCareer", () => {
   it("rejects an empty model response", async () => {
     mockCompletion(null);
 
-    await expect(analyzeForCareer("resume", "job", "key")).rejects.toThrow(
+    await expect(analyzeForCareer(SAMPLE_RESUME, "job", "key")).rejects.toThrow(
       "NO_ANALYSIS",
     );
   });
@@ -210,12 +246,37 @@ describe("analyzeForCareer", () => {
       choices: [{ message: { content: JSON.stringify(VALID_CAREER) } }],
     });
 
-    const response = await analyzeForCareer("resume", "job", "key");
+    const response = await analyzeForCareer(SAMPLE_RESUME, "job", "key");
 
     expect(response.usage).toMatchObject({
       promptTokens: 0,
       completionTokens: 0,
       totalTokens: 0,
+    });
+  });
+
+  it("downgrades fabricated criterion quotes to insufficient (R-007)", async () => {
+    mockCompletion(
+      JSON.stringify({
+        ...VALID_CAREER,
+        mustHaveCriteria: [
+          {
+            criterion: "TypeScript",
+            status: "met",
+            quote: "Invented quote not on the resume.",
+            aiInferred: false,
+          },
+        ],
+      }),
+    );
+
+    const response = await analyzeForCareer(SAMPLE_RESUME, "job", "key");
+
+    expect(response.result.mustHaveCriteria[0]).toEqual({
+      criterion: "TypeScript",
+      status: "insufficient",
+      quote: "",
+      aiInferred: true,
     });
   });
 });
@@ -225,7 +286,7 @@ describe("assessForTalent", () => {
     mockCompletion(JSON.stringify(VALID_TALENT));
 
     const response = await assessForTalent(
-      "Resume text",
+      SAMPLE_RESUME,
       "Job description text",
       "server-api-key",
     );
@@ -249,9 +310,39 @@ describe("assessForTalent", () => {
       JSON.stringify({ ...VALID_TALENT, phoneScreenQuestions: ["only one"] }),
     );
 
-    await expect(assessForTalent("resume", "job", "key")).rejects.toThrow(
+    await expect(assessForTalent(SAMPLE_RESUME, "job", "key")).rejects.toThrow(
       "MALFORMED_ANALYSIS",
     );
+  });
+
+  it("drops strong matches whose quotes are not in the resume", async () => {
+    mockCompletion(
+      JSON.stringify({
+        ...VALID_TALENT,
+        strongMatches: [
+          {
+            match: "Fabricated",
+            quote: "This sentence does not appear.",
+            aiInferred: false,
+          },
+          {
+            match: "Backend delivery",
+            quote: "Led API delivery for two products.",
+            aiInferred: false,
+          },
+        ],
+      }),
+    );
+
+    const response = await assessForTalent(SAMPLE_RESUME, "job", "key");
+
+    expect(response.result.strongMatches).toEqual([
+      {
+        match: "Backend delivery",
+        quote: "Led API delivery for two products.",
+        aiInferred: false,
+      },
+    ]);
   });
 });
 
@@ -264,6 +355,15 @@ describe("audience-specific summaries (T-2.4)", () => {
     expect(ANALYSIS_PROMPTS.talent).toContain("what risk they assume by advancing");
     expect(ANALYSIS_PROMPTS.talent).toContain("Do not write coaching advice");
     expect(ANALYSIS_PROMPTS.talent).not.toContain("what to fix first");
+  });
+
+  it("requires provenance fields in both audience prompts (T-3.4)", () => {
+    for (const prompt of [ANALYSIS_PROMPTS.career, ANALYSIS_PROMPTS.talent]) {
+      expect(prompt).toContain('"met", "not_met", "insufficient"');
+      expect(prompt).toContain("verbatim substring");
+      expect(prompt).toContain("aiInferred");
+      expect(prompt).toContain('use status "insufficient" with an empty quote');
+    }
   });
 
   it("accepts distinct summary text for the same underlying fit signal", () => {

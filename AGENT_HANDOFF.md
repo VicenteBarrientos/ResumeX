@@ -6,11 +6,11 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 15:03 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 15:30 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 2 completa.** T-2.1…T-2.7 hechas. Career mejora CV; Talent decide sobre un candidato en `/talent/assess`. Dos consumidores reales del motor de análisis listos para la Fase 3.
-- **Próximo hito:** Fase 3 — comparar modelos de evidencia (T-3.1) antes de extraer `lib/evidence/`.
-- **Bloqueos conocidos:** ninguno para Fase 3. Decisiones humanas restantes: equipos en Talent (T-4.1), Ashby (T-4.7), extensión (T-5.4), Fase 6.
+- **Estado:** **Fase 3 avanzada.** T-3.1 hecha; T-3.2 cancelada; **T-3.4 hecha** — `CriteriaItem` lleva procedencia (status ternario + quote literal + `aiInferred`), con normalización server-side que descarta citas inventadas.
+- **Próximo hito:** T-3.3 (`lib/roles/`) si sigue justificado, o Fase 4 (persistencia Talent).
+- **Bloqueos conocidos:** ninguno. Decisiones humanas restantes: equipos en Talent (T-4.1), Ashby (T-4.7), extensión (T-5.4), Fase 6.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
 - **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Ninguno. Fase 2 cerrada con T-2.7 opción A.
+Ninguno. T-3.4 lista para commit.
 
 ## Protocolo para agentes
 
@@ -130,8 +130,8 @@ app/
     career/  talent/  (auth, stripe quedan en la raíz de api/)
 
 lib/
-  evidence/     criterio, match, confianza, scoring   ← kernel (extraer en Fase 3)
-  roles/        job description → criterios           ← kernel (extraer en Fase 3)
+  evidence/     (no extraer el matcher de Talent Mapper — T-3.2 cancelada; veredictos LLM con procedencia nacen en T-3.4 si hace falta)
+  roles/        job description → criterios           ← pendiente T-3.3
   ai/  documents/  i18n/
   career/       analyze, format-resume, job-*, autoapply
   talent/       (el actual talent-mapper)
@@ -147,7 +147,7 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 **Fase 2 — Salidas separadas.** Partir `AnalysisResult` según R-008. Career recibe la salida de mejora; Talent la de decisión. Mismo motor debajo.
 
-**Fase 3 — Kernel compartido.** Recién aquí subir `lib/evidence/` y `lib/roles/`, con los dos consumidores ya funcionando (R-009). Migrar la evidencia de Career al modelo con procedencia de R-007.
+**Fase 3 — Kernel compartido.** T-3.1 canceló subir el matcher a `lib/evidence/` (T-3.2). **T-3.4 hecha:** Career y Talent Assess usan `CriteriaItem` con procedencia. Queda T-3.3 (`lib/roles/`) como independiente.
 
 **Fase 4 — Talent como herramienta de trabajo.** Persistencia Prisma de búsquedas, shortlists, notas y estados. Export e integración Ashby.
 
@@ -163,12 +163,48 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 | Marca | "ResumeX" es vocabulario de candidato; un recruiter no compra una herramienta nombrada por el documento que recibe. | Aceptado por ahora. Revisar si Talent gana clientes empresariales. |
 | Deuda de auth | La copia archivada usaba Clerk; el canónico usa NextAuth. No mezclar patrones al portar ideas desde la rama archivada. | — |
 
+## Comparación de evidencia (T-3.1)
+
+Tres superficies, dos modelos. El roadmap contrastaba Career vs Talent Mapper; tras T-2.7 hay un tercer consumidor que hereda el modelo débil.
+
+| Superficie | Tipo | Origen de la evidencia | Qué garantiza |
+|---|---|---|---|
+| Career `/api/analyze` | `CriteriaItem` | LLM sobre CV + JD | Nada verificable: `evidence` es prosa del modelo |
+| Talent `/api/talent-assess` | `CriteriaItem` (mismo `AnalysisBase`) | LLM sobre CV + JD | Igual: misma forma débil |
+| Talent Mapper | `EvidenceMatch` | Matcher determinista sobre título/abstract/topics de una publicación OpenAlex | Extracto con offset, `workId`/`doi`, `confidence`, `matchType` |
+
+### Campos frente a frente
+
+| Concepto (R-007) | `CriteriaItem` | `EvidenceMatch` | ¿Común de verdad? |
+|---|---|---|---|
+| Criterio evaluado | `criterion: string` | `criterion: string` | **Sí** — único campo idéntico |
+| Extracto real | `evidence: string` (prosa libre; a menudo paráfrasis o `"Not found in resume."`) | `snippet: string` (recorte del corpus de la obra) | **No** — mismo nombre conceptual, garantías opuestas |
+| Fuente identificable | ausente (el CV entero es implícito) | `workId`, `workTitle`, `doi?`, `openAlexUrl?`, `year?` | **No** — específico de publicaciones |
+| Confianza | ausente | `confidence: direct \| strong_adjacent \| possible` | **No** |
+| Tipo de match / marca de inferencia | ausente | `matchType: exact \| adjacent \| inferred` | **No** — taxonomía de overlap de frases en papers |
+| Cumplimiento del criterio | `met: boolean` | no existe: Mapper sólo emite matches hallados; los gaps van a `unknowns` / score | **No** — semánticas distintas |
+| Motor | prompt + schema JSON en `lib/analyze.ts` | `matchEvidence()` en `lib/talent-mapper/evidence.ts` (~319 líneas) | **No** — no se pueden reutilizar |
+
+### Qué sí es común (a nivel de producto, no de tipo)
+
+La **exigencia** de R-007: extracto, fuente, confianza, marca de inferencia. Eso es un contrato de honestidad, no un struct compartido. Hoy lo cumple sólo Talent Mapper.
+
+El bug visto en el smoke de Assess (must-have "5+ years" → `met: false` + `"Not found in resume."` cuando el CV sí declara cinco años) es exactamente el colapso de `met: boolean`: no distingue *no cumple* de *evidencia insuficiente / mal etiquetada*.
+
+### Decisión sobre T-3.2
+
+**Cancelar T-3.2 tal como estaba scoped.** Mover `evidence.ts` a `lib/evidence/` no le da un segundo consumidor real: Career/Assess no pueden llamar `matchEvidence(work, criteria)` sobre un CV. Extraerlo violaría R-009 (diseñar el kernel desde un solo uso) y la regla de frontera (si sólo lo importa un producto, no es kernel).
+
+Un contrato tipado delgado (`CriterionVerdict` + procedencia) puede nacer **dentro de T-3.4** al migrar `CriteriaItem`, compartido por Career y Assess (ya son dos consumidores del mismo tipo). No hace falta —ni conviene— unificarlo con `EvidenceMatch`.
+
+`StrongMatch.evidence: string` tiene el mismo defecto y debe migrar junto con `CriteriaItem`.
+
 ## Próximas tareas recomendadas
 
-1. Fase 3 / T-3.1: comparar evidencia Career vs Talent y escribir en el handoff qué es genuinamente común (puede cancelar T-3.2).
-2. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
-3. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
-4. Medir conversión de la banda de `/` hacia `/talent` (R-016 se revisa con datos).
+1. **T-3.3** — evaluar si JD→criterios justifica `lib/roles/` (Talent Mapper `criteria.ts` vs prompt de `analyze.ts`); puede cancelarse como T-3.2.
+2. Commit + deploy de T-3.4 y smoke en `/talent/assess` (el caso "5+ years" debería poder citar el CV o marcar `insufficient` / `not_met` con quote, no "Not found").
+3. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
+4. Centralizar el precio de Pro desde Stripe (**$5/mo** sigue hardcodeado en más de un lugar).
 5. Fase 4 puede correr en paralelo (persistencia Prisma de Talent).
 
 ## Ideas rescatadas de la copia archivada
@@ -279,3 +315,37 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Validaciones realizadas:** `npm test` (50), `npm run typecheck`, `npm run lint`.
 - **Riesgos o bloqueos:** ninguno.
 - **Siguiente paso:** T-3.1 — comparar modelos de evidencia.
+
+### 2026-08-05 15:20 — Smoke test de `/talent/assess` en prod
+
+- **Objetivo:** verificar el flujo desplegado con el usuario demo.
+- **Estado:** completado.
+- **Qué se hizo:** se creó el usuario demo `tm_e2e_demo` en la base de prod (no existía; sí en la local de e2e). Login → redirect a `/talent/assess` con `callbackUrl`, "Try demo" carga CV+JD de muestra, "Assess candidate" devuelve el brief completo: match 85, concern Medium, next step Screen, criterios con evidencia, strong matches, 5 preguntas de phone screen, bullets de cliente y sendout blurb.
+- **Validaciones realizadas:** sin errores de consola propios del flujo (el único 401 fue el intento de login previo a crear el usuario); `proxy.ts` protege `/talent/assess` correctamente.
+- **Riesgos o bloqueos:** observación de calidad — el must-have "5+ years of professional software engineering experience" queda marcado como no cumplido con la etiqueta "Not found in resume", aunque el CV declara 5 años y experiencia desde 2018. La estrictez es intencional (precisión sobre recall), pero la etiqueta describe mal la evidencia: debería distinguir "no encontrado" de "encontrado pero insuficiente". Candidato a T-3.x.
+- **Siguiente paso:** T-3.1 — comparar modelos de evidencia.
+
+### 2026-08-05 15:25 — T-3.1: comparar modelos de evidencia
+
+- **Objetivo:** decidir si existe forma compartida suficiente para extraer `lib/evidence/` (T-3.2).
+- **Estado:** completado.
+- **Hallazgo:** el único campo idéntico es `criterion: string`. Career y Talent Assess comparten `CriteriaItem` (prosa del LLM, `met: boolean`); Talent Mapper usa `EvidenceMatch` (snippet + workId/doi + confidence + matchType, matcher determinista). No hay segundo consumidor real para `matchEvidence()`.
+- **Decisiones:** **T-3.2 cancelada.** T-3.4 es el trabajo de la fase (procedencia en `CriteriaItem` / `StrongMatch`, estado ternario). Un contrato tipado delgado, si nace, nace dentro de T-3.4 para Career+Assess — no unificando con `EvidenceMatch`.
+- **Cambios:** sección "Comparación de evidencia (T-3.1)" en este handoff; ROADMAP marca T-3.1 ✅ y T-3.2 cancelada.
+- **Validaciones realizadas:** inspección de `lib/types.ts`, `lib/talent-mapper/types.ts`, `lib/talent-mapper/evidence.ts`, usos en analyze/scoring.
+- **Siguiente paso:** T-3.4 — migrar evidencia de Career/Assess a procedencia.
+
+### 2026-08-05 15:30 — T-3.4: procedencia en CriteriaItem
+
+- **Objetivo:** ningún campo de evidencia en Career/Assess es prosa libre del modelo sin fuente (R-007).
+- **Estado:** completado.
+- **Cambios:**
+  - `lib/types.ts`: `CriterionStatus` (`met` \| `not_met` \| `insufficient`); `CriteriaItem` / `StrongMatch` con `quote` + `aiInferred` (retirado `met: boolean` y `evidence: string`).
+  - `lib/criteria-evidence.ts`: normalización server-side — cita no presente en el CV → `insufficient` (criterios) o drop (strong matches).
+  - `lib/analyze.ts`: prompts y schemas de procedencia; `normalize` tras validar.
+  - UI: `ResultCards`, `AssessmentCards` — tres iconos (✓/✕/?), quote entre comillas, badge "Inferred".
+  - `lib/format-analysis.ts`, `lib/i18n/resumex.ts`.
+  - Tests: fixtures actualizados; caracterización de citas fabricadas; `criteria-evidence.test.ts`.
+- **Decisiones:** el contrato tipado vive en `lib/types.ts` + helper en `lib/criteria-evidence.ts` (dos consumidores Career/Assess). No se unifica con `EvidenceMatch`.
+- **Validaciones realizadas:** `npm test` (59), `npm run typecheck`, `npm run lint`.
+- **Siguiente paso:** commit/push + smoke en prod; luego T-3.3 o Fase 4.
