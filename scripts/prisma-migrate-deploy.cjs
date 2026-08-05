@@ -24,8 +24,7 @@ if (result.status === 0) {
 }
 
 const blob = `${result.stdout || ""}\n${result.stderr || ""}`;
-const isTargetFailure =
-  blob.includes("P3018") && blob.includes(FAILED);
+const isTargetFailure = blob.includes("P3018") && blob.includes(FAILED);
 
 if (!isTargetFailure) {
   process.exit(result.status || 1);
