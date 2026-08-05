@@ -7,18 +7,25 @@ import { isThemeMode } from "@/lib/theme-sync";
 /**
  * Tool and account routes — require sign-in. Marketing, auth, and webhooks stay public.
  *
- * Whole-product prefixes, except that `/talent` is a public landing page and only
- * the tool under it is gated. The old flat routes are 308'd into these segments by
- * `next.config.ts`, and those redirects run before this proxy.
+ * Whole-product prefixes, except that `/talent` is a public landing page and every
+ * tool under `/talent/*` is gated. The old flat routes are 308'd into these segments
+ * by `next.config.ts`, and those redirects run before this proxy.
  */
 const PROTECTED_PREFIXES = [
   "/career",
-  "/talent/mapper",
   "/extension-auth",
   "/upgrade",
 ];
 
 function isProtectedPath(pathname: string): boolean {
+  if (pathname === "/talent" || pathname === "/talent/") {
+    return false;
+  }
+
+  if (pathname.startsWith("/talent/")) {
+    return true;
+  }
+
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );

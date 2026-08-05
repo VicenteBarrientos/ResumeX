@@ -6,11 +6,11 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 14:53 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 15:03 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 2 casi cerrada.** T-2.1…T-2.6 completas. Career y Talent tienen salidas tipadas separadas; `/api/analyze` devuelve `CareerAnalysis`; el PDF es de Career. Queda T-2.7 (decisión humana sobre `/talent/assess`).
-- **Próximo hito:** T-2.7 🤔 — decidir si Talent gana una superficie de evaluación (`/talent/assess`). Recomendación del roadmap: A.
-- **Bloqueos conocidos:** T-2.7 requiere decisión humana.
+- **Estado:** **Fase 2 completa.** T-2.1…T-2.7 hechas. Career mejora CV; Talent decide sobre un candidato en `/talent/assess`. Dos consumidores reales del motor de análisis listos para la Fase 3.
+- **Próximo hito:** Fase 3 — comparar modelos de evidencia (T-3.1) antes de extraer `lib/evidence/`.
+- **Bloqueos conocidos:** ninguno para Fase 3. Decisiones humanas restantes: equipos en Talent (T-4.1), Ashby (T-4.7), extensión (T-5.4), Fase 6.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
 - **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Ninguno. T-2.5 y T-2.6 verificadas. Falta decisión humana en T-2.7.
+Ninguno. Fase 2 cerrada con T-2.7 opción A.
 
 ## Protocolo para agentes
 
@@ -104,14 +104,14 @@ ResumeX Talent   Job → Persona → ¿a quién contacto y por qué?
 | Producto | Páginas | APIs (siguen planas, R-017) |
 |---|---|---|
 | **Career** | `/career` (→ home), `/career/cv`, `/career/analyzer`, `/career/cover-letter`, `/career/jobs`, `/career/jobsearcher`, `/career/tracker{,/add,/profile,/[id]}`, `/career/autoapply`, `/career/onboarding` | `analyze`, `format`, `cover-letter`, `extract-job`, `jobs`, `match-score`, `profile`, `profile/resume`, `tracker`, `tracker/[id]`, `answers`, `answers/[id]`, `autoapply/*`, `extension/*`, `cron/job-digest` |
-| **Talent** | `/talent` (landing pública), `/talent/mapper` | `talent-mapper/{search, extract-criteria, outreach, status}` |
+| **Talent** | `/talent` (landing pública), `/talent/mapper`, `/talent/assess` | `talent-mapper/{search, extract-criteria, outreach, status}`, `talent-assess` |
 | **Compartido** | `/` (landing Career, R-016), `/login`, `/register`, `/upgrade`, `/extension-auth` | `auth/*`, `stripe/*` |
 
 Career tiene diez superficies y Talent dos. El desbalance es real y está bien: Talent es el producto nuevo y más caro por usuario.
 
 Rutas planas viejas → 308 permanente al segmento correspondiente (R-018). `/formatter`, que ya era un alias, ahora apunta a `/career/cv` en vez de a `/`.
 
-Protegido por `proxy.ts`: `/career`, `/talent/mapper`, `/upgrade`, `/extension-auth`. Público: `/`, `/talent`, `/login`, `/register`.
+Protegido por `proxy.ts`: `/career`, todo `/talent/*` (landing `/talent` pública), `/upgrade`, `/extension-auth`. Público: `/`, `/talent`, `/login`, `/register`.
 
 ### Destino
 
@@ -165,11 +165,11 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Próximas tareas recomendadas
 
-1. T-2.7 🤔: decidir si Talent gana `/talent/assess` (recomendación: A). Sin eso, la Fase 3 arranca con un consumidor y medio.
+1. Fase 3 / T-3.1: comparar evidencia Career vs Talent y escribir en el handoff qué es genuinamente común (puede cancelar T-3.2).
 2. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
 3. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
 4. Medir conversión de la banda de `/` hacia `/talent` (R-016 se revisa con datos).
-5. Fase 4 puede correr en paralelo (persistencia Prisma de Talent) una vez haya un agente disponible.
+5. Fase 4 puede correr en paralelo (persistencia Prisma de Talent).
 
 ## Ideas rescatadas de la copia archivada
 
@@ -263,3 +263,19 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Validaciones realizadas:** `npm test` (50), `npm run typecheck`, `npm run lint`; `rg AnalysisResult` en `.ts/.tsx` vacío.
 - **Riesgos o bloqueos:** `assessForTalent` existe sin UI — T-2.7 lo desbloquea o lo deja en espera.
 - **Siguiente paso:** decisión humana en T-2.7.
+
+### 2026-08-05 15:03 — T-2.7 opción A: `/talent/assess`
+
+- **Objetivo:** dar a Talent el segundo consumidor real de la salida de decisión (recomendación del roadmap).
+- **Estado:** completado.
+- **Cambios:**
+  - `app/talent/assess/page.tsx`, `components/talent/{TalentAssessor,AssessmentCards}.tsx`: superficie de evaluación (CV + JD → brief de decisión).
+  - `app/api/talent-assess/route.ts`: API plana (R-017) sobre `assessForTalent`.
+  - `lib/resolve-resume-job-input.ts`: extracción compartida del input CV/JD (segundo uso real con `/api/analyze`).
+  - `lib/products.ts`: "Assess" en `TALENT.nav`.
+  - `proxy.ts`: todo `/talent/*` protegido; `/talent` sigue público.
+  - Landing `/talent`: CTA secundario hacia Assess.
+- **Decisiones:** T-2.7 = **A**. Fase 3 puede arrancar con dos consumidores del motor de análisis.
+- **Validaciones realizadas:** `npm test` (50), `npm run typecheck`, `npm run lint`.
+- **Riesgos o bloqueos:** ninguno.
+- **Siguiente paso:** T-3.1 — comparar modelos de evidencia.

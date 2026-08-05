@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { analyzeForCareer } from "@/lib/analyze";
+import { assessForTalent } from "@/lib/analyze";
 import {
   getClientErrorMessage,
   logAnalysisError,
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { result, usage } = await analyzeForCareer(resume, jobDescription, apiKey);
+    const { result, usage } = await assessForTalent(resume, jobDescription, apiKey);
 
     return NextResponse.json({
       result,

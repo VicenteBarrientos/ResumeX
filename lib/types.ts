@@ -64,6 +64,12 @@ export interface AnalyzeResponse {
   error?: string;
 }
 
+export interface AssessResponse {
+  result?: TalentAssessment;
+  usage?: TokenUsage;
+  error?: string;
+}
+
 export interface ResumeContact {
   name: string;
   title: string;

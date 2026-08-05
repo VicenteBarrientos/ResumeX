@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/format": ["./node_modules/unpdf/dist/**"],
     "/api/analyze": ["./node_modules/unpdf/dist/**"],
+    "/api/talent-assess": ["./node_modules/unpdf/dist/**"],
   },
 };
 

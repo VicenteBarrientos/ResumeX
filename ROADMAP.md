@@ -145,16 +145,14 @@ Borrar el tipo deprecado y su unión.
 **Depende de:** T-2.5.
 **Terminado cuando:** `grep -rn "AnalysisResult" --include="*.ts" --include="*.tsx" .` no devuelve nada fuera de `AGENT_HANDOFF.md` y este archivo.
 
-### ⬜ T-2.7 🤔 — Decidir si Talent expone una superficie de evaluación
+### ✅ T-2.7 — Decidir si Talent expone una superficie de evaluación
 
 Los campos `TalentAssessment` existen pero **ningún consumidor de Talent los usa todavía**: `/talent/mapper` es sourcing, no evaluación. Hay dos caminos:
 
 - **A.** Construir `/talent/assess` — pegar un CV y una JD, obtener la salida de decisión. Da el segundo consumidor real que la Fase 3 necesita.
 - **B.** Dejar `TalentAssessment` declarado sin superficie hasta la Fase 4, y aceptar que la Fase 3 arranque con un consumidor y medio.
 
-Recomendación: **A**. Sin ella, R-009 se cumple sólo de nombre y el kernel de la Fase 3 se diseña sobre una intuición.
-
-**Requiere decisión humana.** Es alcance de producto nuevo, no refactor.
+**Decisión (2026-08-05):** **A**. Implementado: `/talent/assess` + `/api/talent-assess`.
 
 ### Riesgos de la Fase 2
 
@@ -356,7 +354,7 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 | # | Decisión | Bloquea |
 |---|---|---|
-| 1 | ¿Talent tiene superficie de evaluación (`/talent/assess`) o `TalentAssessment` espera? | T-2.7 → calidad del kernel de la Fase 3 |
+| 1 | ~~¿Talent tiene superficie de evaluación (`/talent/assess`) o `TalentAssessment` espera?~~ **Resuelto: A (2026-08-05)** | — |
 | 2 | ¿Las búsquedas de Talent son del usuario o de un equipo? | T-4.1 → la primera migración de Prisma |
 | 3 | ¿Ashby es real o especulativo? | T-4.7 |
 | 4 | ¿Dónde vive la extensión Chrome? | T-5.4 |
@@ -366,6 +364,7 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 ## Bitácora de este archivo
 
+- **2026-08-05** — T-2.7 opción A: `/talent/assess` + `/api/talent-assess`. Fase 2 cerrada.
 - **2026-08-05** — T-2.5 y T-2.6: consumidores migrados a CareerAnalysis; PDF es de Career; AnalysisResult retirado del código.
 - **2026-08-05** — T-2.3 y T-2.4: `analyzeForCareer` / `assessForTalent` con prompts y schemas por audiencia; `analyzeResume` queda como puente legacy; tests fijan summaries de mejora vs decisión.
 - **2026-08-05** — T-2.1 y T-2.2 completadas: 16 tests nuevos fijan el request, parseo, validación, clamp de score y normalización de errores; `CareerAnalysis` y `TalentAssessment` quedaron declarados con un `AnalysisResult` compuesto y deprecado para mantener compatibles los consumidores hasta T-2.5.

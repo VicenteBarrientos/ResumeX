@@ -86,9 +86,8 @@ export function formatTalentAssessmentSummary(result: TalentAssessment): string 
     "",
     formatCriteriaList("Nice-to-Have Criteria", result.niceToHaveCriteria),
     "",
-    formatPhoneScreenQuestions(result.phoneScreenQuestions)
-      ? `Phone Screen Questions\n${formatPhoneScreenQuestions(result.phoneScreenQuestions)}`
-      : "Phone Screen Questions\nNone identified.",
+    "Phone Screen Questions",
+    formatPhoneScreenQuestions(result.phoneScreenQuestions) || "None identified.",
     "",
     formatBulletList("Client-Facing Bullets", result.clientFacingBullets),
     "",

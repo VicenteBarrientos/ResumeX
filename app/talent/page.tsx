@@ -193,6 +193,16 @@ export default async function TalentLandingPage() {
             >
               Open Talent Mapper
             </Link>
+            <Link
+              href={
+                session
+                  ? "/talent/assess"
+                  : `/login?callbackUrl=${encodeURIComponent("/talent/assess")}`
+              }
+              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-emerald-400/50"
+            >
+              Assess a resume →
+            </Link>
           </div>
           <p className="mt-10 text-sm text-zinc-500 dark:text-zinc-400">
             Looking for a job instead?{" "}

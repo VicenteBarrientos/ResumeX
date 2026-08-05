@@ -57,7 +57,10 @@ export const TALENT: Product = {
   tagline: "Find researchers by their public evidence, not by their job title.",
   basePath: "/talent",
   home: "/talent/mapper",
-  nav: [{ href: "/talent/mapper", label: "Talent Mapper" }],
+  nav: [
+    { href: "/talent/mapper", label: "Talent Mapper" },
+    { href: "/talent/assess", label: "Assess" },
+  ],
 };
 
 export const PRODUCTS: Product[] = [CAREER, TALENT];
