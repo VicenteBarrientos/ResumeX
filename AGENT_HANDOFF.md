@@ -357,3 +357,12 @@ No hay cÃ³digo que portar: eran declaraciones de tipo sin implementaciÃ³n. Trata
 - **Cambios:** commit `ae1f837` pusheado a `main`; deploy production `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn` READY.
 - **Validaciones realizadas:** demo en `/talent/assess` â€” match 85, concern Medium, next step Screen. Must-have "5+ years" ahora es âœ• con quote literal `"5 years of experience building scalable web applications."` (antes era "Not found in resume."). Tres estados visibles (âœ“/âœ•/?); nice-to-haves con "Not stated in resume."; strong matches con quotes entre comillas. Sin "Not found in resume." en la UI.
 - **Siguiente paso:** T-3.3 o Fase 4.
+
+### 2026-08-05 16:00 — Cierre del roadmap (Fases 3–6)
+
+- **Objetivo:** cerrar el roadmap en alcance agente.
+- **Estado:** completado (diferidos conscientes: Ashby, Organization, precio/marca Talent, backlog B-3/B-8/B-9).
+- **Decisiones:** T-3.3 cancelada; búsquedas por usuario; Ashby diferida; extensión en este repo; Fase 6 mínima (T-6.1).
+- **Cambios:** Prisma Talent persistence + APIs + /talent/searches + workspace sync; screeningQuestions; analytics; ARCHIVE.md sourcing-copilot; B-1/B-4/B-5.
+- **Validaciones:** npm test (64), typecheck, lint.
+- **Siguiente paso:** push + migrate deploy en Vercel.
