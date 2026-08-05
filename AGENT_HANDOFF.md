@@ -6,19 +6,19 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 14:43 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 14:48 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 2 en curso.** Fase 1 está desplegada en producción; los redirects críticos `/talent-mapper` y `/tracker` responden 308 hacia sus segmentos. T-2.1 y T-2.2 están completas: `lib/analyze.ts` tiene red de caracterización y existen `CareerAnalysis` / `TalentAssessment` sin romper consumidores.
-- **Próximo hito:** T-2.3 — partir el motor en `analyzeForCareer()` y `assessForTalent()` sobre el núcleo compartido que permanece en `lib/analyze.ts`.
-- **Bloqueos conocidos:** ninguno. La decisión pendiente sobre la landing quedó resuelta en R-016.
+- **Estado:** **Fase 2 en curso.** T-2.1…T-2.4 completas. El motor ya expone `analyzeForCareer()` y `assessForTalent()` con prompts por audiencia; `analyzeResume` queda como puente legacy para `/api/analyze` hasta T-2.5.
+- **Próximo hito:** T-2.5 — migrar consumidores de `AnalysisResult` y decidir el dueño del PDF (Career vs Talent).
+- **Bloqueos conocidos:** T-2.7 (¿superficie `/talent/assess`?) sigue pendiente de decisión humana.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
-- **Prod:** https://resume-x-yixz.vercel.app
+- **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-Ninguno. T-2.1 y T-2.2 quedaron completas y verificadas. La Fase 1 y la integración del commit remoto de showcase ya fueron pusheadas a `main`; el deployment de producción `dpl_9zy6Ymx38mKgZLgKpTiMzSPbua4D` quedó Ready.
+Ninguno. T-2.3 y T-2.4 verificadas. El siguiente trabajo tomable es T-2.5.
 
 ## Protocolo para agentes
 
@@ -165,12 +165,12 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Próximas tareas recomendadas
 
-1. T-2.3: partir `lib/analyze.ts` en `analyzeForCareer()` y `assessForTalent()` sin extraer todavía un kernel nuevo (R-009).
-2. T-2.4: fijar en tests que los summaries cambian de marco según audiencia.
-3. T-2.5: migrar consumidores y resolver explícitamente si el PDF pertenece a Career o Talent.
+1. T-2.5: migrar consumidores fuera de `AnalysisResult` y decidir el dueño del PDF (recomendación: Career — el botón vive en el analyzer del candidato).
+2. T-2.6: retirar el tipo deprecado cuando no queden consumidores.
+3. T-2.7 🤔: decidir si Talent gana `/talent/assess` (recomendación del roadmap: A).
 4. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
 5. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
-6. Publicar la landing `/talent` a un dominio o path que un recruiter pueda recibir por link, y medir si la banda de `/` convierte (R-016 se revisa con datos, no con opinión).
+6. Medir conversión de la banda de `/` hacia `/talent` (R-016 se revisa con datos).
 
 ## Ideas rescatadas de la copia archivada
 
@@ -235,3 +235,16 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Validaciones realizadas:** `npm run lint`, `npm run typecheck`, `npm test` (46 tests). Deployment de producción `dpl_9zy6Ymx38mKgZLgKpTiMzSPbua4D` Ready; logs de Vercel terminan en `Deployment completed`; `/` y `/talent` responden 200; `/talent-mapper` → `/talent/mapper/` y `/tracker` → `/career/tracker/` responden 308; render real de `/talent` revisado en navegador.
 - **Riesgos o bloqueos:** `npm run build` no puede reproducirse localmente porque Vercel no descarga el valor de la variable sensible `DATABASE_URL` (queda vacío en `.vercel/.env.production.local`). El mismo build sí terminó correctamente en Vercel con el entorno de producción.
 - **Siguiente paso:** T-2.3, partir el motor y sus prompts manteniendo el núcleo en `lib/analyze.ts`.
+
+### 2026-08-05 14:48 — T-2.3 y T-2.4: motor y summaries por audiencia
+
+- **Objetivo:** partir `lib/analyze.ts` en salidas Career/Talent con prompts distintos, sin romper `/api/analyze`.
+- **Estado:** completado.
+- **Cambios:**
+  - `lib/analyze.ts`: núcleo compartido `runStructuredAnalysis`; nuevos `analyzeForCareer()` / `assessForTalent()` con prompts y schemas propios; `analyzeResume` queda como puente legacy con el prompt compuesto.
+  - `lib/__tests__/analyze.test.ts`: cobertura de las dos funciones nuevas, schemas distintos, clamp/validación por audiencia, y T-2.4 (prompts y summaries de mejora vs decisión).
+  - `ROADMAP.md`: T-2.3 y T-2.4 marcadas completas.
+- **Decisiones:** `/api/analyze` sigue llamando `analyzeResume` hasta T-2.5 para no cambiar el payload compuesto que aún consumen `ResultCards` y el PDF. El núcleo no se extrajo a `lib/evidence/` (R-009).
+- **Validaciones realizadas:** `npm test` (52), `npm run typecheck`, `npm run lint`.
+- **Riesgos o bloqueos:** ninguno nuevo. La calidad del modelo con prompts partidos aún no se contrastó con fixtures reales (riesgo declarado en el roadmap).
+- **Siguiente paso:** T-2.5 — migrar consumidores; dueño del PDF: Career (el botón vive en el analyzer del candidato).

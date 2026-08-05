@@ -104,7 +104,7 @@ Punto de partida, no dogma. Si al implementar aparece un campo mal ubicado, disc
 
 **Terminado cuando:** `npm run typecheck` pasa sin cambiar ningún consumidor.
 
-### ⬜ T-2.3 — Partir el motor
+### ✅ T-2.3 — Partir el motor
 
 - `lib/analyze.ts` expone hoy una función que devuelve `AnalysisResult`. Partirla en `analyzeForCareer()` y `assessForTalent()` sobre un núcleo compartido de extracción.
 - El núcleo compartido **se queda en `lib/analyze.ts` por ahora**. No lo subas a `lib/evidence/`: eso es Fase 3 y necesita dos consumidores funcionando (R-009).
@@ -113,7 +113,7 @@ Punto de partida, no dogma. Si al implementar aparece un campo mal ubicado, disc
 **Depende de:** T-2.1, T-2.2.
 **Terminado cuando:** los tests de T-2.1 pasan contra las dos funciones nuevas, y `/api/analyze` sigue devolviendo lo mismo que antes para Career.
 
-### ⬜ T-2.4 — Reescribir el `summary` por audiencia
+### ✅ T-2.4 — Reescribir el `summary` por audiencia
 
 El mismo hecho — "tiene 3 de 5 must-haves" — se le dice distinto a quien puede mejorar y a quien tiene que decidir. Career: qué le falta y qué hacer. Talent: qué riesgo asume al avanzar y qué preguntar para reducirlo.
 
@@ -366,5 +366,6 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 ## Bitácora de este archivo
 
+- **2026-08-05** — T-2.3 y T-2.4: `analyzeForCareer` / `assessForTalent` con prompts y schemas por audiencia; `analyzeResume` queda como puente legacy; tests fijan summaries de mejora vs decisión.
 - **2026-08-05** — T-2.1 y T-2.2 completadas: 16 tests nuevos fijan el request, parseo, validación, clamp de score y normalización de errores; `CareerAnalysis` y `TalentAssessment` quedaron declarados con un `AnalysisResult` compuesto y deprecado para mantener compatibles los consumidores hasta T-2.5.
 - **2026-08-05** — Creado tras cerrar la Fase 1. Fases 2–5 heredadas del plan de `AGENT_HANDOFF.md` y desglosadas en tareas; Fase 6 y backlog transversal son nuevos. Los números de la sección "El terreno, hoy" salen de inspección directa del repo en esa fecha, no de estimación.

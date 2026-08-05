@@ -6,14 +6,26 @@ import {
   RateLimitError,
 } from "openai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ANALYSIS_MODEL, analyzeResume } from "@/lib/analyze";
+import {
+  ANALYSIS_MODEL,
+  ANALYSIS_PROMPTS,
+  analyzeForCareer,
+  analyzeResume,
+  assessForTalent,
+  validateCareerAnalysis,
+  validateTalentAssessment,
+} from "@/lib/analyze";
 import {
   AnalysisError,
   getClientErrorMessage,
   logAnalysisError,
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
-import type { AnalysisResult } from "@/lib/types";
+import type {
+  AnalysisResult,
+  CareerAnalysis,
+  TalentAssessment,
+} from "@/lib/types";
 
 const { createCompletion, constructOpenAI } = vi.hoisted(() => ({
   createCompletion: vi.fn(),
@@ -38,9 +50,29 @@ vi.mock("openai", async (importOriginal) => {
   return { ...actual, default: MockOpenAI };
 });
 
-const VALID_ANALYSIS: AnalysisResult = {
+const VALID_CAREER: CareerAnalysis = {
   matchScore: 82,
-  summary: "The resume meets the core requirements and shows relevant delivery experience.",
+  summary:
+    "You already show TypeScript delivery. PostgreSQL is missing from the resume, so add concrete database work before you apply.",
+  mustHaveCriteria: [
+    { criterion: "TypeScript", met: true, evidence: "Built TypeScript services." },
+  ],
+  niceToHaveCriteria: [
+    { criterion: "PostgreSQL", met: false, evidence: "Not found in resume." },
+  ],
+  strengths: ["Relevant TypeScript experience"],
+  gaps: ["No PostgreSQL evidence"],
+  matchedKeywords: ["TypeScript"],
+  missingKeywords: ["PostgreSQL"],
+  suggestions: [
+    { title: "Add database context", detail: "Name the databases used in recent roles." },
+  ],
+};
+
+const VALID_TALENT: TalentAssessment = {
+  matchScore: 82,
+  summary:
+    "Advancing carries moderate risk because database evidence is absent. Validate PostgreSQL depth on a phone screen before an interview.",
   concernLevel: "Low",
   recommendedNextStep: "Interview",
   mustHaveCriteria: [
@@ -51,13 +83,6 @@ const VALID_ANALYSIS: AnalysisResult = {
   ],
   strongMatches: [
     { match: "Backend delivery", evidence: "Led API delivery for two products." },
-  ],
-  strengths: ["Relevant TypeScript experience"],
-  gaps: ["No PostgreSQL evidence"],
-  matchedKeywords: ["TypeScript"],
-  missingKeywords: ["PostgreSQL"],
-  suggestions: [
-    { title: "Add database context", detail: "Name the databases used in recent roles." },
   ],
   phoneScreenQuestions: [
     "How did you structure the TypeScript services?",
@@ -72,6 +97,12 @@ const VALID_ANALYSIS: AnalysisResult = {
     "Database background needs validation.",
   ],
   sendoutBlurb: "The candidate shows relevant TypeScript and API delivery experience.",
+};
+
+const VALID_ANALYSIS: AnalysisResult = {
+  ...VALID_CAREER,
+  ...VALID_TALENT,
+  summary: "The resume meets the core requirements and shows relevant delivery experience.",
 };
 
 function mockCompletion(content: string | null, promptTokens = 120, completionTokens = 80) {
@@ -100,6 +131,102 @@ beforeEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("analyzeForCareer", () => {
+  it("requests the Career schema and returns only improvement fields", async () => {
+    mockCompletion(JSON.stringify(VALID_CAREER));
+
+    const response = await analyzeForCareer(
+      "Resume text",
+      "Job description text",
+      "server-api-key",
+    );
+
+    expect(constructOpenAI).toHaveBeenCalledWith({ apiKey: "server-api-key" });
+    const request = createCompletion.mock.calls[0][0];
+    expect(request.model).toBe(ANALYSIS_MODEL);
+    expect(request.messages[0].content).toBe(ANALYSIS_PROMPTS.career);
+    expect(JSON.parse(request.messages[1].content)).toMatchObject({
+      resume: "Resume text",
+      jobDescription: "Job description text",
+      responseSchema: expect.objectContaining({
+        strengths: "string[]",
+        suggestions: expect.any(Array),
+      }),
+    });
+    expect(JSON.parse(request.messages[1].content).responseSchema).not.toHaveProperty(
+      "recommendedNextStep",
+    );
+    expect(response.result).toEqual(VALID_CAREER);
+    expect(response.result).not.toHaveProperty("recommendedNextStep");
+  });
+
+  it("rejects malformed Career payloads and clamps matchScore", async () => {
+    mockCompletion(JSON.stringify({ ...VALID_CAREER, suggestions: undefined }));
+    await expect(analyzeForCareer("resume", "job", "key")).rejects.toThrow(
+      "MALFORMED_ANALYSIS",
+    );
+
+    mockCompletion(JSON.stringify({ ...VALID_CAREER, matchScore: 140.2 }));
+    const response = await analyzeForCareer("resume", "job", "key");
+    expect(response.result.matchScore).toBe(100);
+  });
+});
+
+describe("assessForTalent", () => {
+  it("requests the Talent schema and returns only decision fields", async () => {
+    mockCompletion(JSON.stringify(VALID_TALENT));
+
+    const response = await assessForTalent(
+      "Resume text",
+      "Job description text",
+      "server-api-key",
+    );
+
+    const request = createCompletion.mock.calls[0][0];
+    expect(request.messages[0].content).toBe(ANALYSIS_PROMPTS.talent);
+    expect(JSON.parse(request.messages[1].content).responseSchema).toMatchObject({
+      recommendedNextStep: expect.any(String),
+      phoneScreenQuestions: "string[5]",
+      sendoutBlurb: "string",
+    });
+    expect(JSON.parse(request.messages[1].content).responseSchema).not.toHaveProperty(
+      "suggestions",
+    );
+    expect(response.result).toEqual(VALID_TALENT);
+    expect(response.result).not.toHaveProperty("suggestions");
+  });
+
+  it("rejects Talent payloads missing phone-screen questions", async () => {
+    mockCompletion(
+      JSON.stringify({ ...VALID_TALENT, phoneScreenQuestions: ["only one"] }),
+    );
+
+    await expect(assessForTalent("resume", "job", "key")).rejects.toThrow(
+      "MALFORMED_ANALYSIS",
+    );
+  });
+});
+
+describe("audience-specific summaries (T-2.4)", () => {
+  it("frames Career and Talent summaries differently in the prompts", () => {
+    expect(ANALYSIS_PROMPTS.career).toContain("what is already strong, what is missing");
+    expect(ANALYSIS_PROMPTS.career).toContain("Do not recommend Reject/Screen/Interview");
+    expect(ANALYSIS_PROMPTS.career).not.toContain("what risk they assume");
+
+    expect(ANALYSIS_PROMPTS.talent).toContain("what risk they assume by advancing");
+    expect(ANALYSIS_PROMPTS.talent).toContain("Do not write coaching advice");
+    expect(ANALYSIS_PROMPTS.talent).not.toContain("what to fix first");
+  });
+
+  it("accepts distinct summary text for the same underlying fit signal", () => {
+    expect(validateCareerAnalysis(VALID_CAREER)).toBe(true);
+    expect(validateTalentAssessment(VALID_TALENT)).toBe(true);
+    expect(VALID_CAREER.summary).not.toBe(VALID_TALENT.summary);
+    expect(VALID_CAREER.summary.toLowerCase()).toContain("before you apply");
+    expect(VALID_TALENT.summary.toLowerCase()).toContain("risk");
+  });
+});
+
 describe("analyzeResume", () => {
   it("builds the expected OpenAI request and returns a validated result with usage", async () => {
     mockCompletion(JSON.stringify(VALID_ANALYSIS));
@@ -119,7 +246,7 @@ describe("analyzeResume", () => {
     expect(request.temperature).toBe(0.3);
     expect(request.messages[0]).toMatchObject({
       role: "system",
-      content: expect.stringContaining("Never invent experience"),
+      content: ANALYSIS_PROMPTS.legacy,
     });
     expect(JSON.parse(request.messages[1].content)).toMatchObject({
       resume: "Resume text",
