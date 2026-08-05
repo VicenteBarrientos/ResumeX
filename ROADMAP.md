@@ -71,14 +71,14 @@ La foto: el producto **funciona y está separado correctamente**, pero tiene deu
 
 **Precondiciones.** Ninguna. Puede arrancar de inmediato y en paralelo con cualquier otra fase.
 
-### ⬜ T-7.1 — Tests de caracterización para `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts`
+### ✅ T-7.1 — Tests de caracterización para `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts`
 
 - Mismos criterios que T-2.1: mockear lo externo (parseo de PDF/DOCX vía `unpdf`/`mammoth`, llamadas a OpenAI si las hay), fijar comportamiento actual — no el ideal.
 - `format-resume.ts` (244 líneas): fijar la forma del resumé formateado, qué pasa con secciones vacías o campos faltantes del perfil.
 - `merge-profile.ts` (102 líneas): fijar la resolución de conflictos cuando el perfil existente y el nuevo extraído difieren en el mismo campo.
 - `parse-profile.ts` (164 líneas): fijar el parseo de un CV bien formado y el comportamiento ante texto no estructurado o vacío.
 
-**Terminado cuando:** los tres archivos tienen tests en `lib/__tests__/`, y comentar cualquier rama de decisión en cada uno hace fallar al menos un test.
+**Terminado (2026-08-05):** `lib/__tests__/format-resume.test.ts`, `merge-profile.test.ts`, `parse-profile.test.ts` — OpenAI mockeado; ramas de normalización, merge conflict, y errores `NO_*`/`MALFORMED_*` fijadas.
 
 ### ⬜ T-7.2 — E2E de Career (cierra B-3)
 

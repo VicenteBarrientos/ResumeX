@@ -455,3 +455,11 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Ops:** `CRON_SECRET` añadido en Vercel Production. **Stripe sigue sin vars** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID` ausentes en `vercel env ls`) — checkout Pro no puede funcionar hasta configurarlas.
 - **Siguiente paso:** pegar las tres keys de Stripe en Vercel Production y verificar `GET /api/stripe/health` en true; smoke humano del analyzer free-tier 402.
 
+### 2026-08-05 19:55 — T-7.1 characterization tests
+
+- **Objetivo:** cerrar T-7.1 (red de seguridad Career) sin tocar producto.
+- **Estado:** completado. 21 tests nuevos; suite total 94 passed.
+- **Cambios clave:** `lib/__tests__/format-resume.test.ts`, `merge-profile.test.ts`, `parse-profile.test.ts`; `eslint.config.mjs` ignora `scripts/**/*.cjs` (require necesario en migrate recovery).
+- **Validaciones:** `npm test` 94 passed; `npm run lint` clean.
+- **Siguiente paso:** humano pega Stripe keys en Vercel y verifica `/api/stripe/health`; o tomar T-7.2 (E2E Career) / T-7.4 (bordes).
+

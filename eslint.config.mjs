@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prisma migrate recovery must stay CommonJS for Vercel build.
+    "scripts/**/*.cjs",
   ]),
 ]);
 
