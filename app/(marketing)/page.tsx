@@ -242,7 +242,7 @@ export default async function LandingPage() {
                 </div>
                 <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-cyan-400">Pro</p>
                 <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-zinc-900 dark:text-white">$15</span>
+                  <span className="text-4xl font-bold text-zinc-900 dark:text-white">$5</span>
                   <span className="text-zinc-400">/month</span>
                 </div>
                 <ul className="mb-8 space-y-3">

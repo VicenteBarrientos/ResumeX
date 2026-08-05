@@ -42,7 +42,7 @@ export async function POST(request: Request) {
               <li>Generate tailored cover letters in seconds</li>
               <li>Track every application in one dashboard</li>
             </ul>
-            <a href="https://resume-x-yixz.vercel.app/career/tracker" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">Go to my dashboard →</a>
+            <a href="https://resumex.talentxrecruiting.com/career/tracker" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">Go to my dashboard →</a>
             <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">ResumeX — AI-Powered Job Search Platform</p>
           </div>
         `,
