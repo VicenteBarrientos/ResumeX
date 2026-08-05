@@ -1,0 +1,21 @@
+---
+description: Architecture and execution rules for ResumeX
+alwaysApply: true
+---
+
+# ResumeX agent rules
+
+- Inspect the existing architecture before modifying code.
+- Preserve all existing ResumeX modules and behavior.
+- Use TypeScript for all new application code.
+- Reuse existing components, schemas, API clients, and visual patterns.
+- Never expose API keys in client-side code.
+- Keep OpenAI, OpenAlex, Ashby, and database calls server-side.
+- Provide a deterministic demo fallback for external API integrations.
+- Do not leave placeholder buttons or incomplete flows.
+- Before declaring a task complete, run lint, typecheck, tests, and production build.
+- Use Playwright to smoke-test important UI flows.
+- Check Vercel deployment logs after deployment.
+- Do not deploy or push directly to main unless explicitly instructed.
+- Never invent candidate qualifications or remove uncertainty labels.
+- Prefer official docs (Next.js in `node_modules/next/dist/docs/`, OpenAlex, Ashby) over guesses; use Context7 for library APIs not already in the repo.
