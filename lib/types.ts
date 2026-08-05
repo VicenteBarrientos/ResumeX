@@ -22,23 +22,37 @@ export interface StrongMatch {
   evidence: string;
 }
 
-export interface AnalysisResult {
+interface AnalysisBase {
   matchScore: number;
   summary: string;
-  concernLevel: ConcernLevel;
-  recommendedNextStep: RecommendedNextStep;
   mustHaveCriteria: CriteriaItem[];
   niceToHaveCriteria: CriteriaItem[];
-  strongMatches: StrongMatch[];
+}
+
+export interface CareerAnalysis extends AnalysisBase {
   strengths: string[];
   gaps: string[];
   matchedKeywords: string[];
   missingKeywords: string[];
   suggestions: Suggestion[];
+}
+
+export interface TalentAssessment extends AnalysisBase {
+  concernLevel: ConcernLevel;
+  recommendedNextStep: RecommendedNextStep;
+  strongMatches: StrongMatch[];
   phoneScreenQuestions: string[];
   clientFacingBullets: string[];
   sendoutBlurb: string;
 }
+
+/**
+ * Legacy composite response returned while Career and Talent consumers migrate
+ * to their audience-specific output.
+ *
+ * @deprecated Use CareerAnalysis or TalentAssessment.
+ */
+export type AnalysisResult = CareerAnalysis & TalentAssessment;
 
 export interface AnalyzeRequest {
   resume: string;

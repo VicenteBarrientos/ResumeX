@@ -85,7 +85,7 @@ Punto de partida, no dogma. Si al implementar aparece un campo mal ubicado, disc
 | `phoneScreenQuestions` | **Talent** | Preguntas para evaluar, no para prepararse |
 | `clientFacingBullets`, `sendoutBlurb` | **Talent** | Artefactos de agencia |
 
-### ⬜ T-2.1 — Tests de caracterización de `lib/analyze.ts`
+### ✅ T-2.1 — Tests de caracterización de `lib/analyze.ts`
 
 **Sin esto no empieza la fase.** `lib/analyze.ts` (208 líneas) no tiene un solo test y es el motor que la Fase 2 va a partir en dos.
 
@@ -96,7 +96,7 @@ Punto de partida, no dogma. Si al implementar aparece un campo mal ubicado, disc
 
 **Terminado cuando:** los tests pasan, y si comentás una rama del parseo en `analyze.ts` al menos un test falla. Un test que pasa con el código roto no es un test.
 
-### ⬜ T-2.2 — Declarar los dos tipos de salida
+### ✅ T-2.2 — Declarar los dos tipos de salida
 
 - En `lib/types.ts`, definir `CareerAnalysis` y `TalentAssessment` con el reparto de arriba.
 - Mantener `AnalysisResult` como `@deprecated`, definido como la unión de ambos, para que nada rompa mientras dura la migración.
@@ -366,4 +366,5 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 ## Bitácora de este archivo
 
+- **2026-08-05** — T-2.1 y T-2.2 completadas: 16 tests nuevos fijan el request, parseo, validación, clamp de score y normalización de errores; `CareerAnalysis` y `TalentAssessment` quedaron declarados con un `AnalysisResult` compuesto y deprecado para mantener compatibles los consumidores hasta T-2.5.
 - **2026-08-05** — Creado tras cerrar la Fase 1. Fases 2–5 heredadas del plan de `AGENT_HANDOFF.md` y desglosadas en tareas; Fase 6 y backlog transversal son nuevos. Los números de la sección "El terreno, hoy" salen de inspección directa del repo en esa fecha, no de estimación.

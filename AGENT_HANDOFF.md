@@ -6,10 +6,10 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 14:35 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 14:43 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 1 completa.** ResumeX opera como dos productos sobre una base de código: **ResumeX Career** en `/career/*` y **ResumeX Talent** en `/talent/*`, cada uno con su `layout.tsx`, su metadata y su navegación. Las rutas planas viejas siguen vivas como 308 permanentes. `lib/products.ts` es la fuente única de nombres, rutas y nav. `lib/` no fue tocado (R-009 intacto).
-- **Próximo hito:** Fase 2 — partir `AnalysisResult` según R-008 (salida de mejora para Career, salida de decisión para Talent).
+- **Estado:** **Fase 2 en curso.** Fase 1 está desplegada en producción; los redirects críticos `/talent-mapper` y `/tracker` responden 308 hacia sus segmentos. T-2.1 y T-2.2 están completas: `lib/analyze.ts` tiene red de caracterización y existen `CareerAnalysis` / `TalentAssessment` sin romper consumidores.
+- **Próximo hito:** T-2.3 — partir el motor en `analyzeForCareer()` y `assessForTalent()` sobre el núcleo compartido que permanece en `lib/analyze.ts`.
 - **Bloqueos conocidos:** ninguno. La decisión pendiente sobre la landing quedó resuelta en R-016.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Ninguno. El árbol quedó limpio el 2026-08-05: el Talent Mapper completo, el handoff y la Fase 1 están commiteados en `main` (`f0b4652`, `f017748`, `2a26369` y el commit de la Fase 1). **Nada pusheado todavía** — revisar y `git push` cuando corresponda.
+Ninguno. T-2.1 y T-2.2 quedaron completas y verificadas. La Fase 1 y la integración del commit remoto de showcase ya fueron pusheadas a `main`; el deployment de producción `dpl_9zy6Ymx38mKgZLgKpTiMzSPbua4D` quedó Ready.
 
 ## Protocolo para agentes
 
@@ -165,11 +165,11 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Próximas tareas recomendadas
 
-1. **Pushear `main`.** Hay cuatro commits locales sin subir (Talent Mapper, log de registro, handoff, Fase 1). Verificar que Vercel tenga `DATABASE_URL` al día antes: el build ahora corre `prisma migrate deploy`.
-2. Revisar en prod que los 308 respondan como en local, sobre todo `/talent-mapper` (URL que puede estar compartida) y `/tracker` (la que abre la extensión Chrome).
-3. Fase 2: partir `AnalysisResult` según R-008.
+1. T-2.3: partir `lib/analyze.ts` en `analyzeForCareer()` y `assessForTalent()` sin extraer todavía un kernel nuevo (R-009).
+2. T-2.4: fijar en tests que los summaries cambian de marco según audiencia.
+3. T-2.5: migrar consumidores y resolver explícitamente si el PDF pertenece a Career o Talent.
 4. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
-5. Alinear el precio de Pro: la landing dice **$15/mo** y la nav dice **$5/mo**. Inconsistencia previa a la Fase 1, visible al usuario.
+5. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
 6. Publicar la landing `/talent` a un dominio o path que un recruiter pueda recibir por link, y medir si la banda de `/` convierte (R-016 se revisa con datos, no con opinión).
 
 ## Ideas rescatadas de la copia archivada
@@ -221,3 +221,17 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Validaciones realizadas:** `npm run typecheck`, `npm run lint`, `npm test` (30 tests) y `next build` en verde — el árbol de rutas del build coincide con el destino. Verificados por HTTP los códigos de las 13 rutas relevantes: `/` y `/talent` 200, herramientas 307 a login con el `callbackUrl` nuevo, rutas planas 308 al segmento. Renderizado real de `/` y `/talent` revisado en el navegador. `npm run test:e2e:talent-mapper` pasa contra las rutas nuevas: login → `/talent/mapper` → demo → shortlist → CSV, sin errores de consola ni requests fallidos.
 - **Riesgos o bloqueos:** ninguno. Los 308 sólo existen en local hasta que se pushee; los clientes desplegados (extensión, emails viejos) dependen de que ese deploy ocurra.
 - **Siguiente paso:** pushear `main` y confirmar los redirects en prod. Después, Fase 2 (R-008).
+
+### 2026-08-05 14:43 — deploy de Fase 1 y arranque de Fase 2
+
+- **Objetivo:** publicar la separación de productos, verificar sus rutas críticas en producción y comenzar R-008 con una red de tests antes de partir el motor.
+- **Estado:** completado para T-2.1 y T-2.2.
+- **Cambios:**
+  - `main`: integrado el commit remoto `9cf05ea` sin perder el split; el email de bienvenida combina el dominio canónico con `/career/tracker`, la landing alinea Pro en `$5` y el README conserva ambos productos junto al nuevo showcase.
+  - `lib/__tests__/analyze.test.ts`: 16 tests de caracterización para request a OpenAI, respuesta válida, JSON inválido, campos faltantes, score fuera de rango, uso ausente y todos los caminos de `analysis-errors.ts`.
+  - `lib/types.ts`: nuevos `CareerAnalysis` y `TalentAssessment`; `AnalysisResult` queda temporalmente como compuesto de ambos y marcado `@deprecated`.
+  - `ROADMAP.md`: T-2.1 y T-2.2 marcadas completas.
+- **Decisiones:** la frase “unión de ambos” de T-2.2 no puede coexistir con su requisito de no modificar consumidores: una unión TypeScript sólo expone campos comunes. El alias transitorio usa intersección para representar fielmente el payload legado completo; T-2.6 lo retira.
+- **Validaciones realizadas:** `npm run lint`, `npm run typecheck`, `npm test` (46 tests). Deployment de producción `dpl_9zy6Ymx38mKgZLgKpTiMzSPbua4D` Ready; logs de Vercel terminan en `Deployment completed`; `/` y `/talent` responden 200; `/talent-mapper` → `/talent/mapper/` y `/tracker` → `/career/tracker/` responden 308; render real de `/talent` revisado en navegador.
+- **Riesgos o bloqueos:** `npm run build` no puede reproducirse localmente porque Vercel no descarga el valor de la variable sensible `DATABASE_URL` (queda vacío en `.vercel/.env.production.local`). El mismo build sí terminó correctamente en Vercel con el entorno de producción.
+- **Siguiente paso:** T-2.3, partir el motor y sus prompts manteniendo el núcleo en `lib/analyze.ts`.
