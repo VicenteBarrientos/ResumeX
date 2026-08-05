@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
+import TrackedLink from "@/components/TrackedLink";
 import { authOptions } from "@/lib/auth-options";
 import { CAREER, TALENT } from "@/lib/products";
 
@@ -81,18 +82,20 @@ export default async function TalentLandingPage() {
             actually published.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <TrackedLink
+              event="talent_landing_mapper_cta"
               href={primaryHref}
               className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400"
             >
               Open Talent Mapper
-            </Link>
-            <Link
+            </TrackedLink>
+            <TrackedLink
+              event="talent_landing_mapper_cta"
               href={session ? TALENT.home : "/register"}
               className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-emerald-400/50"
             >
               {session ? "Run the demo search →" : "Create a free account →"}
-            </Link>
+            </TrackedLink>
           </div>
           <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
             A saved public-data snapshot runs the full flow without any API key.
@@ -187,13 +190,15 @@ export default async function TalentLandingPage() {
             Map a role you cannot fill
           </h2>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <TrackedLink
+              event="talent_landing_mapper_cta"
               href={primaryHref}
               className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400"
             >
               Open Talent Mapper
-            </Link>
-            <Link
+            </TrackedLink>
+            <TrackedLink
+              event="talent_landing_assess_cta"
               href={
                 session
                   ? "/talent/assess"
@@ -202,7 +207,7 @@ export default async function TalentLandingPage() {
               className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-emerald-400/50"
             >
               Assess a resume →
-            </Link>
+            </TrackedLink>
           </div>
           <p className="mt-10 text-sm text-zinc-500 dark:text-zinc-400">
             Looking for a job instead?{" "}

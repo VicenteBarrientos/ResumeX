@@ -11,11 +11,6 @@ export type EvidenceConfidence =
   | "strong_adjacent"
   | "possible";
 
-/** @deprecated Prefer EvidenceConfidence */
-export type MatchConfidence = EvidenceConfidence;
-/** @deprecated Prefer EvidenceMatchType */
-export type MatchType = EvidenceMatchType;
-
 export type LocationCriteria = {
   city?: string;
   region?: string;

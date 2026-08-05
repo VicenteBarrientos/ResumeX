@@ -117,6 +117,7 @@ export const researcherCandidateSchema = z.object({
   outreachAngle: z.string(),
   possibleConcerns: z.array(z.string()),
   unknowns: z.array(z.string()),
+  screeningQuestions: z.array(z.string()).optional(),
 });
 
 export const searchResultSchema = z.object({

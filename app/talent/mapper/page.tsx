@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import TalentMapperWorkspace from "@/components/talent-mapper/TalentMapperWorkspace";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default function TalentMapperPage() {
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
       <div className="relative z-10">
-        <TalentMapperWorkspace />
+        <Suspense fallback={<div className="p-8 text-sm text-zinc-500">Loading Talent Mapper…</div>}>
+          <TalentMapperWorkspace />
+        </Suspense>
       </div>
     </div>
   );

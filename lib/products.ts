@@ -1,3 +1,5 @@
+import { formatProPriceLabel } from "@/lib/stripe";
+
 /**
  * ResumeX ships two products on one codebase (R-002). Their names are exact
  * (R-003) and live here so nav, metadata and copy read them from one place
@@ -45,7 +47,7 @@ export const CAREER: Product = {
     { href: "/career/cover-letter", label: "Cover Letter" },
     { href: "/career/autoapply", label: "AutoApply" },
     { href: "/career/tracker", label: "Tracker" },
-    { href: "/upgrade", label: "⭐ Go Pro — $5/mo" },
+    { href: "/upgrade", label: `⭐ Go Pro — ${formatProPriceLabel()}` },
   ],
 };
 
@@ -60,6 +62,7 @@ export const TALENT: Product = {
   nav: [
     { href: "/talent/mapper", label: "Talent Mapper" },
     { href: "/talent/assess", label: "Assess" },
+    { href: "/talent/searches", label: "Saved searches" },
   ],
 };
 

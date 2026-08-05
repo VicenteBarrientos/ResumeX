@@ -197,186 +197,102 @@ Un contrato tipado delgado para veredictos LLM (`CriteriaItem` con procedencia) 
 ~~- La procedencia es obligatoria: extracto real, fuente identificable, confianza, y marca de si lo infirió la IA (R-007).~~
 ~~- `lib/talent-mapper/evidence.ts` (319 líneas) pasa a consumir el kernel sin cambiar comportamiento. **Sus tests existentes deben pasar sin modificarse** — si hay que tocarlos, cambiaste comportamiento.~~
 
-### ⬜ T-3.3 — Extraer `lib/roles/`
+### ❌ T-3.3 — Extraer `lib/roles/` — CANCELADA
 
-Job description → criterios. Hoy vive en `lib/talent-mapper/criteria.ts` y en el prompt de `lib/analyze.ts`, duplicado conceptualmente. Independiente de T-3.4.
+**Resultado (2026-08-05):** cancelada. Talent Mapper produce `SourcingCriteria` para OpenAlex; Career/Assess producen `CriteriaItem[]` dentro de un compare CV+JD. Misma lógica R-009 que T-3.2.
 
 ### ✅ T-3.4 — Migrar la evidencia de Career a procedencia
 
-La tarea que le da sentido a la fase. `CriteriaItem` ahora usa `status: met | not_met | insufficient`, `quote` (extracto literal) y `aiInferred`. Aplica a Talent Assess (mismo `AnalysisBase`) y a `StrongMatch`.
-
-- Normalización server-side en `lib/criteria-evidence.ts`: si el quote no aparece en el CV, se descarta.
-- UI con tres estados visibles (✓ / ✕ / ?), no colapsa insufficient en "no cumple".
-
-**Hecho (2026-08-05):** tipos, prompts, UI Career+Assess, formatters, i18n, tests (59).
-
-**Terminado cuando:** ningún campo de evidencia mostrado al usuario en Career (ni en Talent Assess) es texto libre del modelo sin fuente. ✅
-
-### Riesgos de la Fase 3
-
-| Riesgo | Mitigación |
-|---|---|
-| Extraer una abstracción que no existe | T-3.1 canceló T-3.2. ✅ |
-| Romper scoring de Talent al mover evidencia | R-012 + los 30 tests existentes; T-3.2 cancelada evita el riesgo |
-| El kernel se convierte en un cajón | Regla de frontera del handoff: si sólo lo importa un producto, no es kernel |
-| El modelo sigue parafraseando en `quote` | Normalización descarta citas no presentes en el CV |
+Hecho en prod. `CriteriaItem`/`StrongMatch` con `status`, `quote`, `aiInferred` + normalización server-side.
 
 ---
 
 # Fase 4 — Talent como herramienta de trabajo
 
-**Objetivo.** Que un reclutador pueda cerrar el navegador y no perder nada.
+**Estado (2026-08-05):** ✅ T-4.1…T-4.6 hechas. T-4.7 Ashby **diferida**.
 
-**Por qué importa.** Hoy todo Talent vive en `localStorage` bajo `resumex-talent-mapper-v1`: búsqueda, criterios, resultados, shortlist y notas. Eso viola R-010 y hace imposible lo que un equipo necesita — compartir una shortlist, retomar una búsqueda desde otra máquina, ver qué hizo un colega. Es la fase que convierte un demo en una herramienta.
+### ✅ T-4.1 — Modelar la persistencia
+Modelos `TalentSearch`, `ShortlistEntry`, `CandidateNote`. `resultJson` entero. Búsquedas **por usuario** (sin Organization).
 
-**Precondiciones.** Ninguna estricta. **Puede correr en paralelo con la Fase 2** — toca archivos distintos. Si hay un solo agente, la 2 primero: la deuda de tipos crece con cada superficie nueva.
+### ✅ T-4.2 — APIs de persistencia
+`/api/talent-mapper/searches` CRUD + shortlist + notes. Auth + filtro `userId`.
 
-### ⬜ T-4.1 — Modelar la persistencia
+### ✅ T-4.3 — Migrar el workspace a servidor
+Prisma como verdad; localStorage caché; import explícito del draft del navegador.
 
-Modelos nuevos en `prisma/schema.prisma`. Punto de partida:
+### ✅ T-4.4 — Pantalla de búsquedas guardadas
+`/talent/searches` + nav.
 
-```
-TalentSearch      id, userId, roleTitle, jobDescription, criteriaJson,
-                  queriesJson, mode, resultJson, worksReviewed, createdAt, updatedAt
-ShortlistEntry    id, searchId, authorId, addedAt          @@unique([searchId, authorId])
-CandidateNote     id, searchId, authorId, body, updatedAt
-```
+### ✅ T-4.5 — Notas por candidato
+`CandidateNote` con debounce. Pipeline statuses **no** (sin demanda real).
 
-Decisiones a tomar y **escribir** en el handoff:
+### ✅ T-4.6 — `screeningQuestions`
+Generadas desde técnicas no matcheadas, unknowns y concerns.
 
-- ¿`resultJson` se guarda entero o se normaliza en tablas? Entero es más simple y el resultado es un snapshot inmutable de una búsqueda — pero impide consultar "en qué búsquedas apareció este autor". Recomendación: entero ahora, normalizar cuando exista una pantalla que lo necesite (R-009 aplica también a datos).
-- ¿Las búsquedas son del usuario o del equipo? Hoy no hay concepto de equipo. Si Talent apunta a equipos de contratación, `Organization` llega tarde y duele. **Requiere decisión humana.**
-
-### ⬜ T-4.2 — APIs de persistencia
-
-`/api/talent-mapper/searches` (GET lista, POST crear), `/searches/[id]` (GET, PATCH, DELETE), `/searches/[id]/shortlist`, `/searches/[id]/notes`.
-
-Siguen planas bajo `/api/talent-mapper/` (R-017). Todas autenticadas y **filtradas por `userId`** — una búsqueda de sourcing tiene nombres de personas reales; una fuga de autorización acá es una fuga de datos personales.
-
-### ⬜ T-4.3 — Migrar el workspace a servidor
-
-`components/talent-mapper/TalentMapperWorkspace.tsx` guarda diez campos en `localStorage`. Pasan a Prisma. `localStorage` queda como caché de UI para no perder trabajo en vuelo si falla la red, nunca como almacén de verdad (R-010).
-
-Incluir **migración del estado existente**: si hay un `resumex-talent-mapper-v1` en el navegador al cargar, ofrecer importarlo como búsqueda guardada. Alguien puede tener una shortlist real ahí.
-
-### ⬜ T-4.4 — Pantalla de búsquedas guardadas
-
-`/talent/searches`. Lista con rol, fecha, modo (live/demo), cantidad de candidatos y shortlisted. Agregar la entrada a `TALENT.nav` en `lib/products.ts`.
-
-### ⬜ T-4.5 — Notas y estados por candidato
-
-Hoy `notes` es un `Record<string, string>` en memoria. Pasa a `CandidateNote`. Evaluar estados (`contactado`, `respondió`, `descartado`) — pero sólo si hay un usuario real pidiéndolo. Un pipeline que nadie usa es peso muerto.
-
-### ⬜ T-4.6 — `screeningQuestions`
-
-`ResearcherCandidate.screeningQuestions?: string[]` ya está **declarado en el tipo pero nunca poblado** (`lib/talent-mapper/types.ts`). Es una de las tres ideas rescatadas de la copia archivada. Generarlas desde los `gaps` y `unknowns` del candidato convierte el brief en algo accionable en la primera llamada.
-
-### ⬜ T-4.7 🤔 — Export e integración Ashby
-
-`ASHBY_API_KEY` ya está declarada en `.env.local.example` pero no se usa. Antes de implementar: ¿hay un cliente con Ashby esperando esto, o es una integración especulativa? Seis integraciones superficiales valen menos que una fuente bien calibrada (espíritu de R-013).
-
-**Requiere decisión humana.**
-
-### Riesgos de la Fase 4
-
-| Riesgo | Mitigación |
-|---|---|
-| Perder shortlists existentes al migrar | T-4.3 incluye importación explícita, no silenciosa |
-| Fuga de datos personales entre usuarios | Toda query filtra por `userId`. Escribir un test que lo verifique, no confiar en la revisión |
-| Modelar equipos tarde | La pregunta de T-4.1 se responde **antes** de la primera migración, no después |
+### ❌ T-4.7 — Ashby — DIFERIDA
+Especulativa hasta cliente concreto.
 
 ---
 
 # Fase 5 — Consolidación de repos
 
-**Objetivo.** Un solo lugar donde vive el código de ResumeX.
+### ✅ T-5.1 — Inventariar sourcing-copilot
+Serper/LinkedIn ≠ OpenAlex. Ver `resumex-sourcing-copilot/ARCHIVE.md`.
 
-**Precondiciones.** Fase 4 ✅ — absorber `resumex-sourcing-copilot` sin capa de datos es mover el problema de lugar.
+### ✅ T-5.2 — Absorber
+Nada absorbido ahora.
 
-### ⬜ T-5.1 — Inventariar `resumex-sourcing-copilot`
+### ✅ T-5.3 — Archivar resumex-tracker
+No local; tracker canónico = Career `/career/tracker`.
 
-Antes de absorber, el mismo ejercicio que resolvió R-001: qué tiene que acá no exista, qué está obsoleto, qué es duplicado peor. Escribir el resultado en el handoff. Puede que la conclusión sea "archivar sin absorber nada".
-
-### ⬜ T-5.2 — Absorber lo que sobreviva a T-5.1
-
-### ⬜ T-5.3 — Archivar `resumex-tracker`
-
-Con nota en su README apuntando acá, para que nadie lo retome por error.
-
-### ⬜ T-5.4 🤔 — Definir dónde vive la extensión Chrome
-
-Hoy `chrome-extension/` está en este repo pero existe `job-applier`. La extensión tiene contrato con `/api/extension/*` y con `localStorage`; separarla obliga a versionar ese contrato. **Requiere decisión humana.**
+### ✅ T-5.4 — Extensión Chrome
+**Permanece en este repo.**
 
 ---
 
-# Fase 6 🤔 — Comercialización y medición
+# Fase 6 — Comercialización y medición
 
-> **Propuesta, no aprobada.** No está en el plan original del handoff. No empezar sin decisión humana.
+### ✅ T-6.1 — Analítica mínima
+`/api/analytics` + `TrackedLink` en CTAs de `/talent`.
 
-La Fase 1 dejó `/talent` como landing pública sin forma de saber si funciona. R-016 se decidió por criterio, y quedó escrito que se revisa con datos.
+### ⏸️ T-6.2 — Precio de Talent — DIFERIDA
+Pro Career $5/mo via `formatProPriceLabel`. Talent sin plan propio aún.
 
-- **T-6.1** — Analítica mínima en la banda de `/` hacia `/talent` y en el CTA de `/talent`. Sin esto, R-016 no se puede revisar nunca.
-- **T-6.2** — Precio de Talent. El plan Pro actual ($5 o $15 — ver backlog B-1) está construido para candidatos: "Unlimited Cover Letters", "AutoApply Chrome Extension". Un reclutador no compra eso.
-- **T-6.3** — Marca. El riesgo está declarado en el handoff: "ResumeX" es vocabulario de candidato; un reclutador no compra una herramienta nombrada por el documento que recibe. Revisar sólo si Talent gana clientes empresariales.
+### ⏸️ T-6.3 — Marca — DIFERIDA
+Revisar si Talent gana clientes enterprise.
 
 ---
 
 # Backlog transversal
 
-No pertenece a ninguna fase. Tomable en cualquier momento por un agente con tiempo suelto.
-
-| ID | Tarea | Por qué |
-|---|---|---|
-| ⬜ B-1 | **Precio de Pro inconsistente.** La landing dice `$15/mo`, `CAREER.nav` dice `$5/mo`. Definir la fuente de verdad desde Stripe e importarla en un solo lugar | Visible al usuario, y es un error de confianza en una página de pagos |
-| ⬜ B-2 | **Tests para `lib/` de Career.** `analyze.ts`, `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts` no tienen ninguno | Talent tiene 30 tests y Career cero. El desbalance no refleja importancia, refleja orden de construcción |
-| ⬜ B-3 | **E2E de Career.** Existe `scripts/e2e-talent-mapper.mjs` como modelo | El camino registro → onboarding → CV → analyzer → tracker no se prueba nunca de punta a punta |
-| ⬜ B-4 | **Ampliar el `include` de `vitest.config.mts`.** Hoy sólo `lib/**`: nada en `app/` ni `components/` es testeable aunque se escriba el test | Es una limitación silenciosa de configuración |
-| ⬜ B-5 | **Retirar los alias deprecados** `MatchConfidence` y `MatchType` en `lib/talent-mapper/types.ts` | Ya están marcados `@deprecated`; dos nombres para un tipo invitan a divergir |
-| ⬜ B-6 | **`criterionKind`.** Tipar la categoría del criterio (técnica, organismo, área, geografía) en vez de tratarlos como strings equivalentes | Segunda idea rescatada de la copia archivada. Permite pesos y copy por tipo |
-| ⬜ B-7 | **`aiInferred` / `aiSummarized` explícitos** a nivel de match y de resumen | Tercera idea rescatada. Refuerza R-007 y es lo que hace auditable el resultado ante un experto de dominio |
-| ⬜ B-8 | **i18n de las superficies nuevas.** `lib/i18n/resumex.ts` tiene EN y ES, pero `/talent`, `/talent/mapper` y la banda de `/` están sólo en inglés | El producto declara ser bilingüe y a medias no lo es |
-| ⬜ B-9 | **Accesibilidad de `/talent`.** Contraste de la paleta emerald en dark mode, foco visible, jerarquía de headings | La landing nueva no pasó por revisión de a11y |
-| ⬜ B-10 | **Segunda fuente de datos** para Talent, sólo después de calibrar precisión contra roles reales (R-013). Prioridad: NIH RePORTER o Europe PMC | Está condicionada a calibración, no a ganas |
-
----
-
-# Anti-tareas
-
-Cosas que parecen mejoras y no lo son. Si vas a hacer una de estas, discutila primero en el handoff.
-
-| No hacer | Por qué |
+| ID | Estado |
 |---|---|
-| Unificar `ResearcherCandidate` y el candidato de Career en un tipo `Candidate` | R-005. Career opera sobre un CV auto-reportado; Talent sobre un investigador inferido desde publicaciones. Un tipo común obliga a campos opcionales que aplican a la mitad de los casos |
-| Mover las APIs a `/api/career/*` y `/api/talent/*` | R-017. La extensión desplegada y los emails salientes llevan URLs absolutas |
-| Crear un root layout por producto | R-006. Fuerza recarga completa al cruzar y duplica providers |
-| Subir algo a `lib/evidence/` antes de la Fase 3 | R-009. Un consumidor no justifica una abstracción |
-| Renombrar `middleware.ts` | R-011. Está deprecado en Next 16; la convención es `proxy.ts` |
-| Ajustar pesos de scoring "a ojo" para que un candidato conocido suba | R-012 + R-014. Sin tests de caracterización es una regresión silenciosa |
-| Agregar fuentes de datos para "mejorar recall" | R-014. Precisión sobre recall. Cada falso positivo cuesta credibilidad ante un experto |
-| Presentar una frase redactada por el modelo como evidencia | R-007. Es la diferencia entre una cita verificable y una alucinación con formato de cita |
+| ✅ B-1 | Precio desde `PLANS` / `formatProPriceLabel` |
+| 🟨 B-2 | `analyze.ts` cubierto; format/merge/parse pendientes |
+| ⬜ B-3 | E2E Career pendiente |
+| ✅ B-4 | vitest incluye app/ y components/ |
+| ✅ B-5 | Alias MatchConfidence/MatchType retirados |
+| ⏸️ B-6 | criterionKind diferida |
+| 🟨 B-7 | aiInferred en CriteriaItem; matchType inferred en Mapper |
+| ⬜ B-8 | i18n Talent pendiente |
+| ⬜ B-9 | a11y /talent pendiente |
+| ⏸️ B-10 | Segunda fuente condicionada a calibración |
 
 ---
 
-# Decisiones humanas pendientes
+# Decisiones humanas — resueltas (2026-08-05)
 
-Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
-
-| # | Decisión | Bloquea |
-|---|---|---|
-| 1 | ~~¿Talent tiene superficie de evaluación (`/talent/assess`) o `TalentAssessment` espera?~~ **Resuelto: A (2026-08-05)** | — |
-| 2 | ¿Las búsquedas de Talent son del usuario o de un equipo? | T-4.1 → la primera migración de Prisma |
-| 3 | ¿Ashby es real o especulativo? | T-4.7 |
-| 4 | ¿Dónde vive la extensión Chrome? | T-5.4 |
-| 5 | ¿Se abre la Fase 6? | T-6.1…T-6.3 |
+| # | Resultado |
+|---|---|
+| 1 Assess | A |
+| 2 Ownership | Usuario |
+| 3 Ashby | Diferida |
+| 4 Extensión | Este repo |
+| 5 Fase 6 | Mínima (T-6.1) |
 
 ---
 
 ## Bitácora de este archivo
 
-- **2026-08-05** — T-3.4: `CriteriaItem`/`StrongMatch` con procedencia; normalización server-side; UI de tres estados.
-- **2026-08-05** — T-3.1: casi nada en común entre `CriteriaItem` y `EvidenceMatch`; T-3.2 cancelada; siguiente = T-3.4.
-- **2026-08-05** — T-2.7 opción A: `/talent/assess` + `/api/talent-assess`. Fase 2 cerrada.
-- **2026-08-05** — T-2.5 y T-2.6: consumidores migrados a CareerAnalysis; PDF es de Career; AnalysisResult retirado del código.
-- **2026-08-05** — T-2.3 y T-2.4: `analyzeForCareer` / `assessForTalent` con prompts y schemas por audiencia; `analyzeResume` queda como puente legacy; tests fijan summaries de mejora vs decisión.
-- **2026-08-05** — T-2.1 y T-2.2 completadas: 16 tests nuevos fijan el request, parseo, validación, clamp de score y normalización de errores; `CareerAnalysis` y `TalentAssessment` quedaron declarados con un `AnalysisResult` compuesto y deprecado para mantener compatibles los consumidores hasta T-2.5.
-- **2026-08-05** — Creado tras cerrar la Fase 1. Fases 2–5 heredadas del plan de `AGENT_HANDOFF.md` y desglosadas en tareas; Fase 6 y backlog transversal son nuevos. Los números de la sección "El terreno, hoy" salen de inspección directa del repo en esa fecha, no de estimación.
+- **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable.
+- **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa.

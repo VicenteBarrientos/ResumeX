@@ -27,6 +27,11 @@ export function getStripeProPriceId() {
 export const PLANS = {
   pro: {
     name: "ResumeX Pro",
-    amount: 500, // $5.00
+    amount: 500, // $5.00 in cents — single source of truth for display copy
   },
-};
+} as const;
+
+/** Display string for Career Pro pricing (B-1). */
+export function formatProPriceLabel(): string {
+  return `$${PLANS.pro.amount / 100}/mo`;
+}

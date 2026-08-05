@@ -1,6 +1,7 @@
 import { reconstructAbstract } from "@/lib/talent-mapper/abstract";
 import { matchEvidence } from "@/lib/talent-mapper/evidence";
 import { scoreResearcher } from "@/lib/talent-mapper/scoring";
+import { withScreeningQuestions } from "@/lib/talent-mapper/screening-questions";
 import type {
   AggregateAuthorsOptions,
   EvidenceMatch,
@@ -152,28 +153,33 @@ export function aggregateAuthors(
       );
     }
 
-    candidates.push({
-      authorId: acc.authorId,
-      name: acc.name,
-      orcid: acc.orcid,
-      openAlexUrl: toOpenAlexAuthorUrl(acc.authorId),
-      likelyInstitution,
-      relevantWorks,
-      matchedRequiredCriteria: dedupeEvidence(matchedRequired),
-      matchedPreferredCriteria: dedupeEvidence(matchedPreferred),
-      matchedResearchAreas: dedupeEvidence(matchedResearchAreas),
-      matchedOrganismsOrSystems: dedupeEvidence(matchedOrganismsOrSystems),
-      publicationYears,
-      mostRecentRelevantYear,
-      relevantWorkCount: relevantWorks.length,
-      totalCitationCountForRelevantWorks,
-      score: scored.score,
-      scoreBreakdown: scored.scoreBreakdown,
-      evidenceSummary: scored.evidenceSummary,
-      outreachAngle: scored.outreachAngle,
-      possibleConcerns,
-      unknowns: scored.unknowns,
-    });
+    candidates.push(
+      withScreeningQuestions(
+        {
+          authorId: acc.authorId,
+          name: acc.name,
+          orcid: acc.orcid,
+          openAlexUrl: toOpenAlexAuthorUrl(acc.authorId),
+          likelyInstitution,
+          relevantWorks,
+          matchedRequiredCriteria: dedupeEvidence(matchedRequired),
+          matchedPreferredCriteria: dedupeEvidence(matchedPreferred),
+          matchedResearchAreas: dedupeEvidence(matchedResearchAreas),
+          matchedOrganismsOrSystems: dedupeEvidence(matchedOrganismsOrSystems),
+          publicationYears,
+          mostRecentRelevantYear,
+          relevantWorkCount: relevantWorks.length,
+          totalCitationCountForRelevantWorks,
+          score: scored.score,
+          scoreBreakdown: scored.scoreBreakdown,
+          evidenceSummary: scored.evidenceSummary,
+          outreachAngle: scored.outreachAngle,
+          possibleConcerns,
+          unknowns: scored.unknowns,
+        },
+        criteria,
+      ),
+    );
   }
 
   candidates.sort((a, b) => {

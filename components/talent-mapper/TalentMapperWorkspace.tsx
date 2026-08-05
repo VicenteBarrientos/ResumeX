@@ -1,6 +1,8 @@
 "use client";
 
-import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CandidateCard from "@/components/talent-mapper/CandidateCard";
 import CandidateDetail from "@/components/talent-mapper/CandidateDetail";
 import {
@@ -14,6 +16,14 @@ import {
   SCIENTIFIC_DEMO_LABEL,
   getDemoCriteria,
 } from "@/lib/talent-mapper/criteria";
+import {
+  createTalentSearch,
+  getTalentSearch,
+  toggleTalentShortlist,
+  updateTalentSearch,
+  upsertTalentNote,
+} from "@/lib/talent-mapper/client-searches";
+import { trackEvent } from "@/lib/analytics";
 import { exportShortlistCsv } from "@/lib/talent-mapper/export-csv";
 import { buildSearchQueries, hashQueryId } from "@/lib/talent-mapper/query-builder";
 import type {
@@ -25,6 +35,7 @@ import type {
 } from "@/lib/talent-mapper/types";
 
 const STORAGE_KEY = "resumex-talent-mapper-v1";
+const IMPORT_FLAG_KEY = "resumex-talent-mapper-imported";
 
 type Step = "role" | "criteria" | "strategy" | "results";
 
@@ -71,6 +82,9 @@ function loadState(): Partial<PersistedState> | null {
 }
 
 export default function TalentMapperWorkspace() {
+  const searchParams = useSearchParams();
+  const urlSearchId = searchParams.get("searchId");
+
   const [step, setStep] = useState<Step>("role");
   const [roleTitle, setRoleTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
@@ -91,6 +105,10 @@ export default function TalentMapperWorkspace() {
   const [talkingOpen, setTalkingOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [newCriterion, setNewCriterion] = useState<Record<string, string>>({});
+  const [searchId, setSearchId] = useState<string | null>(null);
+  const [importOffer, setImportOffer] = useState<PersistedState | null>(null);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const noteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Filters
   const [minScore, setMinScore] = useState(0);
@@ -106,34 +124,86 @@ export default function TalentMapperWorkspace() {
     "score" | "recent" | "works" | "name" | "institution"
   >("score");
 
-  useEffect(() => {
-    const saved = loadState();
-    startTransition(() => {
-      if (saved) {
-        if (saved.step) setStep(saved.step);
-        if (saved.roleTitle) setRoleTitle(saved.roleTitle);
-        if (saved.jobDescription) setJobDescription(saved.jobDescription);
-        if (saved.criteria) setCriteria(saved.criteria);
-        if (saved.extractedCriteria) setExtractedCriteria(saved.extractedCriteria);
-        if (saved.queries) setQueries(saved.queries);
-        if (saved.mode) setMode(saved.mode);
-        if (saved.result) setResult(saved.result);
-        if (saved.shortlist) setShortlist(new Set(saved.shortlist));
-        if (saved.notes) setNotes(saved.notes);
-      }
-      setHydrated(true);
-    });
-
-    fetch("/api/talent-mapper/status")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!data) return;
-        startTransition(() => {
-          setOpenAlexConfigured(Boolean(data.openAlexConfigured));
-        });
-      })
-      .catch(() => undefined);
+  const applyPersisted = useCallback((saved: Partial<PersistedState>) => {
+    if (saved.step) setStep(saved.step);
+    if (saved.roleTitle) setRoleTitle(saved.roleTitle);
+    if (saved.jobDescription) setJobDescription(saved.jobDescription);
+    if (saved.criteria) setCriteria(saved.criteria);
+    if (saved.extractedCriteria) setExtractedCriteria(saved.extractedCriteria);
+    if (saved.queries) setQueries(saved.queries);
+    if (saved.mode) setMode(saved.mode);
+    if (saved.result) setResult(saved.result);
+    if (saved.shortlist) setShortlist(new Set(saved.shortlist));
+    if (saved.notes) setNotes(saved.notes);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function hydrate() {
+      const saved = loadState();
+      const alreadyImported = localStorage.getItem(IMPORT_FLAG_KEY) === "1";
+
+      if (urlSearchId) {
+        try {
+          const detail = await getTalentSearch(urlSearchId);
+          if (cancelled) return;
+          setSearchId(detail.id);
+          applyPersisted({
+            step: detail.step ?? "results",
+            roleTitle: detail.roleTitle,
+            jobDescription: detail.jobDescription,
+            criteria: detail.criteria,
+            extractedCriteria: detail.extractedCriteria,
+            queries: detail.queries,
+            mode: detail.mode,
+            result: detail.result,
+            shortlist: detail.shortlist,
+            notes: detail.notes,
+          });
+          setHydrated(true);
+        } catch {
+          if (!cancelled) {
+            setError("Could not load the saved search.");
+            setHydrated(true);
+          }
+        }
+      } else {
+        if (saved && (saved.result || (saved.shortlist && saved.shortlist.length > 0)) && !alreadyImported) {
+          setImportOffer({
+            step: saved.step || "role",
+            roleTitle: saved.roleTitle || "",
+            jobDescription: saved.jobDescription || "",
+            criteria: saved.criteria || null,
+            extractedCriteria: saved.extractedCriteria || null,
+            queries: saved.queries || [],
+            mode: saved.mode || "demo",
+            result: saved.result || null,
+            shortlist: saved.shortlist || [],
+            notes: saved.notes || {},
+          });
+        } else if (saved) {
+          applyPersisted(saved);
+        }
+        setHydrated(true);
+      }
+
+      fetch("/api/talent-mapper/status")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data || cancelled) return;
+          startTransition(() => {
+            setOpenAlexConfigured(Boolean(data.openAlexConfigured));
+          });
+        })
+        .catch(() => undefined);
+    }
+
+    void hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, [urlSearchId, applyPersisted]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -167,6 +237,82 @@ export default function TalentMapperWorkspace() {
     shortlist,
     notes,
   ]);
+
+  async function persistSnapshot(nextResult?: TalentSearchResult | null) {
+    const snapshotResult = nextResult === undefined ? result : nextResult;
+    const payload = {
+      roleTitle: roleTitle || criteria?.roleTitle || "Untitled search",
+      jobDescription,
+      criteria,
+      extractedCriteria,
+      queries,
+      mode,
+      result: snapshotResult,
+      uiStep: step,
+      shortlist: [...shortlist],
+      notes,
+    };
+
+    setSaveBusy(true);
+    try {
+      if (searchId) {
+        await updateTalentSearch(searchId, payload);
+        setActionHint("Search saved on the server.");
+      } else {
+        const created = await createTalentSearch(payload);
+        setSearchId(created.id);
+        window.history.replaceState(
+          null,
+          "",
+          `/talent/mapper?searchId=${created.id}`,
+        );
+        trackEvent("talent_search_saved");
+        setActionHint("Search saved. Shortlist and notes will sync to this search.");
+        localStorage.setItem(IMPORT_FLAG_KEY, "1");
+        setImportOffer(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save search.");
+    } finally {
+      setSaveBusy(false);
+    }
+  }
+
+  async function importBrowserDraft() {
+    if (!importOffer) return;
+    setSaveBusy(true);
+    setError(null);
+    try {
+      applyPersisted(importOffer);
+      const created = await createTalentSearch({
+        roleTitle: importOffer.roleTitle || "Imported browser draft",
+        jobDescription: importOffer.jobDescription,
+        criteria: importOffer.criteria,
+        extractedCriteria: importOffer.extractedCriteria,
+        queries: importOffer.queries,
+        mode: importOffer.mode,
+        result: importOffer.result,
+        uiStep: importOffer.step,
+        shortlist: importOffer.shortlist,
+        notes: importOffer.notes,
+      });
+      setSearchId(created.id);
+      localStorage.setItem(IMPORT_FLAG_KEY, "1");
+      setImportOffer(null);
+      window.history.replaceState(null, "", `/talent/mapper?searchId=${created.id}`);
+      setActionHint("Browser draft imported as a saved search.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Import failed.");
+    } finally {
+      setSaveBusy(false);
+    }
+  }
+
+  function dismissImportOffer() {
+    localStorage.setItem(IMPORT_FLAG_KEY, "1");
+    if (importOffer) applyPersisted(importOffer);
+    setImportOffer(null);
+  }
 
   const selected = useMemo(
     () => result?.candidates.find((c) => c.authorId === selectedId) ?? null,
@@ -257,6 +403,8 @@ export default function TalentMapperWorkspace() {
 
   const resetDemo = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    setSearchId(null);
+    setImportOffer(null);
     setStep("role");
     setRoleTitle("");
     setJobDescription("");
@@ -270,6 +418,7 @@ export default function TalentMapperWorkspace() {
     setError(null);
     setActionHint(null);
     setMinScore(0);
+    window.history.replaceState(null, "", "/talent/mapper");
   }, []);
 
   async function extractCriteria() {
@@ -331,6 +480,7 @@ export default function TalentMapperWorkspace() {
       }
       setResult(data as TalentSearchResult);
       setStep("results");
+      void persistSnapshot(data as TalentSearchResult);
     } catch {
       setError("Search request failed.");
       setActionHint("Retry, or switch to Demo snapshot.");
@@ -367,10 +517,31 @@ export default function TalentMapperWorkspace() {
   function toggleShortlist(id: string) {
     setShortlist((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const willAdd = !next.has(id);
+      if (willAdd) next.add(id);
+      else next.delete(id);
+
+      if (searchId) {
+        void toggleTalentShortlist(searchId, id, willAdd).catch(() => {
+          setError("Could not sync shortlist to the server.");
+        });
+      }
+
       return next;
     });
+  }
+
+  function handleNotesChange(authorId: string, value: string) {
+    setNotes((prev) => ({ ...prev, [authorId]: value }));
+    if (!searchId) return;
+    if (noteTimers.current[authorId]) {
+      clearTimeout(noteTimers.current[authorId]);
+    }
+    noteTimers.current[authorId] = setTimeout(() => {
+      void upsertTalentNote(searchId, authorId, value).catch(() => {
+        setError("Could not sync note to the server.");
+      });
+    }, 600);
   }
 
   function exportCsv() {
@@ -450,13 +621,63 @@ export default function TalentMapperWorkspace() {
           </button>
           <button
             type="button"
+            onClick={() => void persistSnapshot()}
+            disabled={saveBusy || (!roleTitle.trim() && !criteria)}
+            className="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 disabled:opacity-50 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100"
+          >
+            {saveBusy ? "Saving…" : searchId ? "Save updates" : "Save search"}
+          </button>
+          <Link
+            href="/talent/searches"
+            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600 dark:border-white/15 dark:text-zinc-400"
+          >
+            Saved searches
+          </Link>
+          <button
+            type="button"
             onClick={resetDemo}
             className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600 dark:border-white/15 dark:text-zinc-400"
           >
             Reset demo
           </button>
         </div>
+        {searchId ? (
+          <p className="text-xs text-zinc-500">
+            Server search active · shortlist and notes sync automatically
+          </p>
+        ) : null}
       </header>
+
+      {importOffer ? (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+          <p className="font-medium">Import browser draft as a saved search?</p>
+          <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
+            This browser has a Talent Mapper draft
+            {importOffer.shortlist.length
+              ? ` with ${importOffer.shortlist.length} shortlisted`
+              : ""}
+            . Importing moves it to the server (recommended). Skipping keeps it as
+            local cache only.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={saveBusy}
+              onClick={() => void importBrowserDraft()}
+              className="rounded-full bg-amber-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              Import as saved search
+            </button>
+            <button
+              type="button"
+              onClick={dismissImportOffer}
+              className="rounded-full border border-amber-300 px-4 py-2 text-xs font-medium"
+            >
+              Keep local only
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-6 space-y-3">
         <HowItWorks />
@@ -1087,9 +1308,7 @@ export default function TalentMapperWorkspace() {
           roleTitle={result?.meta.roleTitle || roleTitle}
           shortlisted={shortlist.has(selected.authorId)}
           notes={notes[selected.authorId] || ""}
-          onNotesChange={(v) =>
-            setNotes((prev) => ({ ...prev, [selected.authorId]: v }))
-          }
+          onNotesChange={(v) => handleNotesChange(selected.authorId, v)}
           onToggleShortlist={() => toggleShortlist(selected.authorId)}
           onClose={() => setSelectedId(null)}
           focusOutreach={focusOutreach}

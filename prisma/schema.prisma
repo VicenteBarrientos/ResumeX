@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id               String        @id @default(cuid())
-  username         String        @unique
+  id               String         @id @default(cuid())
+  username         String         @unique
   email            String?
   passwordHash     String
-  createdAt        DateTime      @default(now())
-  stripeCustomerId String?       @unique
-  isPro            Boolean       @default(false)
+  createdAt        DateTime       @default(now())
+  stripeCustomerId String?        @unique
+  isPro            Boolean        @default(false)
   applications     Application[]
   profile          Profile?
   answers          Answer[]
+  talentSearches   TalentSearch[]
 }
 
 model Application {
@@ -57,4 +58,50 @@ model Answer {
   answer    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Talent Mapper search owned by a single user (R-010 / T-4.1).
+// No Organization yet — team ownership deferred until a real hiring team needs it.
+// resultJson is a full immutable snapshot of TalentSearchResult.
+model TalentSearch {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleTitle      String
+  jobDescription String          @default("")
+  criteriaJson   Json
+  queriesJson    Json
+  mode           String
+  resultJson     Json?
+  worksReviewed  Int             @default(0)
+  uiStep         String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  shortlist      ShortlistEntry[]
+  notes          CandidateNote[]
+
+  @@index([userId, updatedAt])
+}
+
+model ShortlistEntry {
+  id       String       @id @default(cuid())
+  searchId String
+  search   TalentSearch @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  authorId String
+  addedAt  DateTime     @default(now())
+
+  @@unique([searchId, authorId])
+  @@index([searchId])
+}
+
+model CandidateNote {
+  id        String       @id @default(cuid())
+  searchId  String
+  search    TalentSearch @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  updatedAt DateTime     @updatedAt
+
+  @@unique([searchId, authorId])
+  @@index([searchId])
 }

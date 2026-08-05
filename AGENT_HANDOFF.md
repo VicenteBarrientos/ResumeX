@@ -6,11 +6,11 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 15:35 -04:00 — America/Santiago
-- **Versión del handoff:** 1.1
-- **Estado:** **Fase 3 avanzada y en prod.** T-3.1 hecha; T-3.2 cancelada; **T-3.4 desplegada** — procedencia en criterios verificada en `/talent/assess`.
-- **Próximo hito:** T-3.3 (`lib/roles/`) si sigue justificado, o Fase 4 (persistencia Talent).
-- **Bloqueos conocidos:** ninguno. Decisiones humanas restantes: equipos en Talent (T-4.1), Ashby (T-4.7), extensión (T-5.4), Fase 6.
+- **Última actualización:** 2026-08-05 16:00 -04:00 — America/Santiago
+- **Versión del handoff:** 1.2
+- **Estado:** **Roadmap de fases cerrado en alcance agente.** Fases 1–5 hechas; Fase 6 mínima (analytics). Persistencia Talent en Prisma; `/talent/searches`; screeningQuestions; Ashby/equipos/marca diferidos con decisión escrita.
+- **Próximo hito:** backlog restante (B-3 E2E Career, B-8 i18n Talent, B-9 a11y) o demanda real (Ashby, equipos, precio Talent).
+- **Bloqueos conocidos:** ninguno crítico. Diferidos conscientes: T-4.7 Ashby, T-6.2/T-6.3, Organization.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
 - **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com · deploy `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn` (`ae1f837`)
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Ninguno. T-3.4 en prod (`ae1f837` / `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn`).
+Ninguno. Listo para commit/push de Fase 4–6.
 
 ## Protocolo para agentes
 

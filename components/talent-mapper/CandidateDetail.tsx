@@ -226,7 +226,7 @@ export default function CandidateDetail({
               onChange={(e) => onNotesChange(e.target.value)}
               rows={3}
               className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
-              placeholder="Private notes for your process (stored locally in this browser)"
+              placeholder="Private notes for your process (saved with this search)"
             />
           </div>
         </div>
