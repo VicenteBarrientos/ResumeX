@@ -17,6 +17,7 @@ const PROTECTED_PREFIXES = [
   "/extension-auth",
   "/formatter",
   "/upgrade",
+  "/talent-mapper",
 ];
 
 function isProtectedPath(pathname: string): boolean {

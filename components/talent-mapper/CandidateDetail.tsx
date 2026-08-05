@@ -1,0 +1,250 @@
+"use client";
+
+import { useEffect } from "react";
+import EvidenceList from "@/components/talent-mapper/EvidenceList";
+import OutreachEditor from "@/components/talent-mapper/OutreachEditor";
+import ScoreBreakdownView from "@/components/talent-mapper/ScoreBreakdown";
+import { Disclaimer } from "@/components/talent-mapper/Disclaimer";
+import type { ResearcherCandidate } from "@/lib/talent-mapper/types";
+
+export default function CandidateDetail({
+  candidate,
+  roleTitle,
+  shortlisted,
+  notes,
+  onNotesChange,
+  onToggleShortlist,
+  onClose,
+  focusOutreach,
+}: {
+  candidate: ResearcherCandidate;
+  roleTitle: string;
+  shortlisted: boolean;
+  notes: string;
+  onNotesChange: (v: string) => void;
+  onToggleShortlist: () => void;
+  onClose: () => void;
+  focusOutreach?: boolean;
+}) {
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex justify-end bg-black/40 backdrop-blur-[1px]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Researcher detail: ${candidate.name}`}
+    >
+      <button
+        type="button"
+        className="flex-1 cursor-default"
+        aria-label="Close detail panel"
+        onClick={onClose}
+      />
+      <aside className="flex h-full w-full max-w-xl flex-col overflow-hidden border-l border-zinc-200 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-950">
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-white/10">
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+              {candidate.name}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Likely institution based on public scholarly metadata:{" "}
+              {candidate.likelyInstitution?.name || "Unknown"}
+            </p>
+            <Disclaimer className="mt-3">
+              Publication affiliation is not confirmed current employment. Validate
+              role, location, and eligibility with the candidate before outreach or
+              pipeline decisions.
+            </Disclaimer>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs">
+              <a
+                href={candidate.openAlexUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:underline dark:text-cyan-400"
+              >
+                OpenAlex profile
+              </a>
+              {candidate.orcid && (
+                <a
+                  href={candidate.orcid}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:underline dark:text-cyan-400"
+                >
+                  ORCID
+                </a>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs dark:border-white/15"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="flex-1 space-y-6 overflow-y-auto px-5 py-4">
+          <ScoreBreakdownView score={candidate.score} breakdown={candidate.scoreBreakdown} />
+
+          <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+            {candidate.evidenceSummary}
+          </p>
+
+          <EvidenceList title="Matched required criteria" matches={candidate.matchedRequiredCriteria} />
+          <EvidenceList title="Matched preferred criteria" matches={candidate.matchedPreferredCriteria} />
+          <EvidenceList title="Research areas" matches={candidate.matchedResearchAreas} />
+          <EvidenceList
+            title="Organisms / systems"
+            matches={candidate.matchedOrganismsOrSystems}
+          />
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Relevant publications
+            </h4>
+            <ul className="mt-2 space-y-3">
+              {candidate.relevantWorks.map((w) => (
+                <li
+                  key={w.id}
+                  className="rounded-lg border border-zinc-100 p-3 dark:border-white/10"
+                >
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {w.title}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {[w.year, w.sourceName, w.citedByCount != null ? `${w.citedByCount} citations (context only)` : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                  {w.matchedCriteria.length > 0 && (
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                      Matching: {w.matchedCriteria.join(", ")}
+                    </p>
+                  )}
+                  {w.abstractSnippet && (
+                    <p className="mt-1 text-xs text-zinc-500">{w.abstractSnippet}</p>
+                  )}
+                  <div className="mt-2 flex gap-3 text-xs">
+                    {w.openAlexUrl && (
+                      <a
+                        href={w.openAlexUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:underline dark:text-cyan-400"
+                      >
+                        Source
+                      </a>
+                    )}
+                    {w.doi && (
+                      <a
+                        href={
+                          w.doi.startsWith("http")
+                            ? w.doi
+                            : `https://doi.org/${w.doi.replace(/^https?:\/\/doi\.org\//, "")}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:underline dark:text-cyan-400"
+                      >
+                        DOI
+                      </a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {candidate.possibleConcerns.length > 0 && (
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                Possible concerns
+              </h4>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+                {candidate.possibleConcerns.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Unknown — requires validation
+            </h4>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+              {candidate.unknowns.map((u) => (
+                <li key={u}>{u}</li>
+              ))}
+            </ul>
+          </div>
+
+          {candidate.screeningQuestions && (
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Suggested screening questions
+              </h4>
+              <ul className="mt-1 list-decimal space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+                {candidate.screeningQuestions.map((q) => (
+                  <li key={q}>{q}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Personalized outreach
+            </h4>
+            <OutreachEditor candidate={candidate} roleTitle={roleTitle} />
+            {focusOutreach && (
+              <p className="mt-2 text-xs text-zinc-500">
+                Draft a message, edit it, then copy — no automated sending.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="recruiter-notes"
+              className="text-xs font-semibold uppercase tracking-wide text-zinc-500"
+            >
+              Recruiter notes
+            </label>
+            <textarea
+              id="recruiter-notes"
+              value={notes}
+              onChange={(e) => onNotesChange(e.target.value)}
+              rows={3}
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+              placeholder="Private notes for your process (stored locally in this browser)"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 border-t border-zinc-100 px-5 py-3 dark:border-white/10">
+          <button
+            type="button"
+            onClick={onToggleShortlist}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              shortlisted
+                ? "bg-indigo-600 text-white dark:bg-cyan-500 dark:text-zinc-900"
+                : "border border-zinc-200 dark:border-white/15"
+            }`}
+          >
+            {shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
+}

@@ -26,6 +26,14 @@ const FEATURES = [
     cta: "Analyze my resume",
   },
   {
+    icon: "◈",
+    title: "Talent Mapper",
+    description:
+      "Discover potential scientific candidates through public research evidence — beyond LinkedIn job titles.",
+    href: "/talent-mapper",
+    cta: "Open Talent Mapper",
+  },
+  {
     icon: "⚡",
     title: "AutoApply",
     description: "Chrome extension that auto-fills job applications using your saved profile. Apply 10× faster.",

@@ -19,6 +19,7 @@ export default function AppNav() {
     ? [
         { href: "/cv", label: t.nav.cvFormatter },
         { href: "/analyzer", label: t.nav.analyzer },
+        { href: "/talent-mapper", label: "Talent Mapper" },
         { href: "/jobs", label: "Job Search" },
         { href: "/cover-letter", label: "Cover Letter" },
         { href: "/autoapply", label: "AutoApply" },
