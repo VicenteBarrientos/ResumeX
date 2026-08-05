@@ -23,7 +23,7 @@ Ninguno. El árbol quedó limpio el 2026-08-05: el Talent Mapper completo, el ha
 ## Protocolo para agentes
 
 1. Leer este archivo antes de trabajar.
-2. Leer `AGENTS.md` (reglas de código) y `README.md` (setup y env). Para contexto de producto, el wiki: `ObsidianVault/ResumeX/ResumeX.md`.
+2. Leer `AGENTS.md` (reglas de código) y `README.md` (setup y env). Para tomar una tarea concreta, [`ROADMAP.md`](./ROADMAP.md): fases desglosadas en tareas con precondiciones y definición de terminado. Para contexto de producto, el wiki: `ObsidianVault/ResumeX/ResumeX.md`.
 3. Antes de modificar el producto, verificar si existe una decisión previa en **Decisiones vigentes**. Si una decisión estorba, discutirla — no ignorarla en silencio.
 4. Al terminar una intervención:
    - actualizar **Estado actual** si cambió el hito, estado o bloqueo;
@@ -140,6 +140,8 @@ lib/
 Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto, es compartido. Si sólo uno, pertenece a ese producto.
 
 ## Plan de separación
+
+> Resumen de las fases. El desglose en tareas tomables — precondiciones, pasos, definición de terminado, riesgos y anti-tareas — está en [`ROADMAP.md`](./ROADMAP.md).
 
 **Fase 1 — Rutas y marca. ✅ Completada el 2026-08-05.** Segmentos `/career` y `/talent` con `layout.tsx` propio y navegación separada. Redirects permanentes desde las rutas planas. Nombres R-003 en metadata, nav y copy. `lib/` intacto salvo el `lib/products.ts` nuevo. Pendiente respecto del destino: `app/api/career|talent` (diferido por R-017) y `talent/candidates|shortlists` (llegan en la Fase 4).
 

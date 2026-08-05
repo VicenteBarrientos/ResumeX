@@ -172,6 +172,10 @@ For Prisma validation, make sure `DATABASE_URL` is a PostgreSQL URL in `.env`:
 npx prisma validate
 ```
 
+## Roadmap
+
+[`ROADMAP.md`](./ROADMAP.md) breaks the separation plan into takeable tasks — preconditions, steps, definition of done, and the anti-tasks worth *not* doing. [`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md) holds current state and the standing decisions.
+
 ## Deployment
 
 See [VERCEL.md](./VERCEL.md) for the Vercel environment checklist, migration rollout notes, and recovery steps for databases that were previously updated with `prisma db push`.

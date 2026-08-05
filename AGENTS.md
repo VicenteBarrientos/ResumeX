@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # ResumeX — reglas de trabajo
 
-**Antes de tocar nada, leer [`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md).** Contiene el estado actual, las decisiones vigentes (R-001…) y el plan de separación. Este archivo sólo resume lo que aplica al escribir código.
+**Antes de tocar nada, leer [`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md).** Contiene el estado actual, las decisiones vigentes (R-001…) y el plan de separación. Para elegir en qué trabajar, [`ROADMAP.md`](./ROADMAP.md): las fases desglosadas en tareas con definición de terminado, más las **anti-tareas** (cosas que parecen mejoras y no lo son). Este archivo sólo resume lo que aplica al escribir código.
 
 ## Repositorio
 
