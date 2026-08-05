@@ -45,7 +45,7 @@ const EMPTY_CERTIFICATION: CertificationEntry = {
 };
 
 const fieldClass =
-  "rounded bg-transparent px-1 outline-none transition placeholder:text-zinc-400 hover:bg-zinc-100 focus:bg-indigo-50 focus:ring-1 focus:ring-indigo-300";
+  "rounded bg-transparent px-1 outline-none transition placeholder:text-zinc-400 hover:bg-zinc-100 focus:bg-brand-50 focus:ring-1 focus:ring-brand-300";
 
 function Field({
   value,
@@ -133,7 +133,7 @@ function AddButton({ onClick, label }: { onClick: () => void; label: string }) {
     <button
       type="button"
       onClick={onClick}
-      className="mt-1 inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 transition hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-700"
+      className="mt-1 inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
     >
       <span aria-hidden>+</span>
       {label}

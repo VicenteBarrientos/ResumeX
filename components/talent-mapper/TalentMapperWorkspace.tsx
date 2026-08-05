@@ -582,11 +582,11 @@ export default function TalentMapperWorkspace() {
   ) => (
     <span
       key={key ?? label}
-      className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300"
+      className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700"
     >
       {label}
       {onMove && (
-        <button type="button" onClick={onMove} className="text-[10px] text-indigo-600 dark:text-cyan-400">
+        <button type="button" onClick={onMove} className="text-[10px] text-brand-600">
           {moveLabel}
         </button>
       )}
@@ -599,13 +599,13 @@ export default function TalentMapperWorkspace() {
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
       <header className="mb-8 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">
           ResumeX module
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           ResumeX Talent Mapper
         </h1>
-        <p className="max-w-2xl text-base text-zinc-600 dark:text-zinc-400">
+        <p className="max-w-2xl text-base text-zinc-600">
           Find potential candidates through public evidence of their work.
         </p>
         <p className="text-sm text-zinc-500">
@@ -615,7 +615,7 @@ export default function TalentMapperWorkspace() {
           <button
             type="button"
             onClick={loadDemo}
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:bg-cyan-500 dark:text-zinc-900"
+            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500"
           >
             Load scientific sourcing demo
           </button>
@@ -623,20 +623,20 @@ export default function TalentMapperWorkspace() {
             type="button"
             onClick={() => void persistSnapshot()}
             disabled={saveBusy || (!roleTitle.trim() && !criteria)}
-            className="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 disabled:opacity-50 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100"
+            className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 disabled:opacity-50"
           >
             {saveBusy ? "Saving…" : searchId ? "Save updates" : "Save search"}
           </button>
           <Link
             href="/talent/searches"
-            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600 dark:border-white/15 dark:text-zinc-400"
+            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600"
           >
             Saved searches
           </Link>
           <button
             type="button"
             onClick={resetDemo}
-            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600 dark:border-white/15 dark:text-zinc-400"
+            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600"
           >
             Reset demo
           </button>
@@ -649,9 +649,9 @@ export default function TalentMapperWorkspace() {
       </header>
 
       {importOffer ? (
-        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950">
           <p className="font-medium">Import browser draft as a saved search?</p>
-          <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
+          <p className="mt-1 text-amber-900/80">
             This browser has a Talent Mapper draft
             {importOffer.shortlist.length
               ? ` with ${importOffer.shortlist.length} shortlisted`
@@ -705,8 +705,8 @@ export default function TalentMapperWorkspace() {
             }}
             className={`rounded-full px-3 py-1.5 ${
               step === id
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-100 text-zinc-600"
             }`}
           >
             {label}
@@ -715,20 +715,20 @@ export default function TalentMapperWorkspace() {
       </nav>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-100">
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
           <p className="font-medium">{error}</p>
           {actionHint && <p className="mt-1 opacity-90">{actionHint}</p>}
         </div>
       )}
       {!error && actionHint && (
-        <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-100">
+        <div className="mb-4 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-950">
           <p>{actionHint}</p>
         </div>
       )}
 
       {step === "role" && (
-        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Enter a role</h2>
+        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-zinc-900">Enter a role</h2>
           <p className="text-sm text-zinc-500">{SCIENTIFIC_DEMO_LABEL}</p>
           <div>
             <label htmlFor="role-title" className="text-xs font-medium text-zinc-500">
@@ -738,7 +738,7 @@ export default function TalentMapperWorkspace() {
               id="role-title"
               value={roleTitle}
               onChange={(e) => setRoleTitle(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm"
               placeholder="e.g. Scientist — Virology and Experimental Biology"
             />
           </div>
@@ -751,7 +751,7 @@ export default function TalentMapperWorkspace() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={14}
-              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed dark:border-white/15 dark:bg-zinc-900"
+              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed"
               placeholder="Paste a complete job description…"
             />
           </div>
@@ -759,7 +759,7 @@ export default function TalentMapperWorkspace() {
             type="button"
             disabled={busy}
             onClick={extractCriteria}
-            className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60 dark:bg-cyan-500 dark:text-zinc-900"
+            className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {busy ? "Extracting…" : "Extract sourcing criteria"}
           </button>
@@ -767,10 +767,10 @@ export default function TalentMapperWorkspace() {
       )}
 
       {step === "criteria" && criteria && (
-        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-zinc-900">
                 Review sourcing criteria
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
@@ -781,7 +781,7 @@ export default function TalentMapperWorkspace() {
             <button
               type="button"
               onClick={() => extractedCriteria && setCriteria(extractedCriteria)}
-              className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs dark:border-white/15"
+              className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
             >
               Reset to extracted
             </button>
@@ -796,7 +796,7 @@ export default function TalentMapperWorkspace() {
                 id="crit-title"
                 value={criteria.roleTitle}
                 onChange={(e) => setCriteria({ ...criteria, roleTitle: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -815,7 +815,7 @@ export default function TalentMapperWorkspace() {
                       : undefined,
                   })
                 }
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -829,7 +829,7 @@ export default function TalentMapperWorkspace() {
               value={criteria.roleSummary}
               onChange={(e) => setCriteria({ ...criteria, roleSummary: e.target.value })}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
             />
           </div>
 
@@ -864,7 +864,7 @@ export default function TalentMapperWorkspace() {
                     setNewCriterion((prev) => ({ ...prev, [group]: e.target.value }))
                   }
                   placeholder={`Add ${GROUP_LABELS[group].toLowerCase()}…`}
-                  className="flex-1 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm dark:border-white/15 dark:bg-zinc-900"
+                  className="flex-1 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -879,7 +879,7 @@ export default function TalentMapperWorkspace() {
                 />
                 <button
                   type="button"
-                  className="rounded-lg border border-zinc-200 px-3 text-xs dark:border-white/15"
+                  className="rounded-lg border border-zinc-200 px-3 text-xs"
                   onClick={() => {
                     const v = (newCriterion[group] || "").trim();
                     if (!v) return;
@@ -912,10 +912,10 @@ export default function TalentMapperWorkspace() {
                     })
                   }
                   placeholder={field}
-                  className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm capitalize dark:border-white/15 dark:bg-zinc-900"
+                  className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm capitalize"
                 />
               ))}
-              <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <label className="flex items-center gap-2 text-sm text-zinc-600">
                 <input
                   type="checkbox"
                   checked={Boolean(criteria.location.remoteAllowed)}
@@ -941,14 +941,14 @@ export default function TalentMapperWorkspace() {
                 setQueries(buildSearchQueries(criteria));
                 setStep("strategy");
               }}
-              className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white dark:bg-cyan-500 dark:text-zinc-900"
+              className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white"
             >
               Continue to search strategy
             </button>
             <button
               type="button"
               onClick={() => setStep("role")}
-              className="rounded-full border border-zinc-200 px-4 py-2 text-sm dark:border-white/15"
+              className="rounded-full border border-zinc-200 px-4 py-2 text-sm"
             >
               Back
             </button>
@@ -957,8 +957,8 @@ export default function TalentMapperWorkspace() {
       )}
 
       {step === "strategy" && criteria && (
-        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-zinc-900">
             Search strategy
           </h2>
           <p className="text-sm text-zinc-500">
@@ -968,13 +968,13 @@ export default function TalentMapperWorkspace() {
 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-medium text-zinc-500">Search mode</span>
-            <div className="flex rounded-full border border-zinc-200 p-0.5 dark:border-white/15">
+            <div className="flex rounded-full border border-zinc-200 p-0.5">
               <button
                 type="button"
                 onClick={() => setMode("demo")}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium ${
                   mode === "demo"
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                    ? "bg-zinc-900 text-white"
                     : "text-zinc-600"
                 }`}
               >
@@ -991,7 +991,7 @@ export default function TalentMapperWorkspace() {
                 }
                 className={`rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-40 ${
                   mode === "live"
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                    ? "bg-zinc-900 text-white"
                     : "text-zinc-600"
                 }`}
               >
@@ -999,14 +999,14 @@ export default function TalentMapperWorkspace() {
               </button>
             </div>
             {!openAlexConfigured && (
-              <div className="w-full rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-xs text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+              <div className="w-full rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
                 Live OpenAlex search needs <code className="font-mono">OPENALEX_API_KEY</code>{" "}
                 (free at openalex.org/settings/api). For interviews, use{" "}
                 <strong>Demo snapshot</strong> — it is deterministic and does not call the network.
               </div>
             )}
             {openAlexConfigured && (
-              <span className="text-xs text-emerald-700 dark:text-emerald-300">
+              <span className="text-xs text-emerald-700">
                 Live OpenAlex search is configured. Demo snapshot remains available as a fallback.
               </span>
             )}
@@ -1016,7 +1016,7 @@ export default function TalentMapperWorkspace() {
             {queries.map((q, idx) => (
               <li
                 key={q.id}
-                className="flex flex-wrap items-start gap-2 rounded-xl border border-zinc-100 p-3 dark:border-white/10"
+                className="flex flex-wrap items-start gap-2 rounded-xl border border-zinc-100 p-3"
               >
                 <input
                   type="checkbox"
@@ -1053,7 +1053,7 @@ export default function TalentMapperWorkspace() {
                         )
                       )
                     }
-                    className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 font-mono text-sm dark:border-white/15 dark:bg-zinc-900"
+                    className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 font-mono text-sm"
                   />
                 </div>
                 <button
@@ -1081,7 +1081,7 @@ export default function TalentMapperWorkspace() {
                 },
               ])
             }
-            className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs dark:border-white/15"
+            className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
           >
             Add query
           </button>
@@ -1091,14 +1091,14 @@ export default function TalentMapperWorkspace() {
               type="button"
               disabled={busy}
               onClick={runSearch}
-              className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60 dark:bg-cyan-500 dark:text-zinc-900"
+              className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
             >
               {busy ? "Searching…" : mode === "live" ? "Run live search" : "Run demo snapshot"}
             </button>
             <button
               type="button"
               onClick={() => setStep("criteria")}
-              className="rounded-full border border-zinc-200 px-4 py-2 text-sm dark:border-white/15"
+              className="rounded-full border border-zinc-200 px-4 py-2 text-sm"
             >
               Back
             </button>
@@ -1108,13 +1108,13 @@ export default function TalentMapperWorkspace() {
 
       {step === "results" && result && (
         <section className="space-y-5">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-zinc-900">
                   {result.meta.roleTitle}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-zinc-600">
                   {result.meta.uniqueResearchers} potential researchers identified from{" "}
                   {result.meta.worksReviewed} public works
                 </p>
@@ -1136,14 +1136,14 @@ export default function TalentMapperWorkspace() {
                 <button
                   type="button"
                   onClick={exportCsv}
-                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium dark:border-white/15"
+                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium"
                 >
                   Export shortlist CSV
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep("strategy")}
-                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs dark:border-white/15"
+                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
                 >
                   Adjust strategy
                 </button>
@@ -1151,7 +1151,7 @@ export default function TalentMapperWorkspace() {
             </div>
             <Disclaimer className="mt-4">{result.meta.disclaimer}</Disclaimer>
             {result.meta.warnings.length > 0 && (
-              <ul className="mt-3 space-y-1 text-xs text-amber-800 dark:text-amber-200">
+              <ul className="mt-3 space-y-1 text-xs text-amber-800">
                 {result.meta.warnings.map((w) => (
                   <li key={w}>{w}</li>
                 ))}
@@ -1159,7 +1159,7 @@ export default function TalentMapperWorkspace() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-xs text-zinc-500">
                 Min relevance score
@@ -1169,7 +1169,7 @@ export default function TalentMapperWorkspace() {
                   max={100}
                   value={minScore}
                   onChange={(e) => setMinScore(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1177,7 +1177,7 @@ export default function TalentMapperWorkspace() {
                 <input
                   value={filterTechnique}
                   onChange={(e) => setFilterTechnique(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1185,7 +1185,7 @@ export default function TalentMapperWorkspace() {
                 <input
                   value={filterArea}
                   onChange={(e) => setFilterArea(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1193,7 +1193,7 @@ export default function TalentMapperWorkspace() {
                 <input
                   value={filterInstitution}
                   onChange={(e) => setFilterInstitution(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1201,7 +1201,7 @@ export default function TalentMapperWorkspace() {
                 <input
                   value={filterCountry}
                   onChange={(e) => setFilterCountry(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1210,7 +1210,7 @@ export default function TalentMapperWorkspace() {
                   type="number"
                   value={filterYear || ""}
                   onChange={(e) => setFilterYear(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1219,7 +1219,7 @@ export default function TalentMapperWorkspace() {
                   type="number"
                   value={filterWorks || ""}
                   onChange={(e) => setFilterWorks(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 />
               </label>
               <label className="text-xs text-zinc-500">
@@ -1229,7 +1229,7 @@ export default function TalentMapperWorkspace() {
                   onChange={(e) =>
                     setSortBy(e.target.value as typeof sortBy)
                   }
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-white/15 dark:bg-zinc-900"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 px-2 py-1.5"
                 >
                   <option value="score">Research relevance</option>
                   <option value="recent">Most recent relevant work</option>
@@ -1239,7 +1239,7 @@ export default function TalentMapperWorkspace() {
                 </select>
               </label>
             </div>
-            <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-600 dark:text-zinc-400">
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-600">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -1264,15 +1264,15 @@ export default function TalentMapperWorkspace() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="h-48 animate-pulse rounded-2xl bg-zinc-100 dark:bg-white/5"
+                  className="h-48 animate-pulse rounded-2xl bg-zinc-100"
                 />
               ))}
             </div>
           )}
 
           {!busy && filteredCandidates.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-zinc-300 px-6 py-12 text-center dark:border-white/15">
-              <p className="font-medium text-zinc-800 dark:text-zinc-200">
+            <div className="rounded-2xl border border-dashed border-zinc-300 px-6 py-12 text-center">
+              <p className="font-medium text-zinc-800">
                 No potential researchers match these filters.
               </p>
               <p className="mt-1 text-sm text-zinc-500">

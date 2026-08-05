@@ -50,7 +50,7 @@ function ScoreRing({ score }: { score: number }) {
           fill="none"
           stroke="currentColor"
           strokeWidth="10"
-          className="text-zinc-200 dark:text-white/10"
+          className="text-zinc-200"
         />
         <circle
           cx="72"
@@ -65,7 +65,7 @@ function ScoreRing({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute text-center">
-        <p className="text-3xl font-bold tabular-nums text-zinc-900 dark:text-white">
+        <p className="text-3xl font-bold tabular-nums text-zinc-900">
           {score}
         </p>
         <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Match</p>
@@ -77,24 +77,24 @@ function ScoreRing({ score }: { score: number }) {
 function concernStyles(level: ConcernLevel) {
   switch (level) {
     case "Low":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
     case "Medium":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
+      return "border-amber-200 bg-amber-50 text-amber-800";
     case "High":
-      return "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
+      return "border-rose-200 bg-rose-50 text-rose-800";
   }
 }
 
 function nextStepStyles(step: RecommendedNextStep) {
   switch (step) {
     case "Strongly recommend":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
     case "Interview":
-      return "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
+      return "border-sky-200 bg-sky-50 text-sky-800";
     case "Screen":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
+      return "border-amber-200 bg-amber-50 text-amber-800";
     case "Reject":
-      return "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
+      return "border-rose-200 bg-rose-50 text-rose-800";
   }
 }
 
@@ -106,8 +106,8 @@ function CriteriaChecklist({
   items: CriteriaItem[];
 }) {
   return (
-    <article className="rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+    <article className="rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         {title}
       </h3>
       {items.length > 0 ? (
@@ -117,15 +117,15 @@ function CriteriaChecklist({
               item.status === "met" ? "✓" : item.status === "not_met" ? "✕" : "?";
             const iconClass =
               item.status === "met"
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200"
+                ? "bg-emerald-100 text-emerald-700"
                 : item.status === "not_met"
-                  ? "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200"
-                  : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200";
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-amber-100 text-amber-800";
 
             return (
               <li
                 key={item.criterion}
-                className="rounded-xl border border-zinc-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
+                className="rounded-xl border border-zinc-200/80 bg-white/80 p-3"
               >
                 <div className="flex items-start gap-3">
                   <span
@@ -135,16 +135,16 @@ function CriteriaChecklist({
                     {icon}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <p className="text-sm font-medium text-zinc-900">
                       {item.criterion}
                     </p>
                     {item.quote ? (
-                      <p className="mt-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-600">
                         <span className="text-zinc-500">“</span>
                         {item.quote}
                         <span className="text-zinc-500">”</span>
                         {item.aiInferred ? (
-                          <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-400/20 dark:text-amber-200">
+                          <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800">
                             Inferred
                           </span>
                         ) : null}
@@ -169,8 +169,8 @@ function CriteriaChecklist({
 
 function StrongMatchesList({ matches }: { matches: StrongMatch[] }) {
   return (
-    <article className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+    <article className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         Strong matches
       </h3>
       {matches.length > 0 ? (
@@ -178,15 +178,15 @@ function StrongMatchesList({ matches }: { matches: StrongMatch[] }) {
           {matches.map((item) => (
             <li
               key={item.match}
-              className="rounded-xl border border-emerald-200/80 bg-white/80 p-4 dark:border-emerald-400/20 dark:bg-white/[0.03]"
+              className="rounded-xl border border-emerald-200/80 bg-white/80 p-4"
             >
-              <h4 className="font-medium text-zinc-900 dark:text-white">{item.match}</h4>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <h4 className="font-medium text-zinc-900">{item.match}</h4>
+              <p className="mt-1 text-sm leading-relaxed text-zinc-600">
                 <span className="text-zinc-500">“</span>
                 {item.quote}
                 <span className="text-zinc-500">”</span>
                 {item.aiInferred ? (
-                  <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-400/20 dark:text-amber-200">
+                  <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800">
                     Inferred
                   </span>
                 ) : null}
@@ -206,13 +206,13 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
 
   return (
     <section className="space-y-6" aria-live="polite">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <ScoreRing score={result.matchScore} />
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-zinc-900">
                   Decision summary
                 </h2>
                 <CopyButton
@@ -221,7 +221,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
                   copiedLabel="Copied"
                 />
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
                 {result.summary}
               </p>
             </div>
@@ -251,7 +251,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
       <StrongMatchesList matches={result.strongMatches} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm dark:border-sky-400/20 dark:bg-sky-400/10">
+        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm">
           <SectionHeader
             title="Phone-screen questions"
             copyText={formatPhoneScreenQuestions(result.phoneScreenQuestions)}
@@ -262,9 +262,9 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
             {result.phoneScreenQuestions.map((question, index) => (
               <li
                 key={question}
-                className="flex gap-3 rounded-xl border border-sky-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700 dark:border-sky-400/20 dark:bg-white/[0.03] dark:text-zinc-300"
+                className="flex gap-3 rounded-xl border border-sky-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-800 dark:bg-sky-400/20 dark:text-sky-200">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-800">
                   {index + 1}
                 </span>
                 <span>{question}</span>
@@ -273,7 +273,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
           </ol>
         </article>
 
-        <article className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10">
+        <article className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm">
           <SectionHeader
             title="Client-facing bullets"
             copyText={formatClientFacingBullets(result.clientFacingBullets)}
@@ -284,9 +284,9 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
             {result.clientFacingBullets.map((bullet) => (
               <li
                 key={bullet}
-                className="flex gap-2 rounded-xl border border-emerald-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700 dark:border-emerald-400/20 dark:bg-white/[0.03] dark:text-zinc-300"
+                className="flex gap-2 rounded-xl border border-emerald-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
                 <span>{bullet}</span>
               </li>
             ))}
@@ -294,14 +294,14 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
         </article>
       </div>
 
-      <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <SectionHeader
           title="Sendout blurb"
           copyText={formatSendoutBlurb(result.sendoutBlurb)}
           copyLabel="Copy"
           copiedLabel="Copied"
         />
-        <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+        <p className="text-sm leading-relaxed text-zinc-700">
           {result.sendoutBlurb}
         </p>
       </article>

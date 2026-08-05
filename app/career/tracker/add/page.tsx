@@ -9,7 +9,7 @@ import { Suspense } from "react";
 const STATUSES = ["Applied", "Interview", "Offer", "Rejected", "Saved"];
 
 const inputClass =
-  "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+  "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 
 function AddForm() {
   const { status } = useSession();
@@ -69,23 +69,23 @@ function AddForm() {
       <div className="mb-8">
         <Link
           href="/career/tracker"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900 dark:hover:text-white"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900"
         >
           ← Back to dashboard
         </Link>
-        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
           ResumeX Tracker
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
           Add Application
         </h1>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 Company <span className="text-rose-500">*</span>
               </label>
               <input
@@ -98,7 +98,7 @@ function AddForm() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 Role / Title <span className="text-rose-500">*</span>
               </label>
               <input
@@ -112,7 +112,7 @@ function AddForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <label className="mb-2 block text-sm font-medium text-zinc-800">
               Job URL
             </label>
             <input
@@ -126,7 +126,7 @@ function AddForm() {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 Status
               </label>
               <select
@@ -140,7 +140,7 @@ function AddForm() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 ResumeX Match Score (0–100)
               </label>
               <input
@@ -156,7 +156,7 @@ function AddForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <label className="mb-2 block text-sm font-medium text-zinc-800">
               Notes
             </label>
             <textarea
@@ -168,19 +168,19 @@ function AddForm() {
             />
           </div>
 
-          {error && <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
 
           <div className="flex gap-3">
             <button
               type="submit"
               disabled={loading}
-              className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
+              className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Saving…" : "Save Application"}
             </button>
             <Link
               href="/career/tracker"
-              className="rounded-full border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-300 dark:border-white/15 dark:text-zinc-400 dark:hover:border-white/30"
+              className="rounded-full border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-300"
             >
               Cancel
             </Link>

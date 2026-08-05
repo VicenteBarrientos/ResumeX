@@ -12,7 +12,7 @@ export default function OGImage() {
         style={{
           width: "1200px",
           height: "630px",
-          background: "#0d1117",
+          background: "linear-gradient(180deg, #f1f3f6 0%, #e2e6ec 100%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -32,7 +32,7 @@ export default function OGImage() {
             style={{
               fontSize: "96px",
               fontWeight: "700",
-              color: "white",
+              color: "#1b1d22",
               letterSpacing: "-2px",
               lineHeight: 1,
             }}
@@ -43,7 +43,7 @@ export default function OGImage() {
             style={{
               fontSize: "96px",
               fontWeight: "700",
-              color: "#22d3ee",
+              color: "#1d3559",
               letterSpacing: "-2px",
               lineHeight: 1,
             }}

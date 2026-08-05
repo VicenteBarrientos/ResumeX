@@ -47,7 +47,7 @@ function UpgradeContent() {
   if (status === "loading") {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-600 dark:border-white/10 dark:border-t-cyan-400" />
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-brand-600" />
       </div>
     );
   }
@@ -56,21 +56,21 @@ function UpgradeContent() {
     <div className="mx-auto w-full max-w-2xl px-4 py-12 sm:px-6">
       {/* Success banners */}
       {success === "pro" && (
-        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
           🎉 <strong>You&apos;re now a ResumeX Pro member!</strong> Thank you — enjoy all features.
         </div>
       )}
       {success === "donation" && (
-        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
           ❤️ <strong>Thank you so much for your support!</strong> It means the world to us.
         </div>
       )}
 
       <div className="mb-8 text-center">
-        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
           ResumeX
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
           Support ResumeX
         </h1>
         <p className="mt-2 text-sm text-zinc-500">
@@ -80,17 +80,17 @@ function UpgradeContent() {
 
       <div className="space-y-4">
         {/* Pro plan */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-500 bg-white p-6 shadow-sm dark:border-cyan-400/60 dark:bg-white/[0.03]">
-          <div className="absolute right-4 top-4 rounded-full bg-indigo-600 px-2.5 py-0.5 text-xs font-bold text-white dark:bg-cyan-400 dark:text-zinc-900">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-brand-500 bg-white p-6 shadow-sm">
+          <div className="absolute right-4 top-4 rounded-full bg-brand-600 px-2.5 py-0.5 text-xs font-bold text-white">
             MOST POPULAR
           </div>
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">ResumeX Pro</h2>
+            <h2 className="text-lg font-bold text-zinc-900">ResumeX Pro</h2>
             <div className="mt-1 flex items-baseline gap-1">
-              <span className="text-4xl font-bold text-zinc-900 dark:text-white">$5</span>
+              <span className="text-4xl font-bold text-zinc-900">$5</span>
               <span className="text-sm text-zinc-500">/month</span>
             </div>
-            <p className="mt-1 text-xs text-indigo-600 dark:text-cyan-400 font-medium">
+            <p className="mt-1 text-xs text-brand-600 font-medium">
               Founding member price — locked in forever
             </p>
           </div>
@@ -105,7 +105,7 @@ function UpgradeContent() {
               "Export to CSV",
               "Priority support",
             ].map((f) => (
-              <li key={f} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <li key={f} className="flex items-center gap-2 text-sm text-zinc-700">
                 <span className="text-emerald-500">✓</span>
                 {f}
               </li>
@@ -114,15 +114,15 @@ function UpgradeContent() {
           <button
             onClick={() => startCheckout("pro")}
             disabled={loading !== null}
-            className="w-full rounded-full bg-indigo-600 py-3 text-sm font-bold text-white transition hover:bg-indigo-500 disabled:opacity-60 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816]"
+            className="w-full rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition hover:bg-brand-500 disabled:opacity-60"
           >
             {loading === "pro" ? "Redirecting…" : "Get Pro — $5/month"}
           </button>
         </div>
 
         {/* Donation */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-          <h2 className="mb-1 text-lg font-bold text-zinc-900 dark:text-white">Make a Donation ❤️</h2>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-1 text-lg font-bold text-zinc-900">Make a Donation ❤️</h2>
           <p className="mb-4 text-sm text-zinc-500">
             Love what we&apos;re building? A one-time contribution goes a long way.
           </p>
@@ -133,8 +133,8 @@ function UpgradeContent() {
                 onClick={() => setDonationAmount(amt)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   donationAmount === amt
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-cyan-400 dark:bg-cyan-400/10 dark:text-cyan-300"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
+                    ? "border-brand-500 bg-brand-50 text-brand-700"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
                 }`}
               >
                 ${amt}
@@ -144,7 +144,7 @@ function UpgradeContent() {
           <button
             onClick={() => startCheckout("donation")}
             disabled={loading !== null}
-            className="w-full rounded-full border-2 border-rose-400 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60 dark:border-rose-400/60 dark:text-rose-400 dark:hover:bg-rose-400/10"
+            className="w-full rounded-full border-2 border-rose-400 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
           >
             {loading === "donation" ? "Redirecting…" : `Donate $${donationAmount} ❤️`}
           </button>
@@ -156,7 +156,7 @@ function UpgradeContent() {
             <button
               onClick={openPortal}
               disabled={loading !== null}
-              className="text-xs text-zinc-400 underline hover:text-zinc-600 disabled:opacity-50 dark:hover:text-zinc-200"
+              className="text-xs text-zinc-400 underline hover:text-zinc-600 disabled:opacity-50"
             >
               {loading === "portal" ? "Opening…" : "Manage billing & cancel subscription"}
             </button>
@@ -169,7 +169,7 @@ function UpgradeContent() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link href="/career/tracker" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+        <Link href="/career/tracker" className="text-sm text-zinc-400 hover:text-zinc-600">
           ← Back to tracker
         </Link>
       </div>

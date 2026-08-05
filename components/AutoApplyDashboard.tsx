@@ -147,13 +147,13 @@ export default function AutoApplyDashboard() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 dark:text-cyan-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">
           Job Search Hub
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           AutoApply
         </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-500">
           Track applications, manage your profile, and review AI-generated answers — all in one place.
         </p>
       </div>
@@ -161,28 +161,28 @@ export default function AutoApplyDashboard() {
       {/* Stats bar */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Total Applied", value: applications.length, color: "text-zinc-700 dark:text-zinc-300" },
-          { label: "In Review", value: applications.filter((a) => a.status === "reviewing").length, color: "text-amber-600 dark:text-amber-400" },
-          { label: "Interviews", value: applications.filter((a) => a.status === "interview").length, color: "text-indigo-600 dark:text-cyan-400" },
-          { label: "Offers", value: applications.filter((a) => a.status === "offer").length, color: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Total Applied", value: applications.length, color: "text-zinc-700" },
+          { label: "In Review", value: applications.filter((a) => a.status === "reviewing").length, color: "text-amber-600" },
+          { label: "Interviews", value: applications.filter((a) => a.status === "interview").length, color: "text-brand-600" },
+          { label: "Offers", value: applications.filter((a) => a.status === "offer").length, color: "text-emerald-600" },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">{stat.label}</p>
+          <div key={stat.label} className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs text-zinc-500">{stat.label}</p>
             <p className={`mt-1 text-2xl font-bold ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-white/10">
+      <div className="mb-6 flex gap-2 border-b border-zinc-200">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               activeTab === tab.id
-                ? "border-indigo-500 text-indigo-600 dark:border-cyan-400 dark:text-cyan-300"
-                : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                ? "border-brand-500 text-brand-600"
+                : "border-transparent text-zinc-500 hover:text-zinc-700"
             }`}
           >
             {tab.label}

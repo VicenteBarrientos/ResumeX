@@ -65,7 +65,7 @@ export default function OutreachEditor({
           id="outreach-tone"
           value={tone}
           onChange={(e) => setTone(e.target.value as OutreachTone)}
-          className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm dark:border-white/15 dark:bg-zinc-900"
+          className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm"
         >
           <option value="concise">Concise</option>
           <option value="conversational">Conversational</option>
@@ -74,20 +74,20 @@ export default function OutreachEditor({
           type="button"
           onClick={draft}
           disabled={loading}
-          className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-60 dark:bg-cyan-500 dark:text-zinc-900"
+          className="rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 disabled:opacity-60"
         >
           {loading ? "Drafting…" : body ? "Regenerate" : "Draft personalized outreach"}
         </button>
         {body && <CopyButton text={`${subject}\n\n${body}`} label="Copy" />}
       </div>
-      {error && <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
       {body && (
         <>
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             aria-label="Outreach subject"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
             placeholder="Subject"
           />
           <textarea
@@ -95,7 +95,7 @@ export default function OutreachEditor({
             onChange={(e) => setBody(e.target.value)}
             rows={8}
             aria-label="Outreach body"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed dark:border-white/15 dark:bg-zinc-900"
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed"
           />
           <p className="text-xs text-zinc-500">{body.length} characters</p>
         </>

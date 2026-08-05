@@ -42,26 +42,26 @@ function LoginForm() {
   }
 
   const inputClass =
-    "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+    "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
             ResumeX
           </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
             Welcome back
           </h1>
           <p className="mt-2 text-sm text-zinc-500">Sign in to access your tools</p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <button
             type="button"
             onClick={() => signIn("google", { callbackUrl })}
-            className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
+            className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
               <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
@@ -72,13 +72,13 @@ function LoginForm() {
             Continue with Google
           </button>
           <div className="relative mb-4 flex items-center gap-3">
-            <div className="flex-1 border-t border-zinc-200 dark:border-white/10" />
+            <div className="flex-1 border-t border-zinc-200" />
             <span className="text-xs text-zinc-400">or</span>
-            <div className="flex-1 border-t border-zinc-200 dark:border-white/10" />
+            <div className="flex-1 border-t border-zinc-200" />
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 Username
               </label>
               <input
@@ -92,7 +92,7 @@ function LoginForm() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <label className="mb-2 block text-sm font-medium text-zinc-800">
                 Password
               </label>
               <input
@@ -106,13 +106,13 @@ function LoginForm() {
             </div>
 
             {error && (
-              <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+              <p className="text-sm text-rose-600">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90 dark:disabled:bg-white/10 dark:disabled:text-zinc-500"
+              className="w-full rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -130,7 +130,7 @@ function LoginForm() {
           No account?{" "}
           <Link
             href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="font-medium text-brand-600 hover:text-brand-500"
           >
             Register
           </Link>

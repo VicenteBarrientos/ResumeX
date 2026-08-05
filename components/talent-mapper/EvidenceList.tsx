@@ -10,10 +10,10 @@ const confidenceLabel: Record<EvidenceMatch["confidence"], string> = {
 
 const confidenceClass: Record<EvidenceMatch["confidence"], string> = {
   direct:
-    "bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-300",
+    "bg-emerald-50 text-emerald-800",
   strong_adjacent:
-    "bg-sky-50 text-sky-800 dark:bg-sky-400/10 dark:text-sky-300",
-  possible: "bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-zinc-300",
+    "bg-sky-50 text-sky-800",
+  possible: "bg-zinc-100 text-zinc-700",
 };
 
 export default function EvidenceList({
@@ -43,10 +43,10 @@ export default function EvidenceList({
         {matches.map((m) => (
           <li
             key={`${m.criterion}-${m.workId}`}
-            className="rounded-lg border border-zinc-100 bg-white/60 p-3 dark:border-white/10 dark:bg-white/5"
+            className="rounded-lg border border-zinc-100 bg-white/60 p-3"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-zinc-900 dark:text-white">
+              <span className="text-sm font-medium text-zinc-900">
                 {m.criterion}
               </span>
               <span
@@ -55,7 +55,7 @@ export default function EvidenceList({
                 {confidenceLabel[m.confidence]}
               </span>
             </div>
-            <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+            <p className="mt-1 text-sm text-zinc-700">
               “{m.workTitle}”
               {m.year ? ` · ${m.year}` : ""}
             </p>
@@ -68,7 +68,7 @@ export default function EvidenceList({
                   href={m.openAlexUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-600 hover:underline dark:text-cyan-400"
+                  className="text-brand-600 hover:underline"
                 >
                   OpenAlex
                 </a>
@@ -78,7 +78,7 @@ export default function EvidenceList({
                   href={m.doi.startsWith("http") ? m.doi : `https://doi.org/${m.doi.replace(/^https?:\/\/doi\.org\//, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-600 hover:underline dark:text-cyan-400"
+                  className="text-brand-600 hover:underline"
                 >
                   DOI
                 </a>

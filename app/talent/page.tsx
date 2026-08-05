@@ -59,24 +59,24 @@ export default async function TalentLandingPage() {
     : `/login?callbackUrl=${encodeURIComponent(TALENT.home)}`;
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-white text-zinc-900 dark:bg-[#050816] dark:text-white">
+    <div className="relative min-h-full overflow-hidden text-zinc-900">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-32 -top-20 h-[500px] w-[500px] rounded-full bg-emerald-100/60 blur-3xl dark:bg-emerald-500/10" />
-        <div className="absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-teal-100/40 blur-3xl dark:bg-teal-600/10" />
+        <div className="absolute -left-32 -top-20 h-[500px] w-[500px] rounded-full bg-emerald-100/60 blur-3xl" />
+        <div className="absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-teal-100/40 blur-3xl" />
       </div>
 
       <div className="relative z-10">
         {/* Hero */}
         <section className="mx-auto max-w-5xl px-4 pb-16 pt-24 text-center sm:px-6 lg:px-8">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700 dark:text-emerald-300">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
             {TALENT.name} — for {TALENT.audience.toLowerCase()}
           </p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             Find researchers by their evidence,
             <br />
-            <span className="text-emerald-700 dark:text-emerald-400">not by their job title</span>
+            <span className="text-emerald-700">not by their job title</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-300">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600">
             Scientific roles are hard to fill because the people who can do the work do not
             describe themselves the way a job board does. Talent Mapper reads what they
             actually published.
@@ -85,25 +85,25 @@ export default async function TalentLandingPage() {
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={primaryHref}
-              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400"
+              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600"
             >
               Open Talent Mapper
             </TrackedLink>
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={session ? TALENT.home : "/register"}
-              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-emerald-400/50"
+              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700"
             >
               {session ? "Run the demo search →" : "Create a free account →"}
             </TrackedLink>
           </div>
-          <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-4 text-sm text-zinc-500">
             A saved public-data snapshot runs the full flow without any API key.
           </p>
         </section>
 
         {/* How it works */}
-        <section className="bg-zinc-50 py-20 dark:bg-white/[0.02]">
+        <section className="bg-zinc-50 py-20">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
               How it works
@@ -111,12 +111,12 @@ export default async function TalentLandingPage() {
             <div className="grid gap-8 sm:grid-cols-2">
               {STEPS.map((s) => (
                 <div key={s.n} className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white dark:bg-emerald-500 dark:text-[#04150f]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white">
                     {s.n}
                   </div>
                   <div>
                     <h3 className="mb-1.5 text-base font-semibold">{s.title}</h3>
-                    <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    <p className="text-sm leading-relaxed text-zinc-500">
                       {s.body}
                     </p>
                   </div>
@@ -132,27 +132,27 @@ export default async function TalentLandingPage() {
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               An explainable score, not a black box
             </h2>
-            <p className="mt-3 text-base text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 text-base text-zinc-500">
               Research relevance out of 100. Every point is attributable, and you can see
               which paper earned it.
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200">
             {SCORE.map((row) => (
               <div
                 key={row.label}
-                className="flex items-center gap-4 border-b border-zinc-100 px-5 py-3.5 last:border-0 dark:border-white/5"
+                className="flex items-center gap-4 border-b border-zinc-100 px-5 py-3.5 last:border-0"
               >
-                <span className="flex-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <span className="flex-1 text-sm text-zinc-700">
                   {row.label}
                 </span>
-                <div className="hidden h-1.5 w-40 overflow-hidden rounded-full bg-zinc-100 sm:block dark:bg-white/10">
+                <div className="hidden h-1.5 w-40 overflow-hidden rounded-full bg-zinc-100 sm:block">
                   <div
-                    className="h-full rounded-full bg-emerald-600 dark:bg-emerald-400"
+                    className="h-full rounded-full bg-emerald-600"
                     style={{ width: `${row.max}%` }}
                   />
                 </div>
-                <span className="w-10 text-right text-sm font-semibold tabular-nums text-zinc-900 dark:text-white">
+                <span className="w-10 text-right text-sm font-semibold tabular-nums text-zinc-900">
                   {row.max}
                 </span>
               </div>
@@ -161,12 +161,12 @@ export default async function TalentLandingPage() {
         </section>
 
         {/* Limits — stated up front on purpose (R-007, R-014) */}
-        <section className="bg-zinc-50 py-20 dark:bg-white/[0.02]">
+        <section className="bg-zinc-50 py-20">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">
               What this does not tell you
             </h2>
-            <p className="mb-8 text-base text-zinc-500 dark:text-zinc-400">
+            <p className="mb-8 text-base text-zinc-500">
               A sourcing tool that hides its uncertainty costs you credibility the first time
               a domain expert reads a bad match. So these are on the label:
             </p>
@@ -174,7 +174,7 @@ export default async function TalentLandingPage() {
               {LIMITS.map((limit) => (
                 <li
                   key={limit}
-                  className="flex gap-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300"
+                  className="flex gap-3 text-sm leading-relaxed text-zinc-600"
                 >
                   <span className="mt-0.5 shrink-0 text-zinc-400">—</span>
                   {limit}
@@ -193,7 +193,7 @@ export default async function TalentLandingPage() {
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={primaryHref}
-              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400"
+              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600"
             >
               Open Talent Mapper
             </TrackedLink>
@@ -204,14 +204,14 @@ export default async function TalentLandingPage() {
                   ? "/talent/assess"
                   : `/login?callbackUrl=${encodeURIComponent("/talent/assess")}`
               }
-              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-emerald-400/50"
+              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700"
             >
               Assess a resume →
             </TrackedLink>
           </div>
-          <p className="mt-10 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-10 text-sm text-zinc-500">
             Looking for a job instead?{" "}
-            <Link href="/" className="font-medium underline hover:text-zinc-700 dark:hover:text-zinc-200">
+            <Link href="/" className="font-medium underline hover:text-zinc-700">
               {CAREER.name}
             </Link>{" "}
             is the candidate side of ResumeX.

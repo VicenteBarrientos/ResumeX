@@ -29,9 +29,9 @@ function parseList(str: string): string[] {
 
 function scoreColor(score: number | null): string {
   if (score == null) return "text-zinc-500";
-  if (score >= 75) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 50) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
+  if (score >= 75) return "text-emerald-600";
+  if (score >= 50) return "text-amber-600";
+  return "text-red-600";
 }
 
 function JobCard({
@@ -50,35 +50,35 @@ function JobCard({
   busy: boolean;
 }) {
   return (
-    <article className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
+    <article className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-zinc-900 dark:text-white">{job.title}</h3>
-          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+          <h3 className="font-semibold text-zinc-900">{job.title}</h3>
+          <p className="mt-0.5 text-sm text-zinc-500">
             {job.company}
             {job.location ? ` · ${job.location}` : ""}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
               {job.platform}
             </span>
             {job.remote && (
-              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700 dark:bg-sky-400/15 dark:text-sky-300">
+              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
                 Remote
               </span>
             )}
             {job.applySupported && (
-              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-700 dark:bg-cyan-400/15 dark:text-cyan-300">
+              <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs text-brand-700">
                 ⚡ AutoApply
               </span>
             )}
             {job.status === "applied" && (
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300">
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                 Applied
               </span>
             )}
             {job.matchScore != null && (
-              <span className={`rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium dark:bg-white/10 ${scoreColor(job.matchScore)}`}>
+              <span className={`rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium ${scoreColor(job.matchScore)}`}>
                 {job.matchScore}% match
               </span>
             )}
@@ -87,10 +87,10 @@ function JobCard({
       </div>
 
       {job.matchSummary && (
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{job.matchSummary}</p>
+        <p className="mt-3 text-sm text-zinc-600">{job.matchSummary}</p>
       )}
       {job.matchGaps?.length > 0 && (
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-zinc-500">
           Gaps: {job.matchGaps.join(", ")}
         </p>
       )}
@@ -101,7 +101,7 @@ function JobCard({
             type="button"
             disabled={busy}
             onClick={onMatch}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
           >
             Analyze match
           </button>
@@ -110,7 +110,7 @@ function JobCard({
           <button
             type="button"
             onClick={onApply}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 dark:bg-cyan-500 dark:hover:bg-cyan-400"
+            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700"
           >
             Open & apply
           </button>
@@ -119,7 +119,7 @@ function JobCard({
           type="button"
           disabled={busy}
           onClick={onSave}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-200"
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
         >
           {job.status === "saved" ? "Saved ✓" : "Save"}
         </button>
@@ -128,7 +128,7 @@ function JobCard({
             type="button"
             disabled={busy}
             onClick={onDismiss}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-700"
           >
             Dismiss
           </button>
@@ -349,13 +349,13 @@ export default function JobSearcherDashboard() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 dark:text-cyan-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">
           Job Search Hub
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           Job Searcher
         </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-500">
           Discover roles, analyze fit against your profile, and queue jobs for AutoApply.
         </p>
       </div>
@@ -369,15 +369,15 @@ export default function JobSearcherDashboard() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-white/5"
+            className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm"
           >
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">{stat.label}</p>
-            <p className="mt-1 text-2xl font-bold text-zinc-800 dark:text-zinc-100">{stat.value}</p>
+            <p className="text-xs text-zinc-500">{stat.label}</p>
+            <p className="mt-1 text-2xl font-bold text-zinc-800">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-white/10">
+      <div className="mb-6 flex gap-2 border-b border-zinc-200">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -385,8 +385,8 @@ export default function JobSearcherDashboard() {
             onClick={() => setActiveTab(tab.id)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? "border-indigo-500 text-indigo-600 dark:border-cyan-400 dark:text-cyan-300"
-                : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                ? "border-brand-500 text-brand-600"
+                : "border-transparent text-zinc-500 hover:text-zinc-700"
             }`}
           >
             {tab.label}
@@ -395,13 +395,13 @@ export default function JobSearcherDashboard() {
       </div>
 
       {status && (
-        <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-300">{status}</p>
+        <p className="mb-4 text-sm text-zinc-600">{status}</p>
       )}
 
       {activeTab === "discover" && (
         <div className="space-y-6">
           {!profile && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               No candidate profile found. Open{" "}
               <a href="/career/autoapply" className="font-medium underline">
                 AutoApply → My Profile
@@ -410,30 +410,30 @@ export default function JobSearcherDashboard() {
             </div>
           )}
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Board watchlists</h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-zinc-900">Board watchlists</h2>
+            <p className="mt-1 text-xs text-zinc-500">
               Comma-separated Greenhouse and Lever board slugs (e.g. stripe, figma).
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              <label className="block text-xs font-medium text-zinc-600">
                 Greenhouse boards
                 <input
                   type="text"
                   value={greenhouseBoards}
                   onChange={(e) => setGreenhouseBoards(e.target.value)}
                   placeholder="stripe, figma, notion"
-                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
                 />
               </label>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              <label className="block text-xs font-medium text-zinc-600">
                 Lever boards
                 <input
                   type="text"
                   value={leverBoards}
                   onChange={(e) => setLeverBoards(e.target.value)}
                   placeholder="netflix, spotify"
-                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
                 />
               </label>
             </div>
@@ -441,63 +441,63 @@ export default function JobSearcherDashboard() {
               type="button"
               disabled={busy || !profile}
               onClick={handleSearch}
-              className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 dark:bg-cyan-500 dark:hover:bg-cyan-400"
+              className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
               {busy ? "Searching…" : "Search jobs"}
             </button>
           </section>
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add by URL</h2>
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-zinc-900">Add by URL</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               <input
                 type="url"
                 value={addUrl}
                 onChange={(e) => setAddUrl(e.target.value)}
                 placeholder="https://boards.greenhouse.io/…"
-                className="min-w-[16rem] flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                className="min-w-[16rem] flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
               />
               <button
                 type="button"
                 disabled={busy || !addUrl.trim()}
                 onClick={handleAddUrl}
-                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-white"
+                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50"
               >
                 Add job
               </button>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Backend API</h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-zinc-900">Backend API</h2>
+            <p className="mt-1 text-xs text-zinc-500">
               Used for search and match analysis. Same secret as the AutoApply extension.
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              <label className="block text-xs font-medium text-zinc-600">
                 Backend URL
                 <input
                   type="url"
                   value={backendUrl}
                   onChange={(e) => setBackendUrl(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
                 />
               </label>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              <label className="block text-xs font-medium text-zinc-600">
                 API secret
                 <input
                   type="password"
                   value={backendSecret}
                   onChange={(e) => setBackendSecret(e.target.value)}
                   placeholder="AUTOAPPLY_SECRET"
-                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
                 />
               </label>
             </div>
             <button
               type="button"
               onClick={handleSaveBackend}
-              className="mt-4 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/15 dark:bg-white/5 dark:text-white"
+              className="mt-4 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50"
             >
               Save settings
             </button>
@@ -512,7 +512,7 @@ export default function JobSearcherDashboard() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterId)}
-                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm"
               >
                 <option value="open">Open</option>
                 <option value="auto">AutoApply-ready</option>
@@ -523,7 +523,7 @@ export default function JobSearcherDashboard() {
                 type="button"
                 disabled={busy || !profile}
                 onClick={handleBatchMatch}
-                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 dark:bg-cyan-500 dark:hover:bg-cyan-400"
+                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 Analyze top 5
               </button>
@@ -531,7 +531,7 @@ export default function JobSearcherDashboard() {
           )}
 
           {filteredJobs.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-200 p-10 text-center text-sm text-zinc-500 dark:border-white/15 dark:text-zinc-400">
+            <div className="rounded-2xl border border-dashed border-zinc-200 p-10 text-center text-sm text-zinc-500">
               {activeTab === "saved"
                 ? "No saved jobs yet. Save jobs from the queue to review them here."
                 : "No jobs in queue. Use Discover to search or add a job URL."}

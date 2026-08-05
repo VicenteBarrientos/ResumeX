@@ -28,7 +28,7 @@ function ScoreRing({ score, matchLabel }: { score: number; matchLabel: string })
           fill="none"
           stroke="currentColor"
           strokeWidth="10"
-          className="text-zinc-200 dark:text-white/10"
+          className="text-zinc-200"
         />
         <circle
           cx="72"
@@ -43,7 +43,7 @@ function ScoreRing({ score, matchLabel }: { score: number; matchLabel: string })
         />
       </svg>
       <div className="absolute text-center">
-        <p className="text-3xl font-bold tabular-nums text-zinc-900 dark:text-white">
+        <p className="text-3xl font-bold tabular-nums text-zinc-900">
           {score}
         </p>
         <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{matchLabel}</p>
@@ -62,19 +62,19 @@ function CriteriaChecklist({
 }: {
   title: string;
   items: CriteriaItem[];
-  accent: "indigo" | "zinc";
+  accent: "brand" | "zinc";
   insufficientLabel: string;
   inferredLabel: string;
   emptyMessage: string;
 }) {
   const borderClass =
-    accent === "indigo"
-      ? "border-indigo-200 bg-indigo-50/50 dark:border-cyan-400/20 dark:bg-cyan-400/10"
-      : "border-zinc-200 bg-zinc-50/80 dark:border-white/10 dark:bg-white/[0.03]";
+    accent === "brand"
+      ? "border-brand-200 bg-brand-50/50"
+      : "border-zinc-200 bg-zinc-50/80";
 
   return (
     <article className={`rounded-2xl border p-5 shadow-sm ${borderClass}`}>
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         {title}
       </h3>
       {items.length > 0 ? (
@@ -84,15 +84,15 @@ function CriteriaChecklist({
               item.status === "met" ? "✓" : item.status === "not_met" ? "✕" : "?";
             const iconClass =
               item.status === "met"
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200"
+                ? "bg-emerald-100 text-emerald-700"
                 : item.status === "not_met"
-                  ? "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200"
-                  : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200";
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-amber-100 text-amber-800";
 
             return (
               <li
                 key={item.criterion}
-                className="rounded-xl border border-zinc-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
+                className="rounded-xl border border-zinc-200/80 bg-white/80 p-3"
               >
                 <div className="flex items-start gap-3">
                   <span
@@ -102,16 +102,16 @@ function CriteriaChecklist({
                     {icon}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <p className="text-sm font-medium text-zinc-900">
                       {item.criterion}
                     </p>
                     {item.quote ? (
-                      <p className="mt-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-600">
                         <span className="text-zinc-500">“</span>
                         {item.quote}
                         <span className="text-zinc-500">”</span>
                         {item.aiInferred ? (
-                          <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-400/20 dark:text-amber-200">
+                          <span className="ml-2 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800">
                             {inferredLabel}
                           </span>
                         ) : null}
@@ -146,15 +146,15 @@ function ListCard({
   accent: "emerald" | "amber" | "sky" | "violet";
 }) {
   const accentClasses = {
-    emerald: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-400/20 dark:bg-emerald-400/10",
-    amber: "border-amber-200 bg-amber-50/60 dark:border-amber-400/20 dark:bg-amber-400/10",
-    sky: "border-sky-200 bg-sky-50/60 dark:border-sky-400/20 dark:bg-sky-400/10",
-    violet: "border-violet-200 bg-violet-50/60 dark:border-violet-400/20 dark:bg-violet-400/10",
+    emerald: "border-emerald-200 bg-emerald-50/60",
+    amber: "border-amber-200 bg-amber-50/60",
+    sky: "border-sky-200 bg-sky-50/60",
+    violet: "border-violet-200 bg-violet-50/60",
   };
 
   return (
     <article className={`rounded-2xl border p-5 shadow-sm ${accentClasses[accent]}`}>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         {title}
       </h3>
       {items.length > 0 ? (
@@ -162,7 +162,7 @@ function ListCard({
           {items.map((item) => (
             <li
               key={item}
-              className="flex gap-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300"
+              className="flex gap-2 text-sm leading-relaxed text-zinc-700"
             >
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-60" />
               <span>{item}</span>
@@ -189,8 +189,8 @@ function KeywordPills({
 }) {
   const pillClass =
     variant === "matched"
-      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-400/20 dark:text-emerald-200"
-      : "bg-rose-100 text-rose-800 dark:bg-rose-400/20 dark:text-rose-200";
+      ? "bg-emerald-100 text-emerald-800"
+      : "bg-rose-100 text-rose-800";
 
   if (keywords.length === 0) {
     return (
@@ -220,13 +220,13 @@ export default function ResultCards({ result }: ResultCardsProps) {
 
   return (
     <section className="space-y-6" aria-live="polite">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <ScoreRing score={result.matchScore} matchLabel={t.results.match} />
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-zinc-900">
                   {t.results.overallFit}
                 </h2>
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -238,7 +238,7 @@ export default function ResultCards({ result }: ResultCardsProps) {
                   <DownloadReportButton result={result} />
                 </div>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
                 {result.summary}
               </p>
             </div>
@@ -250,7 +250,7 @@ export default function ResultCards({ result }: ResultCardsProps) {
         <CriteriaChecklist
           title={t.results.mustHave}
           items={result.mustHaveCriteria}
-          accent="indigo"
+          accent="brand"
           insufficientLabel={t.results.insufficientEvidence}
           inferredLabel={t.results.inferredBadge}
           emptyMessage={t.results.noCriteria}
@@ -281,8 +281,8 @@ export default function ResultCards({ result }: ResultCardsProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm dark:border-sky-400/20 dark:bg-sky-400/10">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700">
             {t.results.matchedKeywords}
           </h3>
           <KeywordPills
@@ -292,8 +292,8 @@ export default function ResultCards({ result }: ResultCardsProps) {
             emptyMissing={t.results.noMissingKeywords}
           />
         </article>
-        <article className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-sm dark:border-rose-400/20 dark:bg-rose-400/10">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+        <article className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-700">
             {t.results.missingKeywords}
           </h3>
           <KeywordPills
@@ -305,8 +305,8 @@ export default function ResultCards({ result }: ResultCardsProps) {
         </article>
       </div>
 
-      <article className="rounded-2xl border border-violet-200 bg-violet-50/60 p-5 shadow-sm dark:border-violet-400/20 dark:bg-violet-400/10">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+      <article className="rounded-2xl border border-violet-200 bg-violet-50/60 p-5 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
           {t.results.suggestions}
         </h3>
         {result.suggestions.length > 0 ? (
@@ -314,12 +314,12 @@ export default function ResultCards({ result }: ResultCardsProps) {
             {result.suggestions.map((suggestion) => (
               <div
                 key={suggestion.title}
-                className="rounded-xl border border-violet-200/80 bg-white/80 p-4 dark:border-violet-400/20 dark:bg-white/[0.03]"
+                className="rounded-xl border border-violet-200/80 bg-white/80 p-4"
               >
-                <h4 className="font-medium text-zinc-900 dark:text-white">
+                <h4 className="font-medium text-zinc-900">
                   {suggestion.title}
                 </h4>
-                <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm leading-relaxed text-zinc-600">
                   {suggestion.detail}
                 </p>
               </div>

@@ -17,11 +17,11 @@ type Application = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  Applied: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300",
-  Interview: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
-  Offer: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-  Rejected: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
-  Saved: "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400",
+  Applied: "bg-brand-100 text-brand-700",
+  Interview: "bg-amber-100 text-amber-700",
+  Offer: "bg-emerald-100 text-emerald-700",
+  Rejected: "bg-rose-100 text-rose-700",
+  Saved: "bg-zinc-100 text-zinc-600",
 };
 
 const SCORE_COLOR = (s: number) =>
@@ -68,7 +68,7 @@ export default function TrackerPage() {
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-600 dark:border-white/10 dark:border-t-cyan-400" />
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-brand-600" />
       </div>
     );
   }
@@ -96,10 +96,10 @@ export default function TrackerPage() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+          <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
             ResumeX Tracker
           </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
             My Applications
           </h1>
         </div>
@@ -109,27 +109,27 @@ export default function TrackerPage() {
           </span>
           <Link
             href="/career/tracker/profile"
-            className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
+            className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-brand-300 hover:text-brand-700"
           >
             My Profile
           </Link>
           {apps.length > 0 && (
             <button
               onClick={exportCSV}
-              className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
+              className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-brand-300 hover:text-brand-700"
             >
               Export CSV
             </button>
           )}
           <Link
             href="/career/tracker/add"
-            className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
           >
             + Add Job
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-rose-300 hover:text-rose-600 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-rose-400/40 dark:hover:text-rose-400"
+            className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-rose-300 hover:text-rose-600"
           >
             Sign out
           </button>
@@ -141,12 +141,12 @@ export default function TrackerPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 gap-3 lg:col-span-2 sm:grid-cols-4 lg:grid-cols-4">
           {[
-            { label: "Total", value: stats.total, color: "text-zinc-900 dark:text-white" },
-            { label: "Applied", value: stats.applied, color: "text-indigo-600 dark:text-indigo-400" },
-            { label: "Interview", value: stats.interview, color: "text-amber-600 dark:text-amber-400" },
-            { label: "Offer", value: stats.offer, color: "text-emerald-600 dark:text-emerald-400" },
+            { label: "Total", value: stats.total, color: "text-zinc-900" },
+            { label: "Applied", value: stats.applied, color: "text-brand-600" },
+            { label: "Interview", value: stats.interview, color: "text-amber-600" },
+            { label: "Offer", value: stats.offer, color: "text-emerald-600" },
           ].map((s) => (
-            <div key={s.label} className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+            <div key={s.label} className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 text-center shadow-sm">
               <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wide text-zinc-500">{s.label}</div>
             </div>
@@ -155,24 +155,24 @@ export default function TrackerPage() {
 
         {/* Funnel chart */}
         {stats.total > 0 && (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Pipeline</p>
             <div className="space-y-2">
               {[
-                { label: "Applied", value: stats.applied, bar: "bg-indigo-500 dark:bg-indigo-400" },
+                { label: "Applied", value: stats.applied, bar: "bg-brand-500" },
                 { label: "Interview", value: stats.interview, bar: "bg-amber-400" },
                 { label: "Offer", value: stats.offer, bar: "bg-emerald-500" },
                 { label: "Rejected", value: stats.rejected, bar: "bg-rose-400" },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-2">
                   <span className="w-16 shrink-0 text-xs text-zinc-500">{row.label}</span>
-                  <div className="flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10" style={{ height: 8 }}>
+                  <div className="flex-1 overflow-hidden rounded-full bg-zinc-100" style={{ height: 8 }}>
                     <div
                       className={`h-full rounded-full transition-all ${row.bar}`}
                       style={{ width: stats.total ? `${Math.round((row.value / stats.total) * 100)}%` : "0%" }}
                     />
                   </div>
-                  <span className="w-5 shrink-0 text-right text-xs font-medium text-zinc-600 dark:text-zinc-400">{row.value}</span>
+                  <span className="w-5 shrink-0 text-right text-xs font-medium text-zinc-600">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -181,11 +181,11 @@ export default function TrackerPage() {
       </div>
 
       {apps.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 py-20 dark:border-white/10">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 py-20">
           <p className="mb-4 text-lg text-zinc-500">No applications yet.</p>
           <Link
             href="/career/tracker/add"
-            className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816]"
+            className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-500"
           >
             Add your first job
           </Link>
@@ -197,13 +197,13 @@ export default function TrackerPage() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter by company, role, or status…"
-            className="mb-4 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20"
+            className="mb-4 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           />
 
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]">
+                <tr className="border-b border-zinc-200 bg-zinc-50">
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">Company</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">Role</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">Status</th>
@@ -212,13 +212,13 @@ export default function TrackerPage() {
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+              <tbody className="divide-y divide-zinc-100">
                 {filtered.map((app) => (
-                  <tr key={app.id} className="transition hover:bg-zinc-50 dark:hover:bg-white/[0.03]">
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">
+                  <tr key={app.id} className="transition hover:bg-zinc-50">
+                    <td className="px-4 py-3 font-medium text-zinc-900">
                       {app.company}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{app.role}</td>
+                    <td className="px-4 py-3 text-zinc-600">{app.role}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[app.status] ?? STATUS_COLORS.Saved}`}>
                         {app.status}
@@ -227,7 +227,7 @@ export default function TrackerPage() {
                     <td className="px-4 py-3">
                       {app.matchScore != null ? (
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-zinc-200">
                             <div
                               className={`h-full rounded-full ${SCORE_COLOR(app.matchScore)}`}
                               style={{ width: `${app.matchScore}%` }}
@@ -245,7 +245,7 @@ export default function TrackerPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/career/tracker/${app.id}`}
-                        className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-400 dark:hover:border-cyan-400/40 dark:hover:text-cyan-300"
+                        className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-brand-300 hover:text-brand-700"
                       >
                         View
                       </Link>

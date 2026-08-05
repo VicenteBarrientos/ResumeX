@@ -21,10 +21,10 @@ export default function ScoreBreakdownView({
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+        <p className="text-sm font-semibold text-zinc-900">
           Research relevance
         </p>
-        <p className="text-2xl font-bold tabular-nums text-indigo-700 dark:text-cyan-300">
+        <p className="text-2xl font-bold tabular-nums text-brand-700">
           {score}
         </p>
       </div>
@@ -34,11 +34,11 @@ export default function ScoreBreakdownView({
       </p>
       <ul className="space-y-1.5">
         {ROWS.map((row) => (
-          <li key={row.key} className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+          <li key={row.key} className="flex items-center gap-2 text-xs text-zinc-600">
             <span className="w-36 shrink-0">{row.label}</span>
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-200">
               <div
-                className="h-full rounded-full bg-indigo-500 dark:bg-cyan-400"
+                className="h-full rounded-full bg-brand-500"
                 style={{ width: `${Math.min(100, (breakdown[row.key] / row.max) * 100)}%` }}
               />
             </div>

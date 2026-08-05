@@ -22,26 +22,26 @@ function GitHubIcon({ className }: { className?: string }) {
 }
 
 const linkClass =
-  "inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200";
+  "inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700";
 
 export default function Footer() {
   const { t } = useLocale();
 
   return (
-    <footer className="relative z-10 mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm dark:border-white/10 dark:bg-[#050816]/80 dark:backdrop-blur-none">
+    <footer className="relative z-10 mt-auto border-t border-zinc-200/80 bg-white/60 backdrop-blur-sm">
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
+            <p className="text-sm font-semibold tracking-tight text-zinc-900">
               ResumeX
             </p>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-500">
               {t.footer.builtBy}
             </p>
             <ThemedExternalLink
               href={TALENTX_URL}
               theme="light"
-              className="mt-2 inline-block text-sm text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-cyan-300"
+              className="mt-2 inline-block text-sm text-zinc-500 transition hover:text-brand-600"
             >
               {t.footer.talentX}
             </ThemedExternalLink>
@@ -76,14 +76,14 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t.footer.github}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-200"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
             >
               <GitHubIcon className="h-4 w-4" />
             </a>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500 sm:text-left">
+        <p className="mt-6 text-center text-xs text-zinc-400 sm:text-left">
           {t.footer.copyright}
         </p>
       </div>

@@ -10,7 +10,7 @@ const LINE_HEIGHT = 6;
 const SECTION_GAP = 10;
 
 const COLORS = {
-  primary: [49, 46, 129] as [number, number, number],
+  primary: [29, 53, 89] as [number, number, number],
   muted: [82, 82, 91] as [number, number, number],
   body: [24, 24, 27] as [number, number, number],
 };

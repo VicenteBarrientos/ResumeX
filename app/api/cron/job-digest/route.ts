@@ -57,7 +57,7 @@ export async function GET(req: Request) {
         (j) => `
         <tr>
           <td style="padding:10px 0;border-bottom:1px solid #f0f0f0">
-            <a href="${j.url}" style="font-weight:600;color:#4f46e5;text-decoration:none">${j.title}</a><br/>
+            <a href="${j.url}" style="font-weight:600;color:#1d3559;text-decoration:none">${j.title}</a><br/>
             <span style="color:#6b7280;font-size:13px">${j.company} · ${j.location}</span>
           </td>
         </tr>`
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
           <h2 style="margin:0 0 4px;font-size:20px">Hi ${profile.fullName ?? profile.user.username} 👋</h2>
           <p style="color:#6b7280;margin:0 0 24px">Here are this week's top job picks for you:</p>
           <table style="width:100%;border-collapse:collapse">${jobRows}</table>
-          <a href="${RESUMEX_URL}/career/jobs" style="display:inline-block;margin-top:24px;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">
+          <a href="${RESUMEX_URL}/career/jobs" style="display:inline-block;margin-top:24px;background:#1d3559;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">
             See all jobs →
           </a>
           <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">

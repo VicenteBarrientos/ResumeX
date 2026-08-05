@@ -47,13 +47,13 @@ export default function CandidateDetail({
         aria-label="Close detail panel"
         onClick={onClose}
       />
-      <aside className="flex h-full w-full max-w-xl flex-col overflow-hidden border-l border-zinc-200 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-950">
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-white/10">
+      <aside className="flex h-full w-full max-w-xl flex-col overflow-hidden border-l border-zinc-200 bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-zinc-900">
               {candidate.name}
             </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               Likely institution based on public scholarly metadata:{" "}
               {candidate.likelyInstitution?.name || "Unknown"}
             </p>
@@ -67,7 +67,7 @@ export default function CandidateDetail({
                 href={candidate.openAlexUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 hover:underline dark:text-cyan-400"
+                className="text-brand-600 hover:underline"
               >
                 OpenAlex profile
               </a>
@@ -76,7 +76,7 @@ export default function CandidateDetail({
                   href={candidate.orcid}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-600 hover:underline dark:text-cyan-400"
+                  className="text-brand-600 hover:underline"
                 >
                   ORCID
                 </a>
@@ -86,7 +86,7 @@ export default function CandidateDetail({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs dark:border-white/15"
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs"
           >
             Close
           </button>
@@ -95,7 +95,7 @@ export default function CandidateDetail({
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-4">
           <ScoreBreakdownView score={candidate.score} breakdown={candidate.scoreBreakdown} />
 
-          <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm leading-relaxed text-zinc-700">
             {candidate.evidenceSummary}
           </p>
 
@@ -115,9 +115,9 @@ export default function CandidateDetail({
               {candidate.relevantWorks.map((w) => (
                 <li
                   key={w.id}
-                  className="rounded-lg border border-zinc-100 p-3 dark:border-white/10"
+                  className="rounded-lg border border-zinc-100 p-3"
                 >
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                  <p className="text-sm font-medium text-zinc-900">
                     {w.title}
                   </p>
                   <p className="mt-1 text-xs text-zinc-500">
@@ -126,7 +126,7 @@ export default function CandidateDetail({
                       .join(" · ")}
                   </p>
                   {w.matchedCriteria.length > 0 && (
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                    <p className="mt-1 text-xs text-zinc-600">
                       Matching: {w.matchedCriteria.join(", ")}
                     </p>
                   )}
@@ -139,7 +139,7 @@ export default function CandidateDetail({
                         href={w.openAlexUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-600 hover:underline dark:text-cyan-400"
+                        className="text-brand-600 hover:underline"
                       >
                         Source
                       </a>
@@ -153,7 +153,7 @@ export default function CandidateDetail({
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-600 hover:underline dark:text-cyan-400"
+                        className="text-brand-600 hover:underline"
                       >
                         DOI
                       </a>
@@ -166,10 +166,10 @@ export default function CandidateDetail({
 
           {candidate.possibleConcerns.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-700">
                 Possible concerns
               </h4>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600">
                 {candidate.possibleConcerns.map((c) => (
                   <li key={c}>{c}</li>
                 ))}
@@ -181,7 +181,7 @@ export default function CandidateDetail({
             <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Unknown — requires validation
             </h4>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-600">
               {candidate.unknowns.map((u) => (
                 <li key={u}>{u}</li>
               ))}
@@ -193,7 +193,7 @@ export default function CandidateDetail({
               <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 Suggested screening questions
               </h4>
-              <ul className="mt-1 list-decimal space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+              <ul className="mt-1 list-decimal space-y-1 pl-5 text-sm text-zinc-600">
                 {candidate.screeningQuestions.map((q) => (
                   <li key={q}>{q}</li>
                 ))}
@@ -225,20 +225,20 @@ export default function CandidateDetail({
               value={notes}
               onChange={(e) => onNotesChange(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-zinc-900"
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
               placeholder="Private notes for your process (saved with this search)"
             />
           </div>
         </div>
 
-        <div className="flex gap-2 border-t border-zinc-100 px-5 py-3 dark:border-white/10">
+        <div className="flex gap-2 border-t border-zinc-100 px-5 py-3">
           <button
             type="button"
             onClick={onToggleShortlist}
             className={`rounded-full px-4 py-2 text-sm font-medium ${
               shortlisted
-                ? "bg-indigo-600 text-white dark:bg-cyan-500 dark:text-zinc-900"
-                : "border border-zinc-200 dark:border-white/15"
+                ? "bg-brand-600 text-white"
+                : "border border-zinc-200"
             }`}
           >
             {shortlisted ? "Remove from shortlist" : "Add to shortlist"}

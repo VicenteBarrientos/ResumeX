@@ -8,7 +8,7 @@ type Props = {
 export function Disclaimer({ children, className = "" }: Props) {
   return (
     <div
-      className={`rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100 ${className}`}
+      className={`rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 ${className}`}
       role="note"
     >
       {children}
@@ -18,8 +18,8 @@ export function Disclaimer({ children, className = "" }: Props) {
 
 export function HowItWorks() {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 text-sm text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-      <p className="font-semibold text-zinc-900 dark:text-white">How Talent Mapper works</p>
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 text-sm text-zinc-700">
+      <p className="font-semibold text-zinc-900">How Talent Mapper works</p>
       <p className="mt-1 leading-relaxed">
         Talent Mapper searches public scholarly metadata, groups relevant works by
         researcher and highlights the evidence connecting each researcher to the
@@ -32,18 +32,18 @@ export function HowItWorks() {
 
 export function WhyTalentMapper({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-white/10">
+    <div className="rounded-xl border border-zinc-200">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-zinc-800 dark:text-zinc-200"
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-zinc-800"
         aria-expanded={open}
       >
         Why Talent Mapper?
         <span className="text-zinc-400">{open ? "−" : "+"}</span>
       </button>
       {open && (
-        <div className="border-t border-zinc-100 px-4 py-3 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+        <div className="border-t border-zinc-100 px-4 py-3 text-sm text-zinc-600">
           <p>
             Hard-to-fill scientific searches often begin outside traditional recruiting
             platforms. Relevant researchers can be discovered through papers,
@@ -64,7 +64,7 @@ export function DemoTalkingPoints({
   onToggle: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-zinc-300 dark:border-white/15">
+    <div className="rounded-xl border border-dashed border-zinc-300">
       <button
         type="button"
         onClick={onToggle}
@@ -75,7 +75,7 @@ export function DemoTalkingPoints({
         <span>{open ? "Hide" : "Show"}</span>
       </button>
       {open && (
-        <ol className="space-y-1.5 border-t border-zinc-100 px-4 py-3 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+        <ol className="space-y-1.5 border-t border-zinc-100 px-4 py-3 text-sm text-zinc-600">
           <li>1. Starts from scientific evidence instead of job titles.</li>
           <li>2. Makes every recommendation explainable through public works.</li>
           <li>3. Keeps the recruiter in control of criteria and outreach.</li>

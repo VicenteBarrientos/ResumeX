@@ -76,12 +76,12 @@ export default function JobsPage() {
   }
 
   const inputClass =
-    "rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+    "rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-10 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Job Search</h1>
+        <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Job Search</h1>
         <p className="mt-1 text-sm text-zinc-500">Search live job postings and save them to your tracker with one click.</p>
       </div>
 
@@ -99,7 +99,7 @@ export default function JobsPage() {
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="shrink-0 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:disabled:bg-white/10 dark:disabled:text-zinc-500 sm:px-6"
+            className="shrink-0 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 sm:px-6"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -117,11 +117,11 @@ export default function JobsPage() {
             onClick={() => setRemoteOnly((r) => !r)}
             className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-sm transition ${
               remoteOnly
-                ? "border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-cyan-400/40 dark:bg-cyan-400/10 dark:text-cyan-300"
-                : "border-zinc-300 bg-white text-zinc-600 hover:border-indigo-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-300"
+                ? "border-brand-300 bg-brand-50 text-brand-700"
+                : "border-zinc-300 bg-white text-zinc-600 hover:border-brand-300"
             }`}
           >
-            <div className={`relative h-4 w-7 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600 dark:bg-cyan-400" : "bg-zinc-300 dark:bg-white/20"}`}>
+            <div className={`relative h-4 w-7 rounded-full transition-colors ${remoteOnly ? "bg-brand-600" : "bg-zinc-300"}`}>
               <span className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${remoteOnly ? "translate-x-3" : ""}`} />
             </div>
             Available to apply from my country
@@ -130,9 +130,9 @@ export default function JobsPage() {
       </form>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error === "Job search not configured." ? (
-            <>Job search API not configured yet. Add <code className="rounded bg-zinc-100 px-1 dark:bg-white/10">ADZUNA_APP_ID</code> and <code className="rounded bg-zinc-100 px-1 dark:bg-white/10">ADZUNA_APP_KEY</code> to your Vercel environment variables.</>
+            <>Job search API not configured yet. Add <code className="rounded bg-zinc-100 px-1">ADZUNA_APP_ID</code> and <code className="rounded bg-zinc-100 px-1">ADZUNA_APP_KEY</code> to your Vercel environment variables.</>
           ) : error}
         </div>
       )}
@@ -151,7 +151,7 @@ export default function JobsPage() {
           return (
             <div
               key={job.id}
-              className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03] sm:p-5"
+              className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -160,26 +160,26 @@ export default function JobsPage() {
                       href={job.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-semibold text-zinc-900 hover:text-indigo-600 dark:text-white dark:hover:text-cyan-300 sm:text-base line-clamp-1"
+                      className="text-sm font-semibold text-zinc-900 hover:text-brand-600 sm:text-base line-clamp-1"
                     >
                       {job.title}
                     </a>
                     {isRemote && (
-                      <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400">
+                      <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
                         Remote
                       </span>
                     )}
-                    <span className="shrink-0 rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-400 dark:border-white/10">
+                    <span className="shrink-0 rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-400">
                       {job.source}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
+                  <p className="text-xs text-zinc-500 sm:text-sm">
                     {job.company} · {job.location}
                   </p>
                   {job.salary && (
-                    <p className="mt-0.5 text-xs font-medium text-indigo-600 dark:text-cyan-400">{job.salary}</p>
+                    <p className="mt-0.5 text-xs font-medium text-brand-600">{job.salary}</p>
                   )}
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                  <p className="mt-2 text-xs leading-relaxed text-zinc-500 line-clamp-2">
                     {job.description.slice(0, 200)}…
                   </p>
                 </div>
@@ -188,14 +188,14 @@ export default function JobsPage() {
                     href={job.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 sm:px-4"
+                    className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:border-brand-400 hover:text-brand-700 sm:px-4"
                   >
                     View
                   </a>
                   <button
                     onClick={() => saveToTracker(job)}
                     disabled={isSaved || isSaving}
-                    className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-default disabled:bg-zinc-200 disabled:text-zinc-400 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:disabled:bg-white/10 dark:disabled:text-zinc-500 sm:px-4"
+                    className="rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 disabled:cursor-default disabled:bg-zinc-200 disabled:text-zinc-400 sm:px-4"
                   >
                     {isSaved ? "Saved ✓" : isSaving ? "…" : "Save"}
                   </button>
@@ -207,13 +207,13 @@ export default function JobsPage() {
       </div>
 
       {!searched && !loading && (
-        <div className="mt-16 text-center text-zinc-400 dark:text-zinc-600">
+        <div className="mt-16 text-center text-zinc-400">
           <p className="mb-3 text-4xl">⊕</p>
           <p className="text-sm">Search for jobs above to see live listings.</p>
           <p className="mt-1 text-xs">Select your country and toggle Remote only to filter results.</p>
           {!session && (
             <p className="mt-2 text-xs">
-              <a href="/login" className="text-indigo-500 hover:underline dark:text-cyan-400">Sign in</a> to save jobs directly to your tracker.
+              <a href="/login" className="text-brand-500 hover:underline">Sign in</a> to save jobs directly to your tracker.
             </p>
           )}
         </div>

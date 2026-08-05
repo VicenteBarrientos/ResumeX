@@ -60,12 +60,12 @@ export default function CoverLetterPage() {
   }
 
   const inputClass =
-    "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+    "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Cover Letter Generator</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">Cover Letter Generator</h1>
         <p className="mt-1 text-sm text-zinc-500">
           {session
             ? "AI will use your saved profile to write a tailored cover letter."
@@ -73,7 +73,7 @@ export default function CoverLetterPage() {
         </p>
         {!session && (
           <p className="mt-1 text-xs text-zinc-400">
-            <a href="/login" className="text-indigo-500 hover:underline dark:text-cyan-400">Sign in</a> to personalize with your profile and resume.
+            <a href="/login" className="text-brand-500 hover:underline">Sign in</a> to personalize with your profile and resume.
           </p>
         )}
       </div>
@@ -82,7 +82,7 @@ export default function CoverLetterPage() {
         {/* Input panel */}
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <label className="mb-2 block text-sm font-medium text-zinc-800">
               Job Description <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -95,7 +95,7 @@ export default function CoverLetterPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Company</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Company</label>
               <input
                 type="text"
                 value={company}
@@ -105,7 +105,7 @@ export default function CoverLetterPage() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Role</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Role</label>
               <input
                 type="text"
                 value={role}
@@ -118,7 +118,7 @@ export default function CoverLetterPage() {
           <button
             onClick={generate}
             disabled={loading || !jobDescription.trim()}
-            className="w-full rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:disabled:bg-white/10 dark:disabled:text-zinc-500"
+            className="w-full rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -128,20 +128,20 @@ export default function CoverLetterPage() {
             ) : "Generate cover letter"}
           </button>
           {error && (
-            <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+            <p className="text-sm text-rose-600">{error}</p>
           )}
         </div>
 
         {/* Output panel */}
         <div className="flex flex-col">
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <label className="text-sm font-medium text-zinc-800">
               Your cover letter
             </label>
             {letter && (
               <button
                 onClick={copy}
-                className="rounded-full border border-zinc-300 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40"
+                className="rounded-full border border-zinc-300 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 transition hover:border-brand-400 hover:text-brand-700"
               >
                 {copied ? "Copied ✓" : "Copy"}
               </button>

@@ -18,7 +18,7 @@ export default function DownloadReportButton({ result }: DownloadReportButtonPro
     <button
       type="button"
       onClick={handleDownload}
-      className="inline-flex shrink-0 items-center rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-800 transition hover:border-indigo-400 hover:bg-indigo-100 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:border-cyan-300/50 dark:hover:bg-cyan-400/20"
+      className="inline-flex shrink-0 items-center rounded-md border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-800 transition hover:border-brand-400 hover:bg-brand-100"
       aria-label={t.results.downloadReport}
     >
       {t.results.downloadReport}

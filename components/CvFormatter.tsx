@@ -45,26 +45,26 @@ function DebugPanel({ info }: { info: ExtractionDebugInfo }) {
         : info.openAiInput;
 
   return (
-    <div className="mt-10 rounded-2xl border border-amber-300 bg-amber-50 dark:border-amber-400/30 dark:bg-amber-400/5">
-      <div className="flex items-center justify-between border-b border-amber-200 px-4 py-2 dark:border-amber-400/20">
-        <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+    <div className="mt-10 rounded-2xl border border-amber-300 bg-amber-50">
+      <div className="flex items-center justify-between border-b border-amber-200 px-4 py-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
           Dev · Extraction Debug
         </span>
-        <div className="flex gap-2 text-xs text-amber-700 dark:text-amber-300">
+        <div className="flex gap-2 text-xs text-amber-700">
           <span>Raw: {info.rawExtracted.length} chars</span>
           <span>·</span>
           <span>Cleaned: {info.cleanedExtracted.length} chars</span>
           {info.charSpacingFixed && (
             <>
               <span>·</span>
-              <span className="font-semibold text-rose-600 dark:text-rose-400">
+              <span className="font-semibold text-rose-600">
                 ⚠ character-spacing corruption detected &amp; fixed
               </span>
             </>
           )}
         </div>
       </div>
-      <div className="flex gap-1 border-b border-amber-200 px-4 pt-2 dark:border-amber-400/20">
+      <div className="flex gap-1 border-b border-amber-200 px-4 pt-2">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -72,20 +72,20 @@ function DebugPanel({ info }: { info: ExtractionDebugInfo }) {
             onClick={() => setTab(t.id)}
             className={`-mb-px rounded-t border-b-2 px-3 py-1 text-xs font-medium transition ${
               tab === t.id
-                ? "border-amber-500 text-amber-800 dark:border-amber-300 dark:text-amber-200"
-                : "border-transparent text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200"
+                ? "border-amber-500 text-amber-800"
+                : "border-transparent text-amber-600 hover:text-amber-800"
             }`}
           >
             {t.label}
             {t.badge && (
-              <span className="ml-1.5 rounded bg-rose-100 px-1 text-[10px] font-bold uppercase text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
+              <span className="ml-1.5 rounded bg-rose-100 px-1 text-[10px] font-bold uppercase text-rose-700">
                 {t.badge}
               </span>
             )}
           </button>
         ))}
       </div>
-      <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all px-4 py-3 text-[11px] leading-relaxed text-amber-900 dark:text-amber-100">
+      <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all px-4 py-3 text-[11px] leading-relaxed text-amber-900">
         {content || "(empty)"}
       </pre>
     </div>
@@ -233,15 +233,15 @@ export default function CvFormatter() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <header className="mb-10 text-center">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
           {f.eyebrow}
         </p>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          <span className="text-zinc-900 dark:bg-gradient-to-r dark:from-white dark:via-cyan-100 dark:to-blue-300 dark:bg-clip-text dark:text-transparent">
+          <span className="text-zinc-900">
             {f.title}
           </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600">
           {f.description}
         </p>
       </header>
@@ -249,7 +249,7 @@ export default function CvFormatter() {
       <form onSubmit={handleFormat} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
-            <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <span className="block text-sm font-medium text-zinc-800">
               {f.uploadLabel}
             </span>
 
@@ -262,12 +262,12 @@ export default function CvFormatter() {
               onDragLeave={() => setIsDragging(false)}
               className={`rounded-2xl border border-dashed p-4 transition ${
                 isDragging
-                  ? "border-indigo-500 bg-indigo-50 dark:border-cyan-400 dark:bg-cyan-400/10"
-                  : "border-zinc-300 bg-zinc-50/80 dark:border-white/10 dark:bg-white/[0.03]"
+                  ? "border-brand-500 bg-brand-50"
+                  : "border-zinc-300 bg-zinc-50/80"
               }`}
             >
               <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
-                <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="text-sm font-medium text-zinc-800">
                   {f.dragDrop}
                 </span>
                 <span className="text-xs text-zinc-500">
@@ -281,19 +281,19 @@ export default function CvFormatter() {
                   disabled={isLoading}
                   className="sr-only"
                 />
-                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-indigo-400 hover:text-indigo-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200">
+                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-brand-400 hover:text-brand-700">
                   {f.chooseFile}
                 </span>
               </label>
 
               {file && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm dark:border-cyan-400/30 dark:bg-cyan-400/10">
-                  <span className="truncate text-indigo-900 dark:text-cyan-100">{file.name}</span>
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-sm">
+                  <span className="truncate text-brand-900">{file.name}</span>
                   <button
                     type="button"
                     onClick={clearFile}
                     disabled={isLoading}
-                    className="shrink-0 text-xs font-medium text-indigo-700 hover:text-indigo-900 disabled:opacity-50 dark:text-cyan-200 dark:hover:text-cyan-100"
+                    className="shrink-0 text-xs font-medium text-brand-700 hover:text-brand-900 disabled:opacity-50"
                   >
                     {t.form.remove}
                   </button>
@@ -302,15 +302,15 @@ export default function CvFormatter() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
+              <div className="h-px flex-1 bg-zinc-200" />
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                 {t.form.or}
               </span>
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
+              <div className="h-px flex-1 bg-zinc-200" />
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <span className="mb-2 block text-sm font-medium text-zinc-800">
                 {f.pasteLabel}
               </span>
               <textarea
@@ -318,22 +318,22 @@ export default function CvFormatter() {
                 onChange={(event) => handlePaste(event.target.value)}
                 rows={14}
                 placeholder={f.pastePlaceholder}
-                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20 dark:disabled:bg-white/[0.02]"
+                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:bg-zinc-100"
                 disabled={isLoading || Boolean(file)}
               />
               {file && <p className="mt-2 text-xs text-zinc-500">{f.removeFileHint}</p>}
             </label>
           </div>
 
-          <div className="flex flex-col justify-between gap-6 rounded-2xl border border-zinc-200 bg-white/60 p-6 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex flex-col justify-between gap-6 rounded-2xl border border-zinc-200 bg-white/60 p-6">
             <div>
-              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              <h2 className="text-sm font-semibold text-zinc-800">
                 {f.howItWorks}
               </h2>
-              <ol className="mt-3 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
+              <ol className="mt-3 space-y-2 text-sm text-zinc-600">
                 {f.steps.map((step, index) => (
                   <li key={index} className="flex gap-3">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-cyan-400/15 dark:text-cyan-200">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
                       {index + 1}
                     </span>
                     <span>{step}</span>
@@ -348,7 +348,7 @@ export default function CvFormatter() {
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <p className="text-xs text-zinc-500">{f.privacyNote}</p>
           <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:items-end">
-            <p className="text-center text-xs text-zinc-400 dark:text-zinc-500 sm:text-right">
+            <p className="text-center text-xs text-zinc-400 sm:text-right">
               {t.form.demoNote}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
@@ -356,14 +356,14 @@ export default function CvFormatter() {
                 type="button"
                 onClick={handleTryDemo}
                 disabled={isLoading}
-                className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-200"
+                className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand-400 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t.form.tryDemo}
               </button>
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="inline-flex min-w-40 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90 dark:disabled:bg-white/10 dark:disabled:text-zinc-500"
+                className="inline-flex min-w-40 items-center justify-center rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
               >
                 {isLoading ? (
                   <>
@@ -378,7 +378,7 @@ export default function CvFormatter() {
             {error && (
               <p
                 role="alert"
-                className="max-w-md text-center text-sm text-rose-700 dark:text-rose-300 sm:text-right"
+                className="max-w-md text-center text-sm text-rose-700 sm:text-right"
               >
                 {error}
               </p>
@@ -393,16 +393,16 @@ export default function CvFormatter() {
         <div className="mt-12">
           <div className="mb-5 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-inherit">
+              <h2 className="text-xl font-semibold text-zinc-900">
                 {f.previewTitle}
               </h2>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{f.previewHint}</p>
+              <p className="mt-1 text-sm text-zinc-500">{f.previewHint}</p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={handleDownloadPdf}
-                className="inline-flex items-center rounded-full border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 transition hover:border-indigo-400 hover:bg-indigo-100 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:border-cyan-300/50 dark:hover:bg-cyan-400/20"
+                className="inline-flex items-center rounded-full border border-brand-300 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 transition hover:border-brand-400 hover:bg-brand-100"
               >
                 {f.downloadPdf}
               </button>
@@ -410,7 +410,7 @@ export default function CvFormatter() {
                 type="button"
                 onClick={handleDownloadDocx}
                 disabled={isExporting}
-                className="inline-flex items-center rounded-full border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 transition hover:border-indigo-400 hover:bg-indigo-100 disabled:opacity-60 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:border-cyan-300/50 dark:hover:bg-cyan-400/20"
+                className="inline-flex items-center rounded-full border border-brand-300 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 transition hover:border-brand-400 hover:bg-brand-100 disabled:opacity-60"
               >
                 {isExporting ? f.exporting : f.downloadDocx}
               </button>

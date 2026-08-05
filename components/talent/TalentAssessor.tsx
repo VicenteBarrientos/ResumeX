@@ -127,13 +127,13 @@ export default function TalentAssessor() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <header className="mb-10 text-center">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-300">
+        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
           ResumeX Talent
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl dark:text-white">
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
           Candidate assessment
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600">
           Paste a resume and a job description. Get a hiring decision brief —
           concern level, next step, phone-screen questions, and a sendout-ready
           blurb. Nothing is invented beyond what the resume supports.
@@ -143,7 +143,7 @@ export default function TalentAssessor() {
       <form onSubmit={handleAssess} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
-            <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <span className="block text-sm font-medium text-zinc-800">
               Candidate resume
             </span>
 
@@ -156,12 +156,12 @@ export default function TalentAssessor() {
               onDragLeave={() => setIsDragging(false)}
               className={`rounded-2xl border border-dashed p-4 transition ${
                 isDragging
-                  ? "border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-400/10"
-                  : "border-zinc-300 bg-zinc-50/80 dark:border-white/10 dark:bg-white/[0.03]"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-zinc-300 bg-zinc-50/80"
               }`}
             >
               <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
-                <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="text-sm font-medium text-zinc-800">
                   Drop a PDF resume here
                 </span>
                 <span className="text-xs text-zinc-500">
@@ -175,21 +175,21 @@ export default function TalentAssessor() {
                   disabled={isLoading}
                   className="sr-only"
                 />
-                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-emerald-400/40 dark:hover:text-emerald-200">
+                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-emerald-400 hover:text-emerald-700">
                   Choose PDF
                 </span>
               </label>
 
               {pdfFile && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm dark:border-emerald-400/30 dark:bg-emerald-400/10">
-                  <span className="truncate text-emerald-900 dark:text-emerald-100">
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
+                  <span className="truncate text-emerald-900">
                     {pdfFile.name}
                   </span>
                   <button
                     type="button"
                     onClick={clearPdf}
                     disabled={isLoading}
-                    className="shrink-0 text-xs font-medium text-emerald-700 hover:text-emerald-900 disabled:opacity-50 dark:text-emerald-200"
+                    className="shrink-0 text-xs font-medium text-emerald-700 hover:text-emerald-900 disabled:opacity-50"
                   >
                     Remove
                   </button>
@@ -198,15 +198,15 @@ export default function TalentAssessor() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
+              <div className="h-px flex-1 bg-zinc-200" />
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                 or
               </span>
-              <div className="h-px flex-1 bg-zinc-200 dark:bg-white/10" />
+              <div className="h-px flex-1 bg-zinc-200" />
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <span className="mb-2 block text-sm font-medium text-zinc-800">
                 Paste resume text
               </span>
               <textarea
@@ -214,14 +214,14 @@ export default function TalentAssessor() {
                 onChange={(event) => handleResumePaste(event.target.value)}
                 rows={14}
                 placeholder="Paste the candidate resume…"
-                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/20 dark:disabled:bg-white/[0.02]"
+                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-zinc-100"
                 disabled={isLoading || Boolean(pdfFile)}
               />
             </label>
           </div>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <span className="mb-2 block text-sm font-medium text-zinc-800">
               Job description
             </span>
             <textarea
@@ -229,7 +229,7 @@ export default function TalentAssessor() {
               onChange={(event) => setJobDescription(event.target.value)}
               rows={22}
               placeholder="Paste the role you are hiring for…"
-              className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/20"
+              className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               disabled={isLoading}
             />
           </label>
@@ -244,18 +244,18 @@ export default function TalentAssessor() {
               type="button"
               onClick={handleTryDemo}
               disabled={isLoading}
-              className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-emerald-400/40 dark:hover:text-emerald-200"
+              className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Try demo
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex min-w-40 items-center justify-center rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-emerald-500 dark:text-[#04150f] dark:hover:bg-emerald-400 dark:disabled:bg-white/10 dark:disabled:text-zinc-500"
+              className="inline-flex min-w-40 items-center justify-center rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
             >
               {isLoading ? (
                 <>
-                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-[#04150f]/30 dark:border-t-[#04150f]" />
+                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Assessing…
                 </>
               ) : (
@@ -266,7 +266,7 @@ export default function TalentAssessor() {
         </div>
 
         {error && (
-          <p role="alert" className="text-center text-sm text-rose-700 dark:text-rose-300">
+          <p role="alert" className="text-center text-sm text-rose-700">
             {error}
           </p>
         )}
@@ -274,7 +274,7 @@ export default function TalentAssessor() {
 
       {result && (
         <div className="mt-10">
-          <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="mb-6 text-xl font-semibold text-zinc-900">
             Assessment
           </h2>
           <AssessmentCards result={result} />

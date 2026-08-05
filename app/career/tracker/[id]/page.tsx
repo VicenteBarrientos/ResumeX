@@ -19,7 +19,7 @@ type Application = {
 const STATUSES = ["Applied", "Interview", "Offer", "Rejected", "Saved"];
 
 const inputClass =
-  "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+  "w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 
 export default function DetailPage() {
   const { status } = useSession();
@@ -97,7 +97,7 @@ export default function DetailPage() {
   if (!app) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-600 dark:border-white/10 dark:border-t-cyan-400" />
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-brand-600" />
       </div>
     );
   }
@@ -107,14 +107,14 @@ export default function DetailPage() {
       <div className="mb-8">
         <Link
           href="/career/tracker"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900 dark:hover:text-white"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition hover:text-zinc-900"
         >
           ← Back to dashboard
         </Link>
-        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300">
+        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
           ResumeX Tracker
         </p>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
           {app.role}{" "}
           <span className="font-normal text-zinc-500">at</span>{" "}
           {app.company}
@@ -124,49 +124,49 @@ export default function DetailPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={handleUpdate} className="space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Company</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Company</label>
               <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className={inputClass} required />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Role</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Role</label>
               <input type="text" value={role} onChange={(e) => setRole(e.target.value)} className={inputClass} required />
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Job URL</label>
+            <label className="mb-2 block text-sm font-medium text-zinc-800">Job URL</label>
             <input type="url" value={jobUrl} onChange={(e) => setJobUrl(e.target.value)} placeholder="https://…" className={inputClass} />
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Status</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Status</label>
               <select value={appStatus} onChange={(e) => setAppStatus(e.target.value)} className={inputClass}>
                 {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Match Score (0–100)</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-800">Match Score (0–100)</label>
               <input type="number" min={0} max={100} value={matchScore} onChange={(e) => setMatchScore(e.target.value)} placeholder="e.g. 78" className={inputClass} />
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-zinc-800">Notes</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className={`${inputClass} resize-y`} />
           </div>
 
-          {error && <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
 
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
               disabled={saving}
-              className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-blue-500 dark:text-[#050816] dark:hover:opacity-90"
+              className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:opacity-50"
             >
               {saving ? "Saving…" : saved ? "Saved ✓" : "Update"}
             </button>
@@ -175,7 +175,7 @@ export default function DetailPage() {
                 href={app.jobUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-700 dark:border-white/15 dark:text-zinc-400 dark:hover:border-cyan-400/40 dark:hover:text-cyan-300"
+                className="rounded-full border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-brand-300 hover:text-brand-700"
               >
                 View Job Post ↗
               </a>
@@ -185,15 +185,15 @@ export default function DetailPage() {
       </div>
 
       {/* Danger zone */}
-      <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-5 dark:border-rose-500/20 dark:bg-rose-500/5">
-        <p className="mb-1 text-sm font-semibold text-rose-700 dark:text-rose-400">Danger Zone</p>
-        <p className="mb-4 text-xs text-rose-600/80 dark:text-rose-400/70">
+      <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-5">
+        <p className="mb-1 text-sm font-semibold text-rose-700">Danger Zone</p>
+        <p className="mb-4 text-xs text-rose-600/80">
           This will permanently delete this application.
         </p>
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:border-rose-500/30 dark:text-rose-400 dark:hover:bg-rose-500/10"
+          className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
         >
           {deleting ? "Deleting…" : "Delete Application"}
         </button>

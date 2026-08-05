@@ -6,7 +6,7 @@
 
 ## Estado actual
 
-- **?ltima actualizaci?n:** 2026-08-05 16:30 -04:00 ? America/Santiago
+- **?ltima actualizaci?n:** 2026-08-05 18:15 -04:00 ? America/Santiago
 - **Versi?n del handoff:** 1.2
 - **Estado:** **Roadmap de fases cerrado en alcance agente.** Fases 1?5 hechas; Fase 6 m?nima (analytics). Persistencia Talent en Prisma; `/talent/searches`; screeningQuestions; Ashby/equipos/marca diferidos con decisi?n escrita.
 - **Pr?ximo hito:** backlog restante (B-3 E2E Career, B-8 i18n Talent, B-9 a11y) o demanda real (Ashby, equipos, precio Talent).
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-C?digo listo (dark-only + URL oficial) sin commit/deploy. Tras deploy: verificar 308 desde `resume-x-yixz.vercel.app` y login OAuth en el dominio oficial.
+C?digo listo (paleta clara + URL oficial) sin commit/deploy. Tras deploy: verificar 308 desde `resume-x-yixz.vercel.app` y login OAuth en el dominio oficial.
 
 ## Protocolo para agentes
 
@@ -89,6 +89,7 @@ C?digo listo (dark-only + URL oficial) sin commit/deploy. Tras deploy: verificar
 | R-017 | Las p?ginas se namespacean por producto; **las APIs siguen planas** (`/api/talent-mapper/*`, `/api/tracker`, ?). | La extensi?n Chrome ya desplegada y los emails salientes llevan URLs de API absolutas. Mover las rutas sin versionado rompe clientes que no controlamos. Se har? cuando exista versionado de API. | Vigente |
 | R-018 | Toda ruta de p?gina que se mueva o renombre deja un 308 permanente en `PRODUCT_SEGMENT_REDIRECTS` (`next.config.ts`). `redirects` corre **antes** de `proxy.ts`, as? que el `callbackUrl` de login queda apuntando a la ruta nueva. | Bookmarks, URLs indexadas, builds viejos de la extensi?n y links de email siguen funcionando sin tocar al cliente. | Vigente |
 | R-019 | `lib/products.ts` es la fuente ?nica de nombres, `basePath`, `home` y navegaci?n de cada producto. Ninguna superficie hardcodea `"ResumeX Talent"` ni `/talent/mapper`. | Es lo que hace cumplible R-003: si el nombre vive en un solo archivo, ninguna superficie puede inventar su variante. | Vigente |
+| R-020 | ResumeX tiene **un solo tema y es claro**: canvas gris (`--canvas-top` → `--canvas-bottom`), tarjetas blancas y acento navy `brand-600` (`#1d3559`). Sin toggle y sin variante oscura. La escala `brand-*` vive en `app/globals.css`; es el acento de Career, Talent conserva esmeralda. | Paleta aprobada por el usuario sobre un mockup el 2026-08-05; SUPERA la decisión dark-only de las 16:30 del mismo día. El acento con nombre propio (`brand`, no `indigo`) evita que cada superficie elija su propio azul. | Vigente |
 
 ## Arquitectura de producto
 
@@ -367,7 +368,7 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Validaciones:** npm test (64), typecheck, lint.
 - **Siguiente paso:** push + migrate deploy en Vercel.
 
-### 2026-08-05 16:30 ? ResumeX queda dark-only
+### 2026-08-05 16:30 ? ResumeX queda dark-only (SUPERADA por la entrada de las 18:15)
 
 - **Objetivo:** quitar el toggle de tema; ResumeX renderiza siempre el fondo oscuro (pedido humano).
 - **Estado:** completado.
@@ -396,3 +397,22 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - Vercel: `NEXTAUTH_URL` y `NEXT_PUBLIC_RESUMEX_URL` = `https://resumex.talentxrecruiting.com` en Production y Preview.
 - **Validaciones:** `npm run typecheck`, `npm run lint`.
 - **Siguiente paso:** commit + deploy; confirmar que Google OAuth tiene `https://resumex.talentxrecruiting.com/api/auth/callback/google` y que `resume-x-yixz.vercel.app` responde 308.
+
+### 2026-08-05 18:15 — ResumeX pasa a paleta clara (navy sobre canvas gris)
+
+- **Objetivo:** adoptar la paleta de un mockup entregado por el usuario: canvas gris frío, tarjetas blancas, acento navy.
+- **Estado:** completado en código; sin commit ni deploy.
+- **Paleta (muestreada del mockup píxel a píxel):** canvas `#f1f3f6` → `#e2e6ec` (el mockup traía `#d7d8dd` → `#bbbec5`; se aclaró por decisión del usuario para que las tarjetas blancas resalten), tinta `#1b1d22`, acento y botón primario `#1d3559`, cuerpo `#5f6368`, tarjetas `#ffffff`.
+- **Cambios:**
+  - `app/globals.css`: `:root` vuelve a claro (`color-scheme: light`), tokens `--canvas-top` / `--canvas-bottom` y gradiente fijo en `body`. Nueva escala `--color-brand-50` … `--color-brand-950` en `@theme`, con `brand-600 = #1d3559`.
+  - `app/layout.tsx` y `app/global-error.tsx`: fuera el `dark` fijo del `<html>`.
+  - 38 archivos de `app/` y `components/`: `indigo-*` → `brand-*` (318 usos). En `components/ResultCards.tsx` la prop `accent` pasa de `"indigo"` a `"brand"`.
+  - Shells de página (`app/(marketing)`, `app/talent`, `career/{cv,analyzer,autoapply,jobsearcher}`, `talent/{mapper,assess,searches}`, `components/ErrorPageLayout.tsx`): sin fondo propio, para que se vea el canvas del `body`.
+  - `components/AppNav.tsx`: el badge del logo pasa de `#0d1117` + cyan a `bg-brand-600` + blanco.
+  - `app/icon.svg` y `app/opengraph-image.tsx`: favicon navy con X blanca; tarjeta OG sobre el canvas claro.
+  - `lib/generate-report-pdf.ts` y los emails de `register` y `job-digest`: primario indigo → `#1d3559`.
+  - Limpieza del tema oscuro: retiradas 1387 utilidades `dark:` inertes en 47 archivos, los contenedores de blobs que sólo existían para el tema oscuro (7 páginas de herramientas, quedaban con `hidden` permanente) y el `@custom-variant dark` de `globals.css`. No queda ninguna clase `dark:` ni ninguna referencia a `indigo` en `app/`, `components/` ni `lib/`.
+- **Decisiones:** R-020. Un solo tema y es claro. Al no existir variante `dark` ni `@custom-variant`, `prefers-color-scheme` no puede repintar la app: para volver a un tema oscuro habría que reintroducir la variante a propósito.
+- **Validaciones realizadas:** `npm run typecheck`, `npm run lint`, `npm test` (64), `npx next build` y `npm run test:e2e:talent-mapper` en verde, antes y después de la limpieza. Playwright sobre `/`, `/login`, `/register`, `/career/tracker`, `/career/analyzer`, `/talent`, `/talent/mapper` y `/opengraph-image`: `body` en `rgb(226, 230, 236)` con gradiente y consola sin errores. Comparación píxel a píxel antes/después de la limpieza: `/talent` idéntica (0 px), y las diferencias del resto se localizan en el badge del logo (cambio intencional) y en el indicador de dev de Next.
+- **Riesgos o bloqueos:** la UI de la extensión Chrome (`chrome-extension/popup.html`) y la pantalla puente `app/extension-auth/page.tsx` siguen oscuras con cyan `#22d3ee`; son otra superficie y alinearlas exige publicar una versión de la extensión. Nota operativa: tras editar `globals.css`, Turbopack siguió sirviendo el CSS viejo hasta borrar `.next`.
+- **Siguiente paso:** commit y deploy; en prod revisar `/career/tracker` con aplicaciones reales y `/talent/mapper` con resultados, y confirmar que la tarjeta OG nueva aparece en el preview de LinkedIn.
