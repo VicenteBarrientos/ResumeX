@@ -40,7 +40,7 @@ export default function Footer() {
             </p>
             <ThemedExternalLink
               href={TALENTX_URL}
-              fallbackTheme="light"
+              theme="light"
               className="mt-2 inline-block text-sm text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-cyan-300"
             >
               {t.footer.talentX}

@@ -15,7 +15,7 @@ export default function SiteLinks() {
       className="flex max-w-[calc(100vw-8rem)] flex-wrap items-center gap-2 sm:max-w-none"
       aria-label={t.nav.siteLinksAria}
     >
-      <ThemedExternalLink href={TALENTX_URL} fallbackTheme="light" className={linkClass}>
+      <ThemedExternalLink href={TALENTX_URL} theme="light" className={linkClass}>
         {t.nav.talentX}
       </ThemedExternalLink>
       <a

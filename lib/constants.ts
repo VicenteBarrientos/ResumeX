@@ -5,11 +5,18 @@ export const MAX_PDF_SIZE_LABEL = "4 MB";
 
 export const MAX_TEXT_LENGTH = 15000;
 
+/**
+ * Official production origin for ResumeX.
+ * Prefer this over any `*.vercel.app` deployment URL in metadata, emails,
+ * Stripe redirects, auth callbacks, and the Chrome extension.
+ */
+export const RESUMEX_OFFICIAL_URL = "https://resumex.talentxrecruiting.com";
+
 export const RESUMEX_URL =
-  process.env.NEXT_PUBLIC_RESUMEX_URL || "https://resumex.talentxrecruiting.com";
+  process.env.NEXT_PUBLIC_RESUMEX_URL?.replace(/\/$/, "") || RESUMEX_OFFICIAL_URL;
 
 export const TALENTX_URL =
-  process.env.NEXT_PUBLIC_TALENTX_URL || "https://talentxrecruiting.com";
+  process.env.NEXT_PUBLIC_TALENTX_URL?.replace(/\/$/, "") || "https://talentxrecruiting.com";
 
 export const TALENTX_LINKEDIN = "https://www.linkedin.com/company/talentxrecruiting";
 

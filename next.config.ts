@@ -1,10 +1,29 @@
 import type { NextConfig } from "next";
+import { RESUMEX_OFFICIAL_URL } from "./lib/constants";
 
-const nextAuthUrl =
-  process.env.NEXTAUTH_URL ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+/**
+ * Resolve the public origin NextAuth (and Stripe callbacks) should use.
+ * Production must never fall through to a `*.vercel.app` deployment URL —
+ * that host is an alias, not the official product URL.
+ */
+function resolveNextAuthUrl(): string {
+  const configured = process.env.NEXTAUTH_URL?.trim().replace(/\/$/, "");
+  if (configured) {
+    return configured;
+  }
+
+  if (process.env.VERCEL_ENV === "production") {
+    return RESUMEX_OFFICIAL_URL;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return "http://localhost:3000";
+}
+
+const nextAuthUrl = resolveNextAuthUrl();
 
 /**
  * Flat tool routes moved under the /career and /talent product segments.
@@ -26,12 +45,28 @@ const PRODUCT_SEGMENT_REDIRECTS = [
   { source: "/talent-mapper/:path*", destination: "/talent/mapper/:path*" },
 ];
 
+/** Production Vercel aliases → official custom domain. */
+const OFFICIAL_HOST_REDIRECTS = [
+  "resume-x-yixz.vercel.app",
+  "resume-x-yixz-vicente-barrientos-projects.vercel.app",
+  "resume-x-yixz-git-main-vicente-barrientos-projects.vercel.app",
+].map((host) => ({
+  source: "/:path*",
+  has: [{ type: "host" as const, value: host }],
+  destination: `${RESUMEX_OFFICIAL_URL}/:path*`,
+  permanent: true,
+}));
+
 const nextConfig: NextConfig = {
   env: {
     NEXTAUTH_URL: nextAuthUrl,
+    NEXT_PUBLIC_RESUMEX_URL: process.env.NEXT_PUBLIC_RESUMEX_URL || RESUMEX_OFFICIAL_URL,
   },
   async redirects() {
-    return PRODUCT_SEGMENT_REDIRECTS.map((r) => ({ ...r, permanent: true }));
+    return [
+      ...PRODUCT_SEGMENT_REDIRECTS.map((r) => ({ ...r, permanent: true })),
+      ...OFFICIAL_HOST_REDIRECTS,
+    ];
   },
   // Keep unpdf (PDF.js) external so the bundler (Turbopack/webpack) does not try to
   // inline PDF.js's dynamic worker import. Bundling it breaks the worker resolution

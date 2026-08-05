@@ -7,11 +7,8 @@ import LanguageToggle from "@/components/LanguageToggle";
 import SiteLinks from "@/components/SiteLinks";
 import LocaleProvider from "@/components/LocaleProvider";
 import LocaleSync from "@/components/LocaleSync";
-import ThemeProvider from "@/components/ThemeProvider";
-import ThemeSync from "@/components/ThemeSync";
-import ThemeToggle from "@/components/ThemeToggle";
+import { RESUMEX_URL } from "@/lib/constants";
 import { localeInitScript } from "@/lib/locale-sync";
-import { themeInitScript } from "@/lib/theme-sync";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,9 +25,7 @@ export const metadata: Metadata = {
   title: "ResumeX — AI-Powered Job Search Platform",
   description:
     "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place. Free to start.",
-  metadataBase: new URL(
-    process.env.NEXTAUTH_URL || "https://resumex.talentxrecruiting.com"
-  ),
+  metadataBase: new URL(RESUMEX_URL),
   openGraph: {
     title: "ResumeX — AI-Powered Job Search Platform",
     description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
@@ -52,18 +47,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className="flex min-h-screen flex-col">
         <AuthProvider>
-        <ThemeProvider defaultTheme="light">
           <LocaleProvider defaultLocale="en">
-            <ThemeSync />
             <LocaleSync />
             <div className="relative flex min-h-screen flex-col">
               <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex items-start justify-between gap-3 sm:inset-x-6 lg:inset-x-8">
@@ -73,14 +65,12 @@ export default function RootLayout({
                 </div>
                 <div className="pointer-events-auto flex shrink-0 items-center gap-2">
                   <LanguageToggle />
-                  <ThemeToggle />
                 </div>
               </div>
               <main className="flex-1 pt-16 sm:pt-20">{children}</main>
               <Footer />
             </div>
           </LocaleProvider>
-        </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

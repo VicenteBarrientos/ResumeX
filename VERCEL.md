@@ -9,7 +9,7 @@ Set these for Production and Preview unless you intentionally disable the featur
 | Name | Required | Notes |
 |------|----------|-------|
 | `DATABASE_URL` | Yes | PostgreSQL URL. Neon/Vercel Postgres pooled URLs are fine for Prisma Client. |
-| `NEXTAUTH_URL` | Yes | Production origin, for example `https://resumex.talentxrecruiting.com`. |
+| `NEXTAUTH_URL` | Yes | Official production origin: `https://resumex.talentxrecruiting.com` (no trailing slash). Do not use a `*.vercel.app` alias. |
 | `NEXTAUTH_SECRET` | Yes | Long random string. Also signs Chrome extension tokens. |
 | `OPENAI_API_KEY` | Yes | Required by analyzer, formatter, cover letters, match score, and profile parsing. |
 | `GOOGLE_CLIENT_ID` | Optional | Enables Google OAuth when paired with `GOOGLE_CLIENT_SECRET`. |
@@ -22,7 +22,7 @@ Set these for Production and Preview unless you intentionally disable the featur
 | `STRIPE_SECRET_KEY` | Optional | Required for checkout and billing portal routes. |
 | `STRIPE_WEBHOOK_SECRET` | Optional | Required for Stripe webhook verification. |
 | `STRIPE_PRO_PRICE_ID` | Optional | Required for Pro subscription checkout. |
-| `NEXT_PUBLIC_RESUMEX_URL` | Optional | Public ResumeX URL for cross-site links. |
+| `NEXT_PUBLIC_RESUMEX_URL` | Optional | Public ResumeX URL for cross-site links. Defaults to `https://resumex.talentxrecruiting.com`. |
 | `NEXT_PUBLIC_TALENTX_URL` | Optional | Public TalentX marketing site URL for cross-site links. |
 | `RESUMEX_DEBUG_LOGS` | Optional | Set to `true` only while diagnosing server issues. |
 

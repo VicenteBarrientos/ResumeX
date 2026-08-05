@@ -1,10 +1,11 @@
 import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth-options";
+import { RESUMEX_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
-import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXTAUTH_URL || "https://resumex.talentxrecruiting.com";
+const BASE_URL = process.env.NEXTAUTH_URL?.trim().replace(/\/$/, "") || RESUMEX_URL;
 
 export async function POST() {
   const session = await getServerSession(authOptions);

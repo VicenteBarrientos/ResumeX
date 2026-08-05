@@ -2,7 +2,6 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isLocale } from "@/lib/locale-sync";
-import { isThemeMode } from "@/lib/theme-sync";
 
 /**
  * Tool and account routes — require sign-in. Marketing, auth, and webhooks stay public.
@@ -31,17 +30,9 @@ function isProtectedPath(pathname: string): boolean {
   );
 }
 
-function applyThemeLocaleCookies(request: NextRequest, response: NextResponse) {
-  const theme = request.nextUrl.searchParams.get("theme");
+/** ResumeX is dark-only, so an inbound `?theme=` param is ignored. */
+function applyLocaleCookie(request: NextRequest, response: NextResponse) {
   const lang = request.nextUrl.searchParams.get("lang");
-
-  if (isThemeMode(theme)) {
-    response.cookies.set("talentx-theme", theme, {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: "lax",
-    });
-  }
 
   if (isLocale(lang)) {
     response.cookies.set("talentx-locale", lang, {
@@ -71,7 +62,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-  return applyThemeLocaleCookies(request, response);
+  return applyLocaleCookie(request, response);
 }
 
 export const config = {

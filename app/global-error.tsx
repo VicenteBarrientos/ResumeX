@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-[#050816] dark:text-white">
         <div className="flex min-h-screen items-center justify-center px-4 py-16">
           <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.03]">

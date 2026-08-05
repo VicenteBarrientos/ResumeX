@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
-import { db } from "@/lib/db";
 import { Resend } from "resend";
+import { RESUMEX_URL } from "@/lib/constants";
+import { db } from "@/lib/db";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
               <li>Generate tailored cover letters in seconds</li>
               <li>Track every application in one dashboard</li>
             </ul>
-            <a href="https://resumex.talentxrecruiting.com/career/tracker" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">Go to my dashboard →</a>
+            <a href="${RESUMEX_URL}/career/tracker" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">Go to my dashboard →</a>
             <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">ResumeX — AI-Powered Job Search Platform</p>
           </div>
         `,
