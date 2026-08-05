@@ -1,15 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
-
-function safeCallbackUrl(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/career/tracker";
-  return raw;
-}
+import { safeCallbackUrl } from "@/lib/safe-callback-url";
 
 function LoginForm() {
   const router = useRouter();

@@ -8,9 +8,9 @@
 
 ## Cómo usar este roadmap
 
-1. **Leé primero `AGENT_HANDOFF.md`.** Estado actual, decisiones vigentes R-001…R-019 y bitácora. Una tarea de acá puede haber quedado obsoleta por una decisión de allá.
-2. **Tomá una tarea completa, no media.** Cada tarea tiene ID (`T-2.3`), precondiciones, pasos y una **definición de terminado** verificable. Si no podés cumplir la definición de terminado, la tarea no está lista para cerrarse: dejá lo hecho, anotá en la bitácora qué falta y por qué.
-3. **Respetá el orden de fase.** Las fases están ordenadas por dependencia real, no por preferencia. La Fase 3 asume que la Fase 2 dejó dos consumidores funcionando; sin eso, extraer el kernel es adivinar (R-009).
+1. **Leé primero `AGENT_HANDOFF.md`.** Estado actual, decisiones vigentes R-001…R-020 y bitácora. Una tarea de acá puede haber quedado obsoleta por una decisión de allá.
+2. **Tomá una tarea completa, no media.** Cada tarea tiene ID (`T-7.3`), precondiciones, pasos y una **definición de terminado** verificable. Si no podés cumplir la definición de terminado, la tarea no está lista para cerrarse: dejá lo hecho, anotá en la bitácora qué falta y por qué.
+3. **Respetá el orden de fase.** Las fases están ordenadas por dependencia real, no por preferencia.
 4. **Dentro de una fase, las tareas sin dependencia declarada son paralelizables.**
 5. **Al terminar**, actualizá el handoff (estado + bitácora) y marcá acá el estado de la tarea.
 
@@ -23,276 +23,249 @@
 | ✅ | Terminada y verificada |
 | ⛔ | Bloqueada — la razón está escrita en la tarea |
 | 🤔 | Requiere decisión humana antes de empezar |
+| ⏸️ | Diferida a demanda real — no empezar sin trigger explícito |
 
 ### Reglas transversales
 
 Aplican a **toda** tarea de este roadmap. No se repiten en cada una.
 
 - **Antes de escribir Next.js**, leer la guía pertinente en `node_modules/next/dist/docs/`. Esta versión tiene breaking changes respecto al conocimiento previo de cualquier modelo.
-- **Antes de tocar `lib/talent-mapper/scoring.ts` o `aggregate-authors.ts`**, tests de caracterización que fijen el comportamiento actual (R-012). Estos archivos regresan en silencio: no rompen el build, sólo empeoran los resultados.
+- **Antes de tocar `lib/talent-mapper/scoring.ts` o `aggregate-authors.ts`**, confirmar que los tests de caracterización existentes (R-012) siguen pasando sin modificarlos. Si hay que tocarlos, cambiaste comportamiento.
 - **Toda ruta de página que se mueva deja un 308** en `PRODUCT_SEGMENT_REDIRECTS` (`next.config.ts`, R-018).
 - **Nombres y rutas de producto salen de `lib/products.ts`** (R-019). Nada de `"ResumeX Talent"` hardcodeado.
 - **Las APIs siguen planas** hasta que exista versionado (R-017).
 - **Verificación mínima antes de commitear:** `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Si la tarea toca Talent Mapper, además `npm run test:e2e:talent-mapper` con el dev server arriba.
 - **Sin secretos** en el repo, el handoff ni el wiki (R-015).
+- **Extraer al segundo uso, no antes (R-009).** Ya causó dos cancelaciones (T-3.2, T-3.3). No repetir el error en las fases nuevas.
 
 ---
 
-## El terreno, hoy
+## El terreno, hoy (2026-08-05, tras el cierre de Fases 1–6)
 
-Números reales al cierre de la Fase 1, para que nadie tenga que redescubrirlos:
+Las seis fases del plan de separación de productos están **completas y en producción** (`add4208`). Números reales, para que nadie los redescubra:
 
 | Dimensión | Estado |
 |---|---|
-| Rutas de página | 10 en `/career/*`, 2 en `/talent/*`, 5 compartidas, 10 redirects 308 desde rutas planas |
-| Rutas de API | 28, todas planas bajo `/api/*` (R-017) |
-| Tests | 30 en 7 archivos, **todos de Talent Mapper**. `vitest.config.mts` sólo incluye `lib/**` |
-| Cobertura de Career | **Cero tests.** `lib/analyze.ts` (208 líneas), `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts` sin red |
-| E2E | Uno: `scripts/e2e-talent-mapper.mjs`, cubre el camino demo completo. Career no tiene E2E |
-| Modelos Prisma | `User`, `Application`, `Profile`, `Answer`. **Ninguno de Talent** |
-| Estado de Talent | Todo en `localStorage`, key `resumex-talent-mapper-v1` |
-| Tipo compartido problemático | `AnalysisResult` (`lib/types.ts:25`), 15 campos sirviendo a dos usuarios distintos |
-| Evidencia de Career | `CriteriaItem { criterion, met, evidence: string }` — un string suelto, sin procedencia. Viola el estándar de R-007 |
-| Evidencia de Talent | `EvidenceMatch` con `workTitle`, `snippet`, `doi`, `confidence`, `matchType`, `workId`. Es el estándar |
+| Rutas de página | 10 en `/career/*`, 3 en `/talent/*`, 5 compartidas, 10 redirects 308 desde rutas planas |
+| Rutas de API | ~30, todas planas bajo `/api/*` (R-017), incluida persistencia Talent |
+| Tests | 11 archivos: 9 de Talent Mapper/Assess (`lib/talent-mapper/__tests__`, `lib/__tests__/{analyze,criteria-evidence}.test.ts`). **Cero para `format-resume.ts` (244 líneas), `merge-profile.ts` (102) y `parse-profile.ts` (164)** |
+| E2E | Uno: `scripts/e2e-talent-mapper.mjs`. **Career no tiene E2E** — ni `/career/tracker`, ni `/career/analyzer`, ni `/career/autoapply` |
+| CI | **No existe.** No hay `.github/workflows/`. La verificación depende de que cada agente corra los comandos localmente antes de commitear |
+| Modelos Prisma | `User`, `Application`, `Profile`, `Answer`, `TalentSearch`, `ShortlistEntry`, `CandidateNote`. **Sin `Organization`** — búsquedas y notas son por usuario, no por equipo |
+| Evidencia | `CriteriaItem`/`StrongMatch` (Career+Assess) y `EvidenceMatch` (Mapper) ya llevan procedencia (R-007): quote/snippet real, `status`/`confidence`, `aiInferred`/`matchType`. El estándar T-3.4 quedó cerrado |
+| i18n | `lib/i18n/resumex.ts` (386 líneas) existe pero cubre Career; **Talent (`/talent`, `/talent/mapper`, `/talent/assess`, `/talent/searches`) no tiene strings traducibles** |
+| a11y | `grep -rn "aria-" app/talent` → **0 resultados**. Ningún atributo ARIA en toda la superficie Talent |
+| Tema | ResumeX web es paleta clara (R-020) desde `b7ffc87`. **La extensión Chrome (`chrome-extension/popup.html`) y el puente `/extension-auth` siguen en dark navy + cyan (`#0d1117`/`#22d3ee`)** — riesgo ya anotado en el handoff, nunca resuelto |
+| Precio Talent | No existe. Pro Career es `$5/mo` vía `formatProPriceLabel`; Talent no tiene plan propio |
+| Equipos/Ashby | Diferidos por falta de cliente concreto (T-4.7, Organization) |
 
-Ese contraste entre las dos últimas filas es, en una línea, el trabajo que queda.
+La foto: el producto **funciona y está separado correctamente**, pero tiene deuda de confiabilidad (tests, CI, E2E) y de superficie (i18n, a11y, tema de la extensión) que quedó pospuesta durante el sprint de separación. Esta es la deuda que las Fases 7–9 cierran antes de que el roadmap vuelva a mirar features nuevas.
 
 ---
 
-# Fase 2 — Salidas separadas
+# Fase 7 — Red de seguridad
 
-**Objetivo.** Partir `AnalysisResult` en dos salidas sobre el mismo motor (R-008): una **de mejora** para Career, una **de decisión** para Talent.
+**Objetivo.** Cerrar los huecos de cobertura que quedaron abiertos en el backlog de la Fase 2–6 (B-2, B-3) y agregar la verificación automática que hoy no existe. Sin esto, cada cambio futuro se apoya en que el agente de turno se acuerde de correr `npm test` a mano.
 
-**Por qué ahora.** Es la deuda que la separación de rutas hizo visible pero no resolvió. Hoy un candidato que usa `/career/analyzer` recibe en el payload `recommendedNextStep: "Reject"` y `sendoutBlurb` — campos escritos para que un reclutador decida sobre él. No se muestran en la UI, pero viajan por la red y están en el tipo. Un tipo sirviendo a dos usuarios es exactamente el problema que la separación viene a resolver.
+**Por qué ahora.** Es la fase de menor riesgo y mayor apalancamiento: no toca producto, sólo lo protege. Las fases siguientes (8, 9) tocan superficie visible — conviene tener la red antes.
 
-**Precondiciones.** Fase 1 ✅.
+**Precondiciones.** Ninguna. Puede arrancar de inmediato y en paralelo con cualquier otra fase.
 
-### Reparto de campos
+### ⬜ T-7.1 — Tests de caracterización para `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts`
 
-Punto de partida, no dogma. Si al implementar aparece un campo mal ubicado, discutilo en la bitácora antes de moverlo.
+- Mismos criterios que T-2.1: mockear lo externo (parseo de PDF/DOCX vía `unpdf`/`mammoth`, llamadas a OpenAI si las hay), fijar comportamiento actual — no el ideal.
+- `format-resume.ts` (244 líneas): fijar la forma del resumé formateado, qué pasa con secciones vacías o campos faltantes del perfil.
+- `merge-profile.ts` (102 líneas): fijar la resolución de conflictos cuando el perfil existente y el nuevo extraído difieren en el mismo campo.
+- `parse-profile.ts` (164 líneas): fijar el parseo de un CV bien formado y el comportamiento ante texto no estructurado o vacío.
 
-| Campo actual | Va a | Razón |
-|---|---|---|
-| `matchScore` | ambos | El número es el mismo; cambia el marco que lo rodea |
-| `summary` | ambos | Redacción distinta por audiencia (ver T-2.4) |
-| `mustHaveCriteria`, `niceToHaveCriteria` | ambos | El candidato ve qué le falta; el reclutador ve qué cumple |
-| `strengths`, `gaps` | **Career** | Vocabulario de mejora personal |
-| `matchedKeywords`, `missingKeywords` | **Career** | Sirve para reescribir el CV |
-| `suggestions` | **Career** | Literalmente "qué hacer para mejorar" |
-| `concernLevel` | **Talent** | Un candidato no necesita saber que su nivel de preocupación es "High" |
-| `recommendedNextStep` | **Talent** | `Reject` \| `Screen` \| `Interview` \| `Strongly recommend` — es una decisión sobre una persona |
-| `strongMatches` | **Talent** | Formato de defensa ante un cliente |
-| `phoneScreenQuestions` | **Talent** | Preguntas para evaluar, no para prepararse |
-| `clientFacingBullets`, `sendoutBlurb` | **Talent** | Artefactos de agencia |
+**Terminado cuando:** los tres archivos tienen tests en `lib/__tests__/`, y comentar cualquier rama de decisión en cada uno hace fallar al menos un test.
 
-### ✅ T-2.1 — Tests de caracterización de `lib/analyze.ts`
+### ⬜ T-7.2 — E2E de Career (cierra B-3)
 
-**Sin esto no empieza la fase.** `lib/analyze.ts` (208 líneas) no tiene un solo test y es el motor que la Fase 2 va a partir en dos.
+- Nuevo `scripts/e2e-career.mjs`, mismo patrón que `e2e-talent-mapper.mjs` (Playwright, usuario demo, dev server en otra terminal).
+- Camino mínimo: login → `/career/analyzer` (CV + JD demo → resultado con criterios y quotes) → `/career/tracker` (crear aplicación → verla en la lista) → `/career/cover-letter` (generar una carta).
+- Agregar el script a `package.json` (`test:e2e:career`) y a la lista de verificación de `AGENTS.md`/reglas transversales de este archivo cuando la tarea toque esas superficies.
 
-- Crear `lib/__tests__/analyze.test.ts`.
-- Mockear la llamada a OpenAI: la unidad bajo test es el armado del prompt, el parseo de la respuesta y el manejo de error, **no** el modelo.
-- Fijar: forma del objeto devuelto ante una respuesta bien formada; comportamiento ante JSON inválido; comportamiento ante campos faltantes; qué pasa con `matchScore` fuera de rango.
-- Revisar `lib/analysis-errors.ts` y cubrir sus caminos.
+**Terminado cuando:** el script corre limpio contra el dev server local, sin errores de consola ni requests fallidos, y queda documentado en `README.md` igual que el de Talent Mapper.
 
-**Terminado cuando:** los tests pasan, y si comentás una rama del parseo en `analyze.ts` al menos un test falla. Un test que pasa con el código roto no es un test.
+### 🟨 T-7.3 — CI mínima en GitHub Actions
 
-### ✅ T-2.2 — Declarar los dos tipos de salida
+- `.github/workflows/ci.yml`: en cada push/PR a `main`, correr `npm ci`, `npm run typecheck`, `npm run lint`, `npm test`. `npm run build` sólo si hay forma de proveer un `DATABASE_URL` de CI (Postgres efímero en el job o skip documentado — el handoff ya registra que el build local falla sin `DATABASE_URL`).
+- No agregar despliegue desde CI: Vercel ya despliega en push. Este workflow es sólo verificación.
 
-- En `lib/types.ts`, definir `CareerAnalysis` y `TalentAssessment` con el reparto de arriba.
-- Mantener `AnalysisResult` como `@deprecated`, definido como la unión de ambos, para que nada rompa mientras dura la migración.
-- No borrar `AnalysisResult` en esta tarea. Se borra en T-2.6, cuando no queden consumidores.
+**Progreso (2026-08-05):** workflow creado (`prisma generate` + typecheck + lint + test; build omitido a propósito). Falta el smoke en GitHub (PR con test roto → check rojo) para marcar ✅.
 
-**Terminado cuando:** `npm run typecheck` pasa sin cambiar ningún consumidor.
+**Terminado cuando:** un PR con un test roto a propósito falla el check en GitHub; uno limpio pasa. Documentar el resultado en la bitácora del handoff con el link al run.
 
-### ✅ T-2.3 — Partir el motor
+### ⬜ T-7.4 — Tests de caracterización para `resolve-resume-job-input.ts` y `criteria-evidence.ts` en sus bordes
 
-- `lib/analyze.ts` expone hoy una función que devuelve `AnalysisResult`. Partirla en `analyzeForCareer()` y `assessForTalent()` sobre un núcleo compartido de extracción.
-- El núcleo compartido **se queda en `lib/analyze.ts` por ahora**. No lo subas a `lib/evidence/`: eso es Fase 3 y necesita dos consumidores funcionando (R-009).
-- El prompt probablemente deba partirse también. Un prompt que pide quince campos para dos audiencias produce texto de compromiso para ambas.
+- Estos dos ya tienen algo de cobertura indirecta vía `analyze.test.ts`/`criteria-evidence.test.ts`; esta tarea es sólo cerrar los bordes: input vacío, CV sin texto extraíble, JD ausente.
+- Menor prioridad que T-7.1–T-7.3; tomarla si sobra tiempo dentro de la fase.
 
-**Depende de:** T-2.1, T-2.2.
-**Terminado cuando:** los tests de T-2.1 pasan contra las dos funciones nuevas, y `/api/analyze` sigue devolviendo lo mismo que antes para Career.
+**Terminado cuando:** casos borde documentados arriba tienen un test que falla si se elimina el manejo correspondiente.
 
-### ✅ T-2.4 — Reescribir el `summary` por audiencia
-
-El mismo hecho — "tiene 3 de 5 must-haves" — se le dice distinto a quien puede mejorar y a quien tiene que decidir. Career: qué le falta y qué hacer. Talent: qué riesgo asume al avanzar y qué preguntar para reducirlo.
-
-**Depende de:** T-2.3.
-**Terminado cuando:** los dos summaries se leen distinto sobre el mismo input, y hay un test que lo fija.
-
-### ✅ T-2.5 — Migrar los consumidores
-
-Seis archivos importan `AnalysisResult` hoy:
-
-| Archivo | Pasa a usar |
-|---|---|
-| `lib/analyze.ts` | ambos |
-| `lib/format-analysis.ts` | `CareerAnalysis` (revisar si tiene ramas de reclutador muertas) |
-| `lib/generate-report-pdf.ts` | decidir: ¿el PDF es del candidato o del reclutador? Hoy es ambiguo |
-| `components/ResumeAnalyzer.tsx` | `CareerAnalysis` |
-| `components/ResultCards.tsx` (469 líneas) | probable split en dos componentes |
-| `components/DownloadReportButton.tsx` | sigue a `generate-report-pdf.ts` |
-
-`ResultCards.tsx` es el archivo caro: 469 líneas renderizando campos de las dos audiencias. Revisar si conviene partirlo en `career/AnalysisCards.tsx` y `talent/AssessmentCards.tsx` con primitivas compartidas, o si alcanza con condicionar por tipo.
-
-**Depende de:** T-2.3.
-**Terminado cuando:** ningún archivo fuera de `lib/types.ts` importa `AnalysisResult`.
-
-### ✅ T-2.6 — Retirar `AnalysisResult`
-
-Borrar el tipo deprecado y su unión.
-
-**Depende de:** T-2.5.
-**Terminado cuando:** `grep -rn "AnalysisResult" --include="*.ts" --include="*.tsx" .` no devuelve nada fuera de `AGENT_HANDOFF.md` y este archivo.
-
-### ✅ T-2.7 — Decidir si Talent expone una superficie de evaluación
-
-Los campos `TalentAssessment` existen pero **ningún consumidor de Talent los usa todavía**: `/talent/mapper` es sourcing, no evaluación. Hay dos caminos:
-
-- **A.** Construir `/talent/assess` — pegar un CV y una JD, obtener la salida de decisión. Da el segundo consumidor real que la Fase 3 necesita.
-- **B.** Dejar `TalentAssessment` declarado sin superficie hasta la Fase 4, y aceptar que la Fase 3 arranque con un consumidor y medio.
-
-**Decisión (2026-08-05):** **A**. Implementado: `/talent/assess` + `/api/talent-assess`.
-
-### Riesgos de la Fase 2
+### Riesgos de la Fase 7
 
 | Riesgo | Mitigación |
 |---|---|
-| Partir el prompt degrada la calidad de una de las dos salidas sin que nadie lo note | Guardar 5 pares (CV, JD) reales como fixtures y comparar salidas antes/después a ojo, no sólo por tipo |
-| `generate-report-pdf.ts` termina sirviendo a dos audiencias otra vez | Decidir su dueño **antes** de tocarlo, no durante |
-| La migración se queda a medio camino y conviven los tres tipos | T-2.6 es parte de la fase, no un "después" |
+| Escribir tests de caracterización sobre código que ya tiene bugs silenciosos fija el bug, no el comportamiento correcto | Si un test revela un bug obvio al escribirlo, anotarlo en la bitácora como hallazgo separado — no corregirlo dentro de esta fase sin decisión explícita |
+| CI sin `DATABASE_URL` bloquea `build` y genera falsos rojos | Documentar explícitamente en el workflow qué pasos corren y cuáles se saltan, con un comentario que explique por qué |
 
 ---
 
-# Fase 3 — Kernel compartido
+# Fase 8 — Accesibilidad e internacionalización de Talent
 
-**Objetivo.** Migrar la evidencia de Career/Assess al modelo con procedencia de R-007 (T-3.4). Extraer `lib/roles/` si sigue justificado (T-3.3). **No** subir el matcher de Talent Mapper a `lib/evidence/` (T-3.2 cancelada por T-3.1).
+**Objetivo.** Llevar `/talent/*` al mismo estándar que Career ya tiene parcialmente: navegable con teclado/lector de pantalla y disponible en los mismos idiomas que Career. Cierra B-8 y B-9.
 
-**Por qué después de la 2.** R-009: se extrae al segundo uso real. Antes de la Fase 2, `lib/talent-mapper/evidence.ts` tiene un solo consumidor. Diseñar el kernel ahí es diseñar para un caso y descubrir en el segundo que la abstracción no servía.
+**Por qué ahora.** Talent es el producto más caro por usuario y el que se vende a equipos de contratación — más expuesto a auditorías de accesibilidad corporativas y a usuarios que no leen inglés o español indistintamente. Hoy tiene cero atributos ARIA y cero strings traducibles propios.
 
-**Precondiciones.** Fase 2 ✅, incluida T-2.7 opción A (o aceptación explícita de arrancar con un consumidor y medio).
+**Precondiciones.** Ninguna dura. Recomendable después de T-7.2 (E2E de Career) para tener el patrón de test fresco, pero no bloqueante.
 
-### ✅ T-3.1 — Comparar los dos modelos de evidencia
+### ⬜ T-8.1 — Auditoría de accesibilidad de `/talent`, `/talent/mapper`, `/talent/assess`, `/talent/searches`
 
-Antes de extraer, escribir en el handoff qué tienen en común de verdad.
+- Recorrer las cuatro páginas con un lector de pantalla (o `axe-core`/Playwright `@axe-core/playwright`) y listar: falta de `aria-label` en botones icon-only, falta de `role` en tarjetas de resultado que funcionan como items de lista, contraste de la paleta clara nueva (R-020) contra WCAG AA, foco visible en elementos interactivos custom (los charts de score, los toggles de shortlist).
+- Documentar hallazgos en la bitácora del handoff antes de arreglar nada — es una auditoría, no un fix a ciegas.
 
-- **Talent Mapper** (`lib/talent-mapper/types.ts`): `EvidenceMatch { criterion, matchType: exact|adjacent|inferred, workTitle, year, snippet, doi, openAlexUrl, confidence: direct|strong_adjacent|possible, workId }`.
-- **Career / Talent Assess** (`lib/types.ts:14`): `CriteriaItem { criterion, met: boolean, evidence: string }` — mismo tipo en `AnalysisBase`.
+**Terminado cuando:** existe una lista concreta de violaciones con archivo y línea, no una impresión general.
 
-La diferencia no es de forma, es de honestidad: Talent Mapper apunta al documento fuente y declara su confianza; Career/Assess devuelven un string que el modelo redactó. Un `met: boolean` tampoco distingue "lo cumple" de "no encontré evidencia".
+### ⬜ T-8.2 — Corregir los hallazgos de T-8.1
 
-**Resultado (2026-08-05):** tabla completa en `AGENT_HANDOFF.md` § "Comparación de evidencia (T-3.1)". Único campo idéntico: `criterion`. **Casi nada es común a nivel de tipo** → T-3.2 cancelada.
+- Depende de T-8.1.
+- Priorizar: navegación por teclado del flujo de búsqueda → shortlist → notas (es el camino de trabajo diario de un recruiter), luego el resto.
 
-**Terminado cuando:** hay una tabla en el handoff con qué campos son genuinamente comunes y cuáles son específicos del sujeto. Si la respuesta honesta es "casi nada es común", eso también es un resultado válido y cancela T-3.2. ✅
+**Terminado cuando:** `@axe-core/playwright` corre contra las cuatro rutas sin violaciones de nivel `serious` o `critical`, y el camino shortlist→notas es completable sólo con teclado (verificado a mano, documentado en la bitácora).
 
-### ❌ T-3.2 — Extraer `lib/evidence/` — CANCELADA
+### ⬜ T-8.3 — Extraer los strings de `/talent/*` a `lib/i18n/`
 
-Cancelada por T-3.1. `matchEvidence()` no tiene segundo consumidor: Career/Assess no operan sobre `ScholarlyWork`. Subir el matcher a `lib/evidence/` violaría R-009 y la regla de frontera.
+- Mismo patrón que `lib/i18n/resumex.ts` ya usa para Career: no inventar un sistema nuevo, extenderlo o crear su análogo para Talent si la estructura actual no separa bien por producto.
+- Cubrir como mínimo: landing pública de Talent, `TalentAssessor`/`AssessmentCards`, el flujo de Mapper (incluida la sección "What this does not tell you", R-007/R-014 — su honestidad no puede perderse en la traducción), `/talent/searches`.
 
-Un contrato tipado delgado para veredictos LLM (`CriteriaItem` con procedencia) puede aparecer dentro de **T-3.4**, compartido por Career y Assess. No se unifica con `EvidenceMatch`.
+**Terminado cuando:** cambiar el idioma activo (el mecanismo que ya usa Career) traduce también las cuatro páginas de Talent, sin strings en inglés/español mezclados por accidente.
 
-~~Sólo si T-3.1 lo justifica.~~
+### Riesgos de la Fase 8
 
-~~- Tipos comunes: criterio, match, nivel de confianza, procedencia.~~
-~~- La procedencia es obligatoria: extracto real, fuente identificable, confianza, y marca de si lo infirió la IA (R-007).~~
-~~- `lib/talent-mapper/evidence.ts` (319 líneas) pasa a consumir el kernel sin cambiar comportamiento. **Sus tests existentes deben pasar sin modificarse** — si hay que tocarlos, cambiaste comportamiento.~~
-
-### ❌ T-3.3 — Extraer `lib/roles/` — CANCELADA
-
-**Resultado (2026-08-05):** cancelada. Talent Mapper produce `SourcingCriteria` para OpenAlex; Career/Assess producen `CriteriaItem[]` dentro de un compare CV+JD. Misma lógica R-009 que T-3.2.
-
-### ✅ T-3.4 — Migrar la evidencia de Career a procedencia
-
-Hecho en prod. `CriteriaItem`/`StrongMatch` con `status`, `quote`, `aiInferred` + normalización server-side.
+| Riesgo | Mitigación |
+|---|---|
+| Traducir la sección "What this does not tell you" pierde matiz y suena a disclaimer legal genérico | Traducción revisada por una persona, no sólo generada; es contenido que sostiene R-007/R-014, no boilerplate |
+| Arreglos de a11y tocan estructura DOM de componentes compartidos con Career | Verificar que `npm run test:e2e:talent-mapper` y el nuevo `test:e2e:career` (T-7.2) sigan pasando después de cada cambio |
 
 ---
 
-# Fase 4 — Talent como herramienta de trabajo
+# Fase 9 — Paridad visual de superficies satélite
 
-**Estado (2026-08-05):** ✅ T-4.1…T-4.6 hechas. T-4.7 Ashby **diferida**.
+**Objetivo.** Alinear la extensión Chrome y el puente `/extension-auth` a la paleta clara R-020. Hoy son las dos únicas superficies que todavía muestran el tema oscuro descartado, con acento cyan que ya no existe en ningún otro lugar del producto.
 
-### ✅ T-4.1 — Modelar la persistencia
-Modelos `TalentSearch`, `ShortlistEntry`, `CandidateNote`. `resultJson` entero. Búsquedas **por usuario** (sin Organization).
+**Por qué ahora.** Es deuda visual heredada de la Fase 1 (dark-only) que sobrevivió al cambio a paleta clara porque requiere publicar una nueva versión de la extensión — se documentó como riesgo abierto y nunca se resolvió. Cuanto más tiempo pase, más raro se ve un login que entra a una extensión oscura desde una web clara.
 
-### ✅ T-4.2 — APIs de persistencia
-`/api/talent-mapper/searches` CRUD + shortlist + notes. Auth + filtro `userId`.
+**Precondiciones.** Ninguna. Independiente de las Fases 7 y 8.
 
-### ✅ T-4.3 — Migrar el workspace a servidor
-Prisma como verdad; localStorage caché; import explícito del draft del navegador.
+### ⬜ T-9.1 — Repintar `app/extension-auth/page.tsx`
 
-### ✅ T-4.4 — Pantalla de búsquedas guardadas
-`/talent/searches` + nav.
+- Reemplazar `bg-[#0d1117]`, `text-cyan-400` y el resto de la paleta oscura hardcodeada por los tokens `--canvas-*`/`brand-*` que ya usa el resto de la app.
+- Es una sola página; no requiere versión nueva de la extensión para desplegarse (corre en el dominio de ResumeX, no en el paquete de la extensión).
 
-### ✅ T-4.5 — Notas por candidato
-`CandidateNote` con debounce. Pipeline statuses **no** (sin demanda real).
+**Terminado cuando:** `/extension-auth` renderiza con el mismo canvas gris y acento navy que `/login`, verificado visualmente en el navegador (Playwright screenshot o inspección manual).
 
-### ✅ T-4.6 — `screeningQuestions`
-Generadas desde técnicas no matcheadas, unknowns y concerns.
+### ⬜ T-9.2 — Repintar `chrome-extension/popup.html` / `popup.js`
 
-### ❌ T-4.7 — Ashby — DIFERIDA
-Especulativa hasta cliente concreto.
+- Mismo criterio de color que la web: canvas claro, acento `#1d3559`, sin cyan.
+- Depende de publicar una nueva versión del paquete de la extensión (cambia `manifest.json` versión) — coordinar con quien administra la Chrome Web Store antes de asumir que un commit alcanza.
 
----
+**Terminado cuando:** el popup usa la paleta clara y la nueva versión está subida (o al menos empaquetada y lista para subir, si publicar requiere una cuenta que el agente no tiene).
 
-# Fase 5 — Consolidación de repos
+### Riesgos de la Fase 9
 
-### ✅ T-5.1 — Inventariar sourcing-copilot
-Serper/LinkedIn ≠ OpenAlex. Ver `resumex-sourcing-copilot/ARCHIVE.md`.
-
-### ✅ T-5.2 — Absorber
-Nada absorbido ahora.
-
-### ✅ T-5.3 — Archivar resumex-tracker
-No local; tracker canónico = Career `/career/tracker`.
-
-### ✅ T-5.4 — Extensión Chrome
-**Permanece en este repo.**
+| Riesgo | Mitigación |
+|---|---|
+| La extensión ya está en manos de usuarios con la versión oscura instalada | Cambio de color no rompe funcionalidad; no requiere migración de datos ni aviso especial |
+| Publicar en la Chrome Web Store puede requerir acceso que el agente no tiene | T-9.2 puede cerrarse dejando el paquete listo (`terminado cuando` ajustado) si publicar está fuera de alcance — documentarlo explícitamente, no fingir que se publicó |
 
 ---
 
-# Fase 6 — Comercialización y medición
+# Fase 10 — Talent como producto de equipo 🤔
 
-### ✅ T-6.1 — Analítica mínima
-`/api/analytics` + `TrackedLink` en CTAs de `/talent`.
+**Estado.** Requiere decisión humana antes de empezar. No tomar ninguna tarea de esta fase sin que exista un cliente o prospecto concreto pidiendo esto — es exactamente el tipo de trabajo especulativo que R-009 y las cancelaciones de T-3.2/T-3.3/T-4.7 ya mostraron que sale mal diseñado sin un consumidor real.
 
-### ⏸️ T-6.2 — Precio de Talent — DIFERIDA
-Pro Career $5/mo via `formatProPriceLabel`. Talent sin plan propio aún.
+**Objetivo, si se activa.** Búsquedas y notas de Talent hoy son por usuario (`TalentSearch.userId`, decisión "Ownership: Usuario" del cierre de roadmap anterior). Un equipo de contratación con más de un recruiter necesita compartir shortlists y notas sobre el mismo research de candidatos.
 
-### ⏸️ T-6.3 — Marca — DIFERIDA
-Revisar si Talent gana clientes enterprise.
+**Trigger para activar esta fase:** un cliente de Talent con ≥2 recruiters pidiendo ver el trabajo del otro, o una venta enterprise que lo condicione.
+
+### 🤔 T-10.1 — Modelar `Organization`
+
+- `Organization`, `OrganizationMember` (rol: admin/recruiter), `TalentSearch.organizationId` opcional junto a `userId` (no reemplazarlo — una búsqueda sigue teniendo un autor).
+- Migración Prisma que no rompa las búsquedas existentes (todas quedan sin organización, visibles sólo para su dueño, como hoy).
+
+**Depende de:** decisión humana de activar la fase.
+
+### 🤔 T-10.2 — Compartir shortlist y notas dentro de una organización
+
+- `ShortlistEntry`/`CandidateNote` visibles para todo miembro de la organización dueña de la búsqueda, no sólo el creador.
+- Decidir si las notas son de autor único (con atribución) o editables por cualquier miembro — probablemente la primera, dado R-014 (declarar lo que no se sabe: una nota sin autor claro pierde procedencia).
+
+**Depende de:** T-10.1.
+
+### 🤔 T-10.3 — Invitaciones y gestión de miembros
+
+- Flujo mínimo: el admin de una organización invita por email, el invitado acepta y queda vinculado.
+- No construir roles granulares por feature (RBAC completo) sin un segundo caso de uso — dos roles (admin/recruiter) alcanzan hasta que aparezca demanda de un tercero.
+
+**Depende de:** T-10.1.
+
+---
+
+# Fase 11 — Comercialización ⏸️
+
+**Estado.** Diferida, igual que en el cierre de roadmap anterior (T-6.2, T-6.3). Se deja escrita para no perder el trabajo de diseño cuando llegue el momento, no para tomarse ahora.
+
+### ⏸️ T-11.1 — Precio de Talent
+
+- Hoy sólo existe `PLANS`/`formatProPriceLabel` para Career ($5/mo). Talent no tiene plan, ni Stripe price ID, ni gate de features.
+- Antes de precificar: decidir el modelo (por asiento, por búsqueda, flat) — es una decisión de negocio, no técnica. No adivinar un número.
+- **Trigger para activar:** intención de cobrar por Talent, aunque sea a un solo cliente piloto.
+
+### ⏸️ T-11.2 — Ashby (integración ATS)
+
+- T-4.7 quedó diferida por falta de cliente concreto. Sigue diferida.
+- **Trigger para activar:** un cliente de Talent que use Ashby y pida exportar/sincronizar candidatos ahí. Sin eso, es una integración especulativa contra una API que puede haber cambiado para cuando haya demanda real — revisar la documentación de Ashby de nuevo en ese momento, no confiar en lo que se sabía en 2026-08-05.
+
+### ⏸️ T-11.3 — Revisión de marca
+
+- "ResumeX" es vocabulario de candidato; un recruiter no compra una herramienta nombrada por el documento que recibe (riesgo ya anotado en el handoff).
+- **Trigger para activar:** Talent empieza a traer clientes empresariales de forma sostenida, no un solo lead.
 
 ---
 
 # Backlog transversal
 
-| ID | Estado |
-|---|---|
-| ✅ B-1 | Precio desde `PLANS` / `formatProPriceLabel` |
-| 🟨 B-2 | `analyze.ts` cubierto; format/merge/parse pendientes |
-| ⬜ B-3 | E2E Career pendiente |
-| ✅ B-4 | vitest incluye app/ y components/ |
-| ✅ B-5 | Alias MatchConfidence/MatchType retirados |
-| ⏸️ B-6 | criterionKind diferida |
-| 🟨 B-7 | aiInferred en CriteriaItem; matchType inferred en Mapper |
-| ⬜ B-8 | i18n Talent pendiente |
-| ⬜ B-9 | a11y /talent pendiente |
-| ⏸️ B-10 | Segunda fuente condicionada a calibración |
+Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. No tiene fase asignada porque cada ítem es independiente y de tamaño pequeño — tomar cualquiera sin esperar el orden de fases.
+
+| ID | Estado | Descripción |
+|---|---|---|
+| ⬜ B-2 | `format-resume`/`merge-profile`/`parse-profile` sin tests | Absorbido por **T-7.1** |
+| ⬜ B-3 | E2E Career pendiente | Absorbido por **T-7.2** |
+| ⏸️ B-6 | `criterionKind` (tipar categoría del criterio: técnica/organismo/área/geografía) | Diferida — sin segundo consumidor que lo necesite hoy; revivir si Talent Mapper o Assess necesitan pesos por tipo de criterio |
+| ✅ B-7 | `aiInferred` en `CriteriaItem`/`StrongMatch` | Confirmado presente en `lib/types.ts:35,42` — cerrar como hecho |
+| ⬜ B-8 | i18n Talent pendiente | Absorbido por **T-8.3** |
+| ⬜ B-9 | a11y `/talent` pendiente | Absorbido por **T-8.1**/**T-8.2** |
+| ⏸️ B-10 | Segunda fuente de evidencia (NIH RePORTER o Europe PMC) | Condicionada a calibrar precisión de OpenAlex contra roles reales primero (R-013) — no agregar fuentes sin medir la que ya existe |
+| ⬜ B-11 | Observabilidad de errores en producción | Nuevo. No hay Sentry ni equivalente; los únicos logs son los de Vercel. Antes de escalar tráfico, evaluar agregar tracking de errores runtime (server actions, API routes) — no bloqueante hoy, pero barato de resolver temprano |
+| ⬜ B-12 | Límite de costo/uso de OpenAI | Nuevo. `analyze.ts`/`assessForTalent`/Talent Mapper llaman a OpenAI sin rate limit ni budget cap por usuario. Un usuario (o un bot) puede generar cientos de análisis sin fricción. Evaluar límite simple (por usuario/día) antes de que sea necesario por un incidente en vez de por prevención |
 
 ---
 
-# Decisiones humanas — resueltas (2026-08-05)
+# Decisiones humanas pendientes
 
-| # | Resultado |
-|---|---|
-| 1 Assess | A |
-| 2 Ownership | Usuario |
-| 3 Ashby | Diferida |
-| 4 Extensión | Este repo |
-| 5 Fase 6 | Mínima (T-6.1) |
+| # | Pregunta | Qué depende de la respuesta |
+|---|---|---|
+| 1 | ¿Algún cliente de Talent ya pidió compartir shortlists entre recruiters? | Activa la Fase 10 |
+| 2 | ¿Hay intención de cobrar por Talent en el corto plazo? | Activa T-11.1 |
+| 3 | ¿Algún cliente de Talent usa Ashby? | Activa T-11.2 |
+| 4 | ¿Vale la pena publicar ya una versión nueva de la extensión Chrome, o esperar a acumular más cambios? | Afecta el timing de T-9.2 (no su necesidad) |
 
 ---
 
 ## Bitácora de este archivo
 
-- **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable.
-- **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa.
+- **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable (entrada anterior, preservada en el historial de git).
+- **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa (entrada anterior, preservada en el historial de git).
+- **2026-08-05** — Nuevo roadmap post-cierre: Fases 1–6 confirmadas completas en producción (`add4208`). Auditoría de terreno (tests, CI, i18n, a11y, tema de extensión, modelos Prisma) y apertura de Fases 7–11: red de seguridad (tests + E2E Career + CI), accesibilidad/i18n de Talent, paridad visual de la extensión, equipos (🤔 condicionada) y comercialización (⏸️ diferida). Backlog transversal actualizado: B-2/B-3/B-8/B-9 absorbidos por tareas nuevas, B-7 cerrado como ya hecho, B-11/B-12 nuevos (observabilidad, límite de costo OpenAI). El detalle tarea-por-tarea de las Fases 1–6 se conserva íntegro en `AGENT_HANDOFF.md` § Bitácora de cambios y en el historial de git de este archivo; no se repite acá para no diluir las fases nuevas.

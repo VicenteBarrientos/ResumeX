@@ -57,6 +57,7 @@ export function exportShortlistCsv(
       .join(" | ");
 
     const notesParts = [
+      candidate.recruiterNotes?.trim(),
       meta.recruiterNotes?.trim(),
       meta.roleTitle ? `Role: ${meta.roleTitle}` : undefined,
       meta.exportedAt ? `Exported: ${meta.exportedAt}` : undefined,

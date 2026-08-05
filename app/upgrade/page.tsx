@@ -13,6 +13,7 @@ function UpgradeContent() {
 
   const [loading, setLoading] = useState<"pro" | "donation" | "portal" | null>(null);
   const [donationAmount, setDonationAmount] = useState(5);
+  const [billingError, setBillingError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -20,6 +21,7 @@ function UpgradeContent() {
 
   async function startCheckout(type: "pro" | "donation") {
     setLoading(type);
+    setBillingError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -27,7 +29,16 @@ function UpgradeContent() {
         body: JSON.stringify({ type, donationAmount }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setBillingError(
+        data.error ||
+          "Checkout is unavailable right now. Billing may not be configured in this environment.",
+      );
+    } catch {
+      setBillingError("Checkout failed. Please try again in a moment.");
     } finally {
       setLoading(null);
     }
@@ -35,10 +46,17 @@ function UpgradeContent() {
 
   async function openPortal() {
     setLoading("portal");
+    setBillingError(null);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setBillingError(data.error || "Billing portal is unavailable right now.");
+    } catch {
+      setBillingError("Could not open the billing portal.");
     } finally {
       setLoading(null);
     }
@@ -77,6 +95,12 @@ function UpgradeContent() {
           Built by a recruiter, for job seekers. Your support keeps this running.
         </p>
       </div>
+
+      {billingError && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-800">
+          {billingError}
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Pro plan */}

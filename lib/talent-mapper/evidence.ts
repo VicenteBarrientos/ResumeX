@@ -177,12 +177,13 @@ function findAdjacentMatch(
     }
     const index = normalizedCorpus.indexOf(adjNorm);
     if (index !== -1) {
-      // Adjacent term is itself present; treat as strong adjacent for criterion
-      // when they share meaningful tokens or the adjacent term is listed.
+      // Adjacent term present → credit the criterion only when they share
+      // meaningful tokens. (Never match solely because adj is in adjacentTerms —
+      // that condition is always true inside this loop and was flooding scores.)
       const shared = criterionTokens.filter((t) =>
         tokenize(adj).includes(t),
       );
-      if (shared.length > 0 || adjacentTerms.includes(adj)) {
+      if (shared.length > 0) {
         return { index, length: adjNorm.length };
       }
     }

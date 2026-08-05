@@ -58,4 +58,12 @@ describe("export-csv", () => {
     expect(csv).toContain("Viral rescue");
     expect(csv).toContain("demo");
   });
+
+  it("includes per-candidate recruiter notes in the Recruiter Notes column", () => {
+    const csv = exportShortlistCsv(
+      [stubCandidate({ recruiterNotes: "Strong wet-lab fit; ask about BSL-2" })],
+      { searchMode: "demo", roleTitle: "Virology Scientist" },
+    );
+    expect(csv).toContain("Strong wet-lab fit; ask about BSL-2");
+  });
 });

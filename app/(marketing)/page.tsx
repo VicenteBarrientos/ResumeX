@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import Link from "next/link";
 import type { Metadata } from "next";
+import TrackedLink from "@/components/TrackedLink";
 import { CAREER, TALENT } from "@/lib/products";
 
 export const metadata: Metadata = {
@@ -169,12 +170,13 @@ export default async function LandingPage() {
                 tell a real match from a keyword match.
               </p>
             </div>
-            <Link
+            <TrackedLink
+              event="home_talent_cta_click"
               href={TALENT.basePath}
               className="inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
             >
               See {TALENT.name} →
-            </Link>
+            </TrackedLink>
           </div>
         </section>
 

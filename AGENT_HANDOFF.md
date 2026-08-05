@@ -6,10 +6,10 @@
 
 ## Estado actual
 
-- **?ltima actualizaci?n:** 2026-08-05 18:45 -04:00 ? America/Santiago
-- **Versi?n del handoff:** 1.2
-- **Estado:** **Roadmap de fases cerrado en alcance agente.** Fases 1?5 hechas; Fase 6 m?nima (analytics). Persistencia Talent en Prisma; `/talent/searches`; screeningQuestions; Ashby/equipos/marca diferidos con decisi?n escrita.
-- **Pr?ximo hito:** backlog restante (B-3 E2E Career, B-8 i18n Talent, B-9 a11y) o demanda real (Ashby, equipos, precio Talent).
+- **?ltima actualizaci?n:** 2026-08-05 19:10 -04:00 ? America/Santiago
+- **Versi?n del handoff:** 1.3
+- **Estado:** **Roadmap de fases 1?6 cerrado y en producci?n** (`add4208`). Nuevo `ROADMAP.md` escrito para el trabajo siguiente: Fase 7 (red de seguridad ? tests Career, E2E Career, CI), Fase 8 (a11y + i18n de Talent), Fase 9 (paridad visual de la extensi?n Chrome), Fase 10 (equipos, ?? condicionada) y Fase 11 (comercializaci?n, ??? diferida).
+- **Pr?ximo hito:** T-7.1 (tests de `format-resume`/`merge-profile`/`parse-profile`) o T-7.2 (E2E Career) ? ambas sin precondiciones, ver `ROADMAP.md`.
 - **Bloqueos conocidos:** ninguno cr?tico. Diferidos conscientes: T-4.7 Ashby, T-6.2/T-6.3, Organization.
 - **Repositorio can?nico:** `C:\Users\hp\Projects\ResumeX` ? rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` ? **no usar**. Ver R-001 y la bit?cora del 2026-08-05.
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Nada en vuelo: paleta clara y URL oficial están en producción (`b7ffc87`). Pendiente de comprobación humana: login con Google en el dominio oficial y las vistas con datos reales.
+Audit-fix sprint en curso local (sin commit): evidence adjacent bug, authorship credit, entitlements/UsageEvent, CI, security hardening. Pendiente deploy + verificar Stripe env en Vercel.
 
 ## Protocolo para agentes
 
@@ -416,3 +416,33 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Validaciones realizadas:** `npm run typecheck`, `npm run lint`, `npm test` (64), `npx next build` y `npm run test:e2e:talent-mapper` en verde, antes y después de la limpieza. Playwright sobre `/`, `/login`, `/register`, `/career/tracker`, `/career/analyzer`, `/talent`, `/talent/mapper` y `/opengraph-image`: `body` en `rgb(226, 230, 236)` con gradiente y consola sin errores. Comparación píxel a píxel antes/después de la limpieza: `/talent` idéntica (0 px), y las diferencias del resto se localizan en el badge del logo (cambio intencional) y en el indicador de dev de Next.
 - **Riesgos o bloqueos:** la UI de la extensión Chrome (`chrome-extension/popup.html`) y la pantalla puente `app/extension-auth/page.tsx` siguen oscuras con cyan `#22d3ee`; son otra superficie y alinearlas exige publicar una versión de la extensión. Nota operativa: tras editar `globals.css`, Turbopack siguió sirviendo el CSS viejo hasta borrar `.next`.
 - **Siguiente paso:** verificado en el dominio oficial: `body` en `rgb(226, 230, 236)` con el gradiente, acento en `rgb(29, 53, 89)`, sin clases `dark:` en el HTML servido, el alias `resume-x-yixz.vercel.app` resuelve al dominio oficial y cero errores de runtime en la última hora. Queda comprobar con datos reales `/career/tracker` con aplicaciones y `/talent/mapper` con resultados, más el preview de la tarjeta OG en LinkedIn.
+
+### 2026-08-05 19:10 — Roadmap nuevo post-cierre de fases
+
+- **Objetivo:** el roadmap de Fases 1–6 quedó completo y desplegado (`add4208`, Cursor); escribir el roadmap siguiente para que otro agente sepa qué tomar sin releer toda la bitácora.
+- **Estado:** completado.
+- **Cambios:**
+  - `ROADMAP.md`: reescrito. Sección "El terreno, hoy" auditada contra el código real (no contra lo que decía el roadmap anterior): 11 archivos de test, todos de Talent Mapper/Assess — `format-resume.ts`, `merge-profile.ts`, `parse-profile.ts` sin cobertura; sin CI (no existe `.github/workflows/`); `grep -rn "aria-" app/talent` da cero resultados; `lib/i18n/resumex.ts` no cubre `/talent/*`; `chrome-extension/popup.html` y `app/extension-auth/page.tsx` siguen en dark navy/cyan pese a R-020; sin modelo `Organization` en `prisma/schema.prisma`.
+  - Fases nuevas: **Fase 7** (red de seguridad — T-7.1 tests Career, T-7.2 E2E Career, T-7.3 CI, T-7.4 bordes), **Fase 8** (a11y + i18n de Talent — T-8.1 auditoría, T-8.2 fix, T-8.3 i18n), **Fase 9** (paridad visual extensión — T-9.1 `/extension-auth`, T-9.2 popup), **Fase 10** 🤔 (equipos/`Organization`, condicionada a demanda real), **Fase 11** ⏸️ (precio Talent, Ashby, marca — diferida, ya lo estaba).
+  - Backlog transversal: B-2/B-3/B-8/B-9 absorbidos por tareas nuevas; **B-7 cerrado** (`aiInferred` ya está en `lib/types.ts:35,42`, no hacía falta trabajo nuevo); B-11 (observabilidad de errores en prod) y B-12 (límite de costo/uso de OpenAI) nuevos, ninguno bloqueante hoy.
+  - `AGENT_HANDOFF.md`: Estado actual y este registro.
+- **Decisiones:** el detalle tarea-por-tarea de las Fases 1–6 no se copió de nuevo a `ROADMAP.md` — vive completo en este archivo (arriba) y en el historial de git de `ROADMAP.md`. Repetirlo ahí habría diluido las fases nuevas, que son el trabajo real pendiente.
+- **Validaciones realizadas:** lectura directa del código (no memoria del roadmap anterior) para cada afirmación del "terreno, hoy": conteo de archivos de test, `grep` de `aria-`, `$5`/`PLANS`, `criterionKind`/`aiInferred`, inspección de `prisma/schema.prisma`, `chrome-extension/popup.html`, `app/extension-auth/page.tsx`, `package.json` (scripts, sin workflow de CI referenciado).
+- **Riesgos o bloqueos:** ninguno nuevo. Fase 10 y 11 quedan explícitamente sin tomar hasta que exista un trigger humano — no son trabajo listo para empezar.
+- **Siguiente paso:** tomar T-7.1 o T-7.2 (sin precondiciones, ver `ROADMAP.md`). Si se prefiere cerrar deuda visible al usuario primero, T-9.1 (`/extension-auth`) es la de menor esfuerzo de toda la lista.
+
+### 2026-08-05 19:35 — Audit-fix sprint (Claude audit recovery)
+
+- **Objetivo:** aplicar los hallazgos verificados del audit multi-dimensión de Claude (5/7 dimensiones completadas) antes de que se agotara el presupuesto de tokens.
+- **Estado:** parcial — bugs de producto/seguridad de mayor ROI cerrados; quedan data-platform, consistency-debt, email unique formal, y piezas grandes (retirar jobsearcher, persistir Assess, shortlist status).
+- **Cambios clave:**
+  - `lib/talent-mapper/evidence.ts`: eliminada la rama always-true `adjacentTerms.includes(adj)` que hacía match de todos los criterios desde un solo término adyacente. Test de regresión en `evidence.test.ts`.
+  - `aggregate-authors.ts`: `authorshipCredit` pondera first/last y excluye middle profundos en papers >8 autores. Test de consortium.
+  - `scoring.test.ts`: pines exactos de pesos (strong_adjacent=28, possible=14, recency=15) — R-012 real.
+  - CSV export lee `candidate.recruiterNotes`; `persistSnapshot` acepta `uiStep` explícito; localStorage ya no guarda candidatos/notas; sign-out limpia keys Talent.
+  - Seguridad: cron falla cerrado sin `CRON_SECRET`; analytics con zod + allowlist; rate-limit en `/api/extension/token`; Google sign-in no adopta cuentas credentials no verificadas (anti pre-registration takeover).
+  - `isPro` ahora se lee: modelo `UsageEvent` + entitlements en analyzer (1/semana free) y cover-letter (1/día free). Migración `20260806010000_usage_events`.
+  - Register honra `callbackUrl`; tracker muestra error real; upgrade muestra errores de checkout; `/api/stripe/health`; OpenAlex deadline 55s + stop en rate-limit con parciales; max 12 queries; CI `.github/workflows/ci.yml`; `robots.ts`/`sitemap.ts`; TrackedLink en CTA Talent del home.
+- **Validaciones:** `npm test` 73 passed; `npm run lint` clean. `prisma generate` puede fallar localmente si el DLL está locked por un proceso; la migración corre en el próximo `npm run build` / deploy.
+- **Siguiente paso:** desplegar (aplica UsageEvent), verificar Stripe env vars en Vercel, luego T-7.1 o retirar `/career/jobsearcher`.
+

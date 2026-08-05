@@ -72,4 +72,29 @@ describe("matchEvidence", () => {
       ),
     ).toBe(true);
   });
+
+  it("does not credit unrelated criteria from a single adjacent term", () => {
+    // Regression: adjacentTerms.includes(adj) was always true inside the loop,
+    // so "plasmid transfection" matched every criterion as strong_adjacent.
+    const matches = matchEvidence(
+      work({
+        id: "W-plasmid",
+        title: "Transient plasmid transfection in HEK293 cells",
+        abstract:
+          "We optimized plasmid transfection protocols for HEK293 mammalian cells.",
+      }),
+      criteria,
+    );
+
+    const criteriaHit = new Set(matches.map((m) => m.criterion));
+    expect(criteriaHit.has("Transfection")).toBe(true);
+
+    expect(criteriaHit.has("Viral rescue")).toBe(false);
+    expect(criteriaHit.has("Coronaviruses")).toBe(false);
+    expect(criteriaHit.has("Mentoring research associates")).toBe(false);
+    expect(criteriaHit.has("Corresponding author")).toBe(false);
+    expect(criteriaHit.has("Independent experimental design")).toBe(false);
+
+    expect(matches.length).toBeLessThanOrEqual(6);
+  });
 });

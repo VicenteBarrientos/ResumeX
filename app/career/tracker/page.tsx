@@ -33,6 +33,7 @@ export default function TrackerPage() {
   const [apps, setApps] = useState<Application[]>([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -40,10 +41,27 @@ export default function TrackerPage() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
+    let cancelled = false;
     fetch("/api/tracker")
-      .then((r) => r.json())
-      .then((data) => setApps(Array.isArray(data) ? data : []))
-      .finally(() => setLoading(false));
+      .then(async (r) => {
+        if (!r.ok) throw new Error("Failed to load applications");
+        return r.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setApps(Array.isArray(data) ? data : []);
+        setLoadError(null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Could not load your applications. Check your connection and try again.");
+        setApps([]);
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [status]);
 
   function exportCSV() {
@@ -180,7 +198,31 @@ export default function TrackerPage() {
         )}
       </div>
 
-      {apps.length === 0 ? (
+      {loadError ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-rose-300 bg-rose-50/50 py-20">
+          <p className="mb-4 text-lg text-rose-700">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setLoadError(null);
+              fetch("/api/tracker")
+                .then(async (r) => {
+                  if (!r.ok) throw new Error("fail");
+                  return r.json();
+                })
+                .then((data) => setApps(Array.isArray(data) ? data : []))
+                .catch(() =>
+                  setLoadError("Could not load your applications. Check your connection and try again."),
+                )
+                .finally(() => setLoading(false));
+            }}
+            className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-500"
+          >
+            Retry
+          </button>
+        </div>
+      ) : apps.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 py-20">
           <p className="mb-4 text-lg text-zinc-500">No applications yet.</p>
           <Link

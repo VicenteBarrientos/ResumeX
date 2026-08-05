@@ -136,7 +136,15 @@ export default function AppNav() {
                   Profile
                 </Link>
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => {
+                    try {
+                      localStorage.removeItem("resumex-talent-mapper-v1");
+                      localStorage.removeItem("resumex-talent-mapper-imported");
+                    } catch {
+                      // ignore
+                    }
+                    void signOut({ callbackUrl: "/" });
+                  }}
                   className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-600 hover:bg-rose-50"
                 >
                   Sign out

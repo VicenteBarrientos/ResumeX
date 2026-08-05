@@ -19,6 +19,17 @@ model User {
   profile          Profile?
   answers          Answer[]
   talentSearches   TalentSearch[]
+  usageEvents      UsageEvent[]
+}
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, name, createdAt])
 }
 
 model Application {

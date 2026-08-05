@@ -6,9 +6,17 @@ import { db } from "@/lib/db";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function GET(req: Request) {
-  // Vercel cron passes the Authorization header
+  // Vercel cron passes the Authorization header. Fail closed when unset —
+  // otherwise the expected value becomes the literal "Bearer undefined".
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: "Cron is not configured." },
+      { status: 500 },
+    );
+  }
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

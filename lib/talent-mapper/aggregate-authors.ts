@@ -36,6 +36,7 @@ export function aggregateAuthors(
     works: ScholarlyWork[];
     evidence: EvidenceMatch[];
     retractedSeen: boolean;
+    bestAuthorshipCredit: number;
   };
 
   const byAuthor = new Map<string, Acc>();
@@ -57,6 +58,14 @@ export function aggregateAuthors(
         continue;
       }
 
+      const credit = authorshipCredit(
+        authorship.authorPosition,
+        work.authorships.length,
+      );
+      if (credit <= 0) {
+        continue;
+      }
+
       let acc = byAuthor.get(authorId);
       if (!acc) {
         acc = {
@@ -66,6 +75,7 @@ export function aggregateAuthors(
           works: [],
           evidence: [],
           retractedSeen: false,
+          bestAuthorshipCredit: credit,
         };
         byAuthor.set(authorId, acc);
       }
@@ -76,6 +86,7 @@ export function aggregateAuthors(
       if (authorship.name && acc.name === "Unknown researcher") {
         acc.name = authorship.name;
       }
+      acc.bestAuthorshipCredit = Math.max(acc.bestAuthorshipCredit, credit);
 
       if (!acc.works.some((w) => w.id === work.id)) {
         acc.works.push(work);
@@ -146,10 +157,22 @@ export function aggregateAuthors(
       mostRecentRelevantYear,
     });
 
+    const credit = clamp01(acc.bestAuthorshipCredit);
+    const adjustedScore = Math.round(scored.score * credit);
+    const adjustedBreakdown = {
+      ...scored.scoreBreakdown,
+      total: adjustedScore,
+    };
+
     const possibleConcerns = [...scored.possibleConcerns];
     if (acc.retractedSeen && !possibleConcerns.some((c) => c.includes("retracted"))) {
       possibleConcerns.unshift(
         "One or more retrieved works are marked retracted — review carefully before outreach.",
+      );
+    }
+    if (credit < 1) {
+      possibleConcerns.push(
+        "Authorship position or consortium size reduced this score — verify contribution before outreach.",
       );
     }
 
@@ -170,8 +193,8 @@ export function aggregateAuthors(
           mostRecentRelevantYear,
           relevantWorkCount: relevantWorks.length,
           totalCitationCountForRelevantWorks,
-          score: scored.score,
-          scoreBreakdown: scored.scoreBreakdown,
+          score: adjustedScore,
+          scoreBreakdown: adjustedBreakdown,
           evidenceSummary: scored.evidenceSummary,
           outreachAngle: scored.outreachAngle,
           possibleConcerns,
@@ -473,6 +496,29 @@ function uniqueNumbers(values: number[]): number[] {
 
 function normalizeKey(value: string): string {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Credit multiplier for an authorship on a matching work.
+ * Deep middle authors on large consortia get 0 (excluded from results).
+ */
+export function authorshipCredit(
+  position: string | undefined,
+  authorCount: number,
+): number {
+  const pos = (position || "middle").toLowerCase().trim();
+  const n = Math.max(1, authorCount);
+  if (pos === "first") return 1;
+  if (pos === "last") return n <= 3 ? 1 : 0.9;
+  if (n <= 4) return 0.75;
+  if (n <= 8) return 0.45;
+  return 0;
+}
+
+function clamp01(value: number): number {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
 }
 
 function softClip(value: string, max: number): string {

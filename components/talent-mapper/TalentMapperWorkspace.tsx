@@ -170,6 +170,7 @@ export default function TalentMapperWorkspace() {
         }
       } else {
         if (saved && (saved.result || (saved.shortlist && saved.shortlist.length > 0)) && !alreadyImported) {
+          // Strip candidate PII from browser drafts before offering import.
           setImportOffer({
             step: saved.step || "role",
             roleTitle: saved.roleTitle || "",
@@ -178,12 +179,24 @@ export default function TalentMapperWorkspace() {
             extractedCriteria: saved.extractedCriteria || null,
             queries: saved.queries || [],
             mode: saved.mode || "demo",
-            result: saved.result || null,
-            shortlist: saved.shortlist || [],
-            notes: saved.notes || {},
+            result: null,
+            shortlist: [],
+            notes: {},
           });
         } else if (saved) {
-          applyPersisted(saved);
+          applyPersisted({
+            step: saved.step,
+            roleTitle: saved.roleTitle,
+            jobDescription: saved.jobDescription,
+            criteria: saved.criteria,
+            extractedCriteria: saved.extractedCriteria,
+            queries: saved.queries,
+            mode: saved.mode,
+            // Never hydrate candidates/notes from localStorage.
+            result: null,
+            shortlist: [],
+            notes: {},
+          });
         }
         setHydrated(true);
       }
@@ -207,20 +220,20 @@ export default function TalentMapperWorkspace() {
 
   useEffect(() => {
     if (!hydrated) return;
-    const payload: PersistedState = {
-      step,
-      roleTitle,
-      jobDescription,
-      criteria,
-      extractedCriteria,
-      queries,
-      mode,
-      result,
-      shortlist: [...shortlist],
-      notes,
-    };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          // Draft only — never mirror candidates/shortlist/notes (shared-browser leak).
+          step,
+          roleTitle,
+          jobDescription,
+          criteria,
+          extractedCriteria,
+          queries,
+          mode,
+        }),
+      );
     } catch {
       // ignore quota
     }
@@ -233,12 +246,12 @@ export default function TalentMapperWorkspace() {
     extractedCriteria,
     queries,
     mode,
-    result,
-    shortlist,
-    notes,
   ]);
 
-  async function persistSnapshot(nextResult?: TalentSearchResult | null) {
+  async function persistSnapshot(
+    nextResult?: TalentSearchResult | null,
+    uiStepOverride?: PersistedState["step"],
+  ) {
     const snapshotResult = nextResult === undefined ? result : nextResult;
     const payload = {
       roleTitle: roleTitle || criteria?.roleTitle || "Untitled search",
@@ -248,7 +261,7 @@ export default function TalentMapperWorkspace() {
       queries,
       mode,
       result: snapshotResult,
-      uiStep: step,
+      uiStep: uiStepOverride ?? step,
       shortlist: [...shortlist],
       notes,
     };
@@ -480,7 +493,7 @@ export default function TalentMapperWorkspace() {
       }
       setResult(data as TalentSearchResult);
       setStep("results");
-      void persistSnapshot(data as TalentSearchResult);
+      void persistSnapshot(data as TalentSearchResult, "results");
     } catch {
       setError("Search request failed.");
       setActionHint("Retry, or switch to Demo snapshot.");

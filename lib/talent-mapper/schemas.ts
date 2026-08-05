@@ -49,7 +49,10 @@ export const extractCriteriaResponseSchema = z.object({
 
 export const searchRequestSchema = z.object({
   criteria: sourcingCriteriaSchema,
-  queries: z.array(searchQuerySchema).min(1, "At least one query is required"),
+  queries: z
+    .array(searchQuerySchema)
+    .min(1, "At least one query is required")
+    .max(12, "At most 12 queries per search"),
   mode: searchModeSchema.default("live"),
   perPage: z.number().int().min(1).max(100).optional(),
 });

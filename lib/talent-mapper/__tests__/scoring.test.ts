@@ -168,4 +168,80 @@ describe("scoreResearcher", () => {
       "Work authorization",
     ]);
   });
+
+  it("pins confidence weights so strong_adjacent outranks possible", () => {
+    // Characterization for R-012: inverting 0.7/0.35 must fail this test.
+    const required = criteria.requiredTechniques;
+    const strong = scoreResearcher({
+      name: "Strong",
+      criteria,
+      matchedRequired: required.map((c) => match(c, "strong_adjacent")),
+      matchedPreferred: [],
+      matchedResearchAreas: [],
+      matchedOrganisms: [],
+      relevantWorks: [
+        {
+          id: "W1",
+          title: "Work",
+          year: 2024,
+          matchedCriteria: required,
+        },
+      ],
+      publicationYears: [2024],
+      mostRecentRelevantYear: 2024,
+    });
+    const weak = scoreResearcher({
+      name: "Weak",
+      criteria,
+      matchedRequired: required.map((c) => match(c, "possible")),
+      matchedPreferred: [],
+      matchedResearchAreas: [],
+      matchedOrganisms: [],
+      relevantWorks: [
+        {
+          id: "W1",
+          title: "Work",
+          year: 2024,
+          matchedCriteria: required,
+        },
+      ],
+      publicationYears: [2024],
+      mostRecentRelevantYear: 2024,
+    });
+
+    expect(strong.scoreBreakdown.requiredTechniques).toBe(28); // round(40 * 0.7)
+    expect(weak.scoreBreakdown.requiredTechniques).toBe(14); // round(40 * 0.35)
+    expect(strong.scoreBreakdown.requiredTechniques).toBeGreaterThan(
+      weak.scoreBreakdown.requiredTechniques,
+    );
+  });
+
+  it("pins fresh-work recency at 15 and country match at 7+", () => {
+    const currentYear = new Date().getUTCFullYear();
+    const scored = scoreResearcher({
+      name: "Geo",
+      criteria,
+      matchedRequired: [match("Viral rescue", "direct")],
+      matchedPreferred: [],
+      matchedResearchAreas: [],
+      matchedOrganisms: [],
+      relevantWorks: [
+        {
+          id: "W1",
+          title: "Work",
+          year: currentYear,
+          matchedCriteria: ["Viral rescue"],
+        },
+      ],
+      likelyInstitution: {
+        name: "MIT",
+        countryCode: "US",
+      },
+      publicationYears: [currentYear],
+      mostRecentRelevantYear: currentYear,
+    });
+
+    expect(scored.scoreBreakdown.recency).toBe(15);
+    expect(scored.scoreBreakdown.geography).toBeGreaterThanOrEqual(7);
+  });
 });

@@ -82,13 +82,24 @@ export async function POST(req: Request) {
   }
 
   try {
-    const searchOutcome =
-      mode === "live"
-        ? await searchOpenAlexWorks(queries, {
-            apiKey: getOpenAlexApiKey(),
-            perPage: parsed.data.perPage ?? 25,
-          })
-        : searchDemoWorks(queries);
+    const controller = new AbortController();
+    const deadlineMs = 55_000;
+    const deadline = setTimeout(() => controller.abort(), deadlineMs);
+
+    let searchOutcome;
+    try {
+      searchOutcome =
+        mode === "live"
+          ? await searchOpenAlexWorks(queries, {
+              apiKey: getOpenAlexApiKey(),
+              perPage: parsed.data.perPage ?? 25,
+              signal: controller.signal,
+              timeoutMs: 15_000,
+            })
+          : searchDemoWorks(queries);
+    } finally {
+      clearTimeout(deadline);
+    }
 
     warnings.push(...searchOutcome.warnings);
 
@@ -156,7 +167,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        error: (error as Error).message || normalized.message,
+        error: normalized.message,
         action,
         code,
         warnings,

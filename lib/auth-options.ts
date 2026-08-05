@@ -41,28 +41,47 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        // Auto-create user on first Google sign-in
-        const existing = await db.user.findFirst({ where: { email: user.email! } });
+        const email = user.email;
+        if (!email) return false;
+
+        // Prefer an existing Google-created stub (empty passwordHash).
+        let existing = await db.user.findFirst({
+          where: { email, passwordHash: "" },
+        });
+
         if (!existing) {
-          const created = await db.user.create({
+          // Anti-takeover: credentials accounts can claim any email without
+          // verification. Clear unverified credentials claims on this email
+          // so Google sign-in cannot be hijacked by pre-registration.
+          await db.user.updateMany({
+            where: {
+              email,
+              passwordHash: { not: "" },
+            },
+            data: { email: null },
+          });
+
+          existing = await db.user.create({
             data: {
-              username: user.email!.split("@")[0] + "_" + Date.now().toString(36),
-              email: user.email!,
+              username: email.split("@")[0] + "_" + Date.now().toString(36),
+              email,
               passwordHash: "",
             },
           });
-          user.id = created.id;
-        } else {
-          user.id = existing.id;
         }
+
+        user.id = existing.id;
       }
       return true;
     },
     async jwt({ token, user, account }) {
       if (user) token.id = user.id;
-      // For Google sign-in, always resolve id from DB via email
-      if (account?.provider === "google") {
-        const dbUser = await db.user.findFirst({ where: { email: token.email! } });
+      // For Google sign-in, resolve id from a Google stub (empty password),
+      // never from an unverified credentials row.
+      if (account?.provider === "google" && token.email) {
+        const dbUser = await db.user.findFirst({
+          where: { email: token.email, passwordHash: "" },
+        });
         if (dbUser) token.id = dbUser.id;
       }
       return token;

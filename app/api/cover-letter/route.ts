@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import {
+  assertCoverLetterEntitlement,
+  recordUsage,
+} from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import OpenAI from "openai";
 
@@ -18,6 +22,18 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const denial = await assertCoverLetterEntitlement(session.user.id);
+  if (denial) {
+    return NextResponse.json(
+      {
+        error: denial.message,
+        code: denial.code,
+        upgradeUrl: denial.upgradeUrl,
+      },
+      { status: 402 },
+    );
   }
 
   const { jobDescription, company, role } = await req.json();
@@ -56,6 +72,7 @@ export async function POST(req: Request) {
     });
 
     const letter = completion.choices[0]?.message?.content ?? "";
+    await recordUsage(session.user.id, "cover_letter");
     return NextResponse.json({ letter });
   } catch {
     return NextResponse.json(

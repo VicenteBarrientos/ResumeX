@@ -154,6 +154,12 @@ export async function searchWorks(
   const executed: SearchQuery[] = [];
 
   for (const query of enabled) {
+    if (options.signal?.aborted) {
+      warnings.push(
+        "Search stopped early because the request deadline was reached. Partial results may be incomplete.",
+      );
+      break;
+    }
     try {
       const rawWorks = await fetchWorksForQuery(query.query, {
         apiKey,
@@ -178,6 +184,13 @@ export async function searchWorks(
           error.code === "missing_openalex_key"
         ) {
           throw error;
+        }
+        // Rate limit: keep works already fetched; do not burn more quota.
+        if (error.code === "openalex_rate_limit") {
+          warnings.push(
+            `Stopped after query “${query.label}”: ${error.message}`,
+          );
+          break;
         }
         warnings.push(
           `Query “${query.label}” failed: ${error.message}`,

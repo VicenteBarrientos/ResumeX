@@ -6,6 +6,7 @@ import {
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
 import { MAX_TEXT_LENGTH } from "@/lib/constants";
+import { assertAnalyzerEntitlement, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import { requireSession } from "@/lib/require-auth";
 import { resolveResumeJobInput } from "@/lib/resolve-resume-job-input";
@@ -17,8 +18,20 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
+
+  const denial = await assertAnalyzerEntitlement(userId);
+  if (denial) {
+    return NextResponse.json(
+      {
+        error: denial.message,
+        code: denial.code,
+        upgradeUrl: denial.upgradeUrl,
+      },
+      { status: 402 },
+    );
+  }
 
   const apiKey = getOpenAiApiKey();
 
@@ -57,6 +70,7 @@ export async function POST(request: Request) {
 
   try {
     const { result, usage } = await analyzeForCareer(resume, jobDescription, apiKey);
+    await recordUsage(userId, "analyze");
 
     return NextResponse.json({
       result,

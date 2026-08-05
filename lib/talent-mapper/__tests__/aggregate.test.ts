@@ -133,4 +133,35 @@ describe("aggregateAuthors", () => {
 
     expect(aggregateAuthors(works, criteria)).toHaveLength(0);
   });
+
+  it("weights first authors above deep middle authors on consortium papers", () => {
+    const authorships = Array.from({ length: 30 }, (_, i) => ({
+      authorId: `A${i + 1}`,
+      name: `Author ${i + 1}`,
+      authorPosition: i === 0 ? "first" : i === 29 ? "last" : "middle",
+      institutions: [{ name: "Consortium Lab", countryCode: "US" }],
+    }));
+
+    const works = [
+      makeWork({
+        id: "W-consortium",
+        title: "Viral rescue and reverse genetics for influenza",
+        abstract:
+          "We report viral rescue, reverse genetics, molecular cloning, mammalian cell culture, transfection, and PCR methods for influenza.",
+        year: 2024,
+        authorships,
+      }),
+    ];
+
+    const candidates = aggregateAuthors(works, criteria);
+    const first = candidates.find((c) => c.authorId === "A1");
+    const last = candidates.find((c) => c.authorId === "A30");
+    const middle = candidates.find((c) => c.authorId === "A15");
+
+    expect(first).toBeDefined();
+    expect(last).toBeDefined();
+    expect(middle).toBeUndefined();
+    expect(first!.score).toBeGreaterThan(last!.score);
+    expect(new Set(candidates.map((c) => c.score)).size).toBeGreaterThan(1);
+  });
 });

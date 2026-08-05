@@ -16,7 +16,8 @@ const PROTECTED_PREFIXES = [
   "/upgrade",
 ];
 
-function isProtectedPath(pathname: string): boolean {
+/** Exported for characterization tests — keep /talent public, /talent/* gated. */
+export function isProtectedPath(pathname: string): boolean {
   if (pathname === "/talent" || pathname === "/talent/") {
     return false;
   }
@@ -30,7 +31,7 @@ function isProtectedPath(pathname: string): boolean {
   );
 }
 
-/** ResumeX is dark-only, so an inbound `?theme=` param is ignored. */
+/** ResumeX is light-only (R-020); inbound `?theme=` is ignored. */
 function applyLocaleCookie(request: NextRequest, response: NextResponse) {
   const lang = request.nextUrl.searchParams.get("lang");
 

@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { safeCallbackUrl } from "@/lib/safe-callback-url";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = safeCallbackUrl(
+    searchParams.get("callbackUrl"),
+    "/career/onboarding",
+  );
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +46,7 @@ export default function RegisterPage() {
     }
 
     await signIn("credentials", { username, password, redirect: false });
-    router.push("/career/onboarding");
+    router.push(callbackUrl);
     router.refresh();
   }
 
@@ -63,7 +69,7 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/career/onboarding" })}
+            onClick={() => signIn("google", { callbackUrl })}
             className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
@@ -157,11 +163,28 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-center text-sm text-zinc-500">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-brand-600 hover:text-brand-500">
+          <Link
+            href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            className="font-medium text-brand-600 hover:text-brand-500"
+          >
             Sign in
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-brand-600" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
