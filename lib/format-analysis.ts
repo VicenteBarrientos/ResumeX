@@ -1,4 +1,4 @@
-import type { AnalysisResult, CriteriaItem, StrongMatch } from "@/lib/types";
+import type { CareerAnalysis, CriteriaItem, TalentAssessment } from "@/lib/types";
 
 function formatCriteriaList(title: string, items: CriteriaItem[]): string {
   if (items.length === 0) {
@@ -13,15 +13,6 @@ function formatCriteriaList(title: string, items: CriteriaItem[]): string {
   return `${title}\n${lines.join("\n")}`;
 }
 
-function formatStrongMatches(matches: StrongMatch[]): string {
-  if (matches.length === 0) {
-    return "Strong Matches\nNone identified.";
-  }
-
-  const lines = matches.map((item) => `${item.match}\n  Evidence: ${item.evidence}`);
-  return `Strong Matches\n${lines.join("\n")}`;
-}
-
 function formatBulletList(title: string, items: string[]): string {
   if (items.length === 0) {
     return `${title}\nNone identified.`;
@@ -30,15 +21,7 @@ function formatBulletList(title: string, items: string[]): string {
   return `${title}\n${items.map((item) => `• ${item}`).join("\n")}`;
 }
 
-function formatNumberedList(title: string, items: string[]): string {
-  if (items.length === 0) {
-    return `${title}\nNone identified.`;
-  }
-
-  return `${title}\n${items.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
-}
-
-function formatSuggestions(result: AnalysisResult): string {
+function formatSuggestions(result: CareerAnalysis): string {
   if (result.suggestions.length === 0) {
     return "Suggestions\nNone identified.";
   }
@@ -62,13 +45,11 @@ export function formatPhoneScreenQuestions(questions: string[]): string {
   return questions.map((question, index) => `${index + 1}. ${question}`).join("\n");
 }
 
-export function formatFullAnalysisSummary(result: AnalysisResult): string {
+export function formatCareerAnalysisSummary(result: CareerAnalysis): string {
   const sections = [
-    "RESUMEX ANALYSIS SUMMARY",
+    "RESUMEX CAREER ANALYSIS",
     "",
     `Match Score: ${result.matchScore}/100`,
-    `Concern Level: ${result.concernLevel}`,
-    `Recommended Next Step: ${result.recommendedNextStep}`,
     "",
     "Overall Fit",
     result.summary,
@@ -76,8 +57,6 @@ export function formatFullAnalysisSummary(result: AnalysisResult): string {
     formatCriteriaList("Must-Have Criteria", result.mustHaveCriteria),
     "",
     formatCriteriaList("Nice-to-Have Criteria", result.niceToHaveCriteria),
-    "",
-    formatStrongMatches(result.strongMatches),
     "",
     formatBulletList("Strengths", result.strengths),
     "",
@@ -87,8 +66,29 @@ export function formatFullAnalysisSummary(result: AnalysisResult): string {
     `Missing Keywords: ${result.missingKeywords.join(", ") || "None"}`,
     "",
     formatSuggestions(result),
+  ];
+
+  return sections.join("\n").trim();
+}
+
+export function formatTalentAssessmentSummary(result: TalentAssessment): string {
+  const sections = [
+    "RESUMEX TALENT ASSESSMENT",
     "",
-    formatNumberedList("Phone Screen Questions", result.phoneScreenQuestions),
+    `Match Score: ${result.matchScore}/100`,
+    `Concern Level: ${result.concernLevel}`,
+    `Recommended Next Step: ${result.recommendedNextStep}`,
+    "",
+    "Decision Summary",
+    result.summary,
+    "",
+    formatCriteriaList("Must-Have Criteria", result.mustHaveCriteria),
+    "",
+    formatCriteriaList("Nice-to-Have Criteria", result.niceToHaveCriteria),
+    "",
+    formatPhoneScreenQuestions(result.phoneScreenQuestions)
+      ? `Phone Screen Questions\n${formatPhoneScreenQuestions(result.phoneScreenQuestions)}`
+      : "Phone Screen Questions\nNone identified.",
     "",
     formatBulletList("Client-Facing Bullets", result.clientFacingBullets),
     "",

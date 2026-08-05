@@ -6,11 +6,11 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 14:48 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 14:53 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 2 en curso.** T-2.1…T-2.4 completas. El motor ya expone `analyzeForCareer()` y `assessForTalent()` con prompts por audiencia; `analyzeResume` queda como puente legacy para `/api/analyze` hasta T-2.5.
-- **Próximo hito:** T-2.5 — migrar consumidores de `AnalysisResult` y decidir el dueño del PDF (Career vs Talent).
-- **Bloqueos conocidos:** T-2.7 (¿superficie `/talent/assess`?) sigue pendiente de decisión humana.
+- **Estado:** **Fase 2 casi cerrada.** T-2.1…T-2.6 completas. Career y Talent tienen salidas tipadas separadas; `/api/analyze` devuelve `CareerAnalysis`; el PDF es de Career. Queda T-2.7 (decisión humana sobre `/talent/assess`).
+- **Próximo hito:** T-2.7 🤔 — decidir si Talent gana una superficie de evaluación (`/talent/assess`). Recomendación del roadmap: A.
+- **Bloqueos conocidos:** T-2.7 requiere decisión humana.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
 - **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Ninguno. T-2.3 y T-2.4 verificadas. El siguiente trabajo tomable es T-2.5.
+Ninguno. T-2.5 y T-2.6 verificadas. Falta decisión humana en T-2.7.
 
 ## Protocolo para agentes
 
@@ -165,12 +165,11 @@ Regla de frontera: si un componente lo importan los dos `layout.tsx` de producto
 
 ## Próximas tareas recomendadas
 
-1. T-2.5: migrar consumidores fuera de `AnalysisResult` y decidir el dueño del PDF (recomendación: Career — el botón vive en el analyzer del candidato).
-2. T-2.6: retirar el tipo deprecado cuando no queden consumidores.
-3. T-2.7 🤔: decidir si Talent gana `/talent/assess` (recomendación del roadmap: A).
-4. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
-5. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
-6. Medir conversión de la banda de `/` hacia `/talent` (R-016 se revisa con datos).
+1. T-2.7 🤔: decidir si Talent gana `/talent/assess` (recomendación: A). Sin eso, la Fase 3 arranca con un consumidor y medio.
+2. Escribir tests de caracterización sobre `scoring.ts` y `aggregate-authors.ts` antes de tocarlos (R-012).
+3. Centralizar el precio de Pro desde Stripe. La inconsistencia visible quedó alineada temporalmente en **$5/mo**, pero sigue hardcodeado en más de un lugar.
+4. Medir conversión de la banda de `/` hacia `/talent` (R-016 se revisa con datos).
+5. Fase 4 puede correr en paralelo (persistencia Prisma de Talent) una vez haya un agente disponible.
 
 ## Ideas rescatadas de la copia archivada
 
@@ -248,3 +247,19 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Validaciones realizadas:** `npm test` (52), `npm run typecheck`, `npm run lint`.
 - **Riesgos o bloqueos:** ninguno nuevo. La calidad del modelo con prompts partidos aún no se contrastó con fixtures reales (riesgo declarado en el roadmap).
 - **Siguiente paso:** T-2.5 — migrar consumidores; dueño del PDF: Career (el botón vive en el analyzer del candidato).
+
+### 2026-08-05 14:53 — T-2.5 y T-2.6: migrar consumidores y retirar `AnalysisResult`
+
+- **Objetivo:** que Career deje de recibir campos de decisión de reclutador, y borrar el tipo compuesto.
+- **Estado:** completado.
+- **Cambios:**
+  - `app/api/analyze/route.ts`: llama `analyzeForCareer`.
+  - `lib/types.ts`: `AnalyzeResponse` usa `CareerAnalysis`; `AnalysisResult` eliminado.
+  - `components/ResultCards.tsx`, `ResumeAnalyzer.tsx`, `DownloadReportButton.tsx`: tipados a Career; UI sin concern/next-step/strong-matches/phone-screen/client-bullets.
+  - `lib/format-analysis.ts`: `formatCareerAnalysisSummary` + `formatTalentAssessmentSummary`.
+  - `lib/generate-report-pdf.ts`: PDF de Career (mejora del candidato), sin recomendación de hiring.
+  - `lib/analyze.ts`: puente `analyzeResume` retirado.
+- **Decisiones:** el PDF pertenece a **Career**. Talent tendrá su propio artefacto cuando exista superficie de evaluación (T-2.7).
+- **Validaciones realizadas:** `npm test` (50), `npm run typecheck`, `npm run lint`; `rg AnalysisResult` en `.ts/.tsx` vacío.
+- **Riesgos o bloqueos:** `assessForTalent` existe sin UI — T-2.7 lo desbloquea o lo deja en espera.
+- **Siguiente paso:** decisión humana en T-2.7.

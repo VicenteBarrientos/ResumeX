@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
-import type { AnalysisResult } from "@/lib/types";
+import type { CareerAnalysis } from "@/lib/types";
 
-const FILENAME = "ResumeX_Report.pdf";
+const FILENAME = "ResumeX_Career_Report.pdf";
 const MARGIN = 20;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
@@ -15,7 +15,8 @@ const COLORS = {
   body: [24, 24, 27] as [number, number, number],
 };
 
-export function generateReportPdf(result: AnalysisResult): void {
+/** Career-owned PDF: improvement report for the candidate, not a recruiter sendout. */
+export function generateReportPdf(result: CareerAnalysis): void {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = MARGIN;
 
@@ -99,41 +100,16 @@ export function generateReportPdf(result: AnalysisResult): void {
     y += 2;
   }
 
-  function addNumberedList(items: string[]): void {
-    if (items.length === 0) {
-      addParagraph("None identified.");
-      return;
-    }
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...COLORS.body);
-
-    items.forEach((item, index) => {
-      const lines = doc.splitTextToSize(`${index + 1}. ${item}`, CONTENT_WIDTH - 4);
-
-      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-        ensureSpace(LINE_HEIGHT);
-        doc.text(lines[lineIndex], MARGIN + (lineIndex === 0 ? 0 : 4), y);
-        y += LINE_HEIGHT;
-      }
-
-      y += 2;
-    });
-
-    y += 2;
-  }
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(...COLORS.primary);
-  doc.text("ResumeX", MARGIN, y);
+  doc.text("ResumeX Career", MARGIN, y);
   y += 8;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.setTextColor(...COLORS.muted);
-  doc.text("Candidate Match Report", MARGIN, y);
+  doc.text("Candidate Improvement Report", MARGIN, y);
   y += 6;
 
   doc.setFontSize(9);
@@ -154,10 +130,6 @@ export function generateReportPdf(result: AnalysisResult): void {
 
   addSectionTitle("Summary");
   addParagraph(result.summary);
-
-  addSectionTitle("Recommendation");
-  addLabelValue("Concern level", result.concernLevel);
-  addLabelValue("Recommended next step", result.recommendedNextStep);
 
   addSectionTitle("Strengths");
   addBulletList(result.strengths, "No standout strengths identified.");
@@ -207,9 +179,6 @@ export function generateReportPdf(result: AnalysisResult): void {
       y += 4;
     }
   }
-
-  addSectionTitle("Interview Questions");
-  addNumberedList(result.phoneScreenQuestions);
 
   doc.save(FILENAME);
 }

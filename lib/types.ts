@@ -46,14 +46,6 @@ export interface TalentAssessment extends AnalysisBase {
   sendoutBlurb: string;
 }
 
-/**
- * Legacy composite response returned while Career and Talent consumers migrate
- * to their audience-specific output.
- *
- * @deprecated Use CareerAnalysis or TalentAssessment.
- */
-export type AnalysisResult = CareerAnalysis & TalentAssessment;
-
 export interface AnalyzeRequest {
   resume: string;
   jobDescription: string;
@@ -67,7 +59,7 @@ export interface TokenUsage {
 }
 
 export interface AnalyzeResponse {
-  result?: AnalysisResult;
+  result?: CareerAnalysis;
   usage?: TokenUsage;
   error?: string;
 }

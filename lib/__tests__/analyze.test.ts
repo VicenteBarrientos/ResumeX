@@ -10,7 +10,6 @@ import {
   ANALYSIS_MODEL,
   ANALYSIS_PROMPTS,
   analyzeForCareer,
-  analyzeResume,
   assessForTalent,
   validateCareerAnalysis,
   validateTalentAssessment,
@@ -21,11 +20,7 @@ import {
   logAnalysisError,
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
-import type {
-  AnalysisResult,
-  CareerAnalysis,
-  TalentAssessment,
-} from "@/lib/types";
+import type { CareerAnalysis, TalentAssessment } from "@/lib/types";
 
 const { createCompletion, constructOpenAI } = vi.hoisted(() => ({
   createCompletion: vi.fn(),
@@ -99,12 +94,6 @@ const VALID_TALENT: TalentAssessment = {
   sendoutBlurb: "The candidate shows relevant TypeScript and API delivery experience.",
 };
 
-const VALID_ANALYSIS: AnalysisResult = {
-  ...VALID_CAREER,
-  ...VALID_TALENT,
-  summary: "The resume meets the core requirements and shows relevant delivery experience.",
-};
-
 function mockCompletion(content: string | null, promptTokens = 120, completionTokens = 80) {
   createCompletion.mockResolvedValue({
     choices: [{ message: { content } }],
@@ -132,7 +121,7 @@ beforeEach(() => {
 });
 
 describe("analyzeForCareer", () => {
-  it("requests the Career schema and returns only improvement fields", async () => {
+  it("builds the Career request and returns a validated result with usage", async () => {
     mockCompletion(JSON.stringify(VALID_CAREER));
 
     const response = await analyzeForCareer(
@@ -142,12 +131,17 @@ describe("analyzeForCareer", () => {
     );
 
     expect(constructOpenAI).toHaveBeenCalledWith({ apiKey: "server-api-key" });
+    expect(createCompletion).toHaveBeenCalledOnce();
+
     const request = createCompletion.mock.calls[0][0];
     expect(request.model).toBe(ANALYSIS_MODEL);
+    expect(request.response_format).toEqual({ type: "json_object" });
+    expect(request.temperature).toBe(0.3);
     expect(request.messages[0].content).toBe(ANALYSIS_PROMPTS.career);
     expect(JSON.parse(request.messages[1].content)).toMatchObject({
       resume: "Resume text",
       jobDescription: "Job description text",
+      missingEvidenceFallback: "Not found in resume.",
       responseSchema: expect.objectContaining({
         strengths: "string[]",
         suggestions: expect.any(Array),
@@ -156,19 +150,73 @@ describe("analyzeForCareer", () => {
     expect(JSON.parse(request.messages[1].content).responseSchema).not.toHaveProperty(
       "recommendedNextStep",
     );
-    expect(response.result).toEqual(VALID_CAREER);
+    expect(response).toEqual({
+      result: VALID_CAREER,
+      usage: {
+        promptTokens: 120,
+        completionTokens: 80,
+        totalTokens: 200,
+        estimatedCostUsd: 0.000066,
+      },
+    });
     expect(response.result).not.toHaveProperty("recommendedNextStep");
   });
 
-  it("rejects malformed Career payloads and clamps matchScore", async () => {
+  it("rejects invalid JSON and normalizes it as a parse failure", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mockCompletion("{not valid json");
+
+    const thrown = await analyzeForCareer("resume", "job", "key").catch(
+      (error) => error,
+    );
+
+    expect(thrown).toBeInstanceOf(SyntaxError);
+    expect(normalizeAnalysisError(thrown)).toMatchObject({
+      code: "JSON_PARSE_FAILED",
+      status: 502,
+    });
+  });
+
+  it("rejects responses with missing or malformed fields", async () => {
     mockCompletion(JSON.stringify({ ...VALID_CAREER, suggestions: undefined }));
+
     await expect(analyzeForCareer("resume", "job", "key")).rejects.toThrow(
       "MALFORMED_ANALYSIS",
     );
+  });
 
-    mockCompletion(JSON.stringify({ ...VALID_CAREER, matchScore: 140.2 }));
+  it.each([
+    [-12.6, 0],
+    [101.4, 100],
+    [82.6, 83],
+  ])("rounds and clamps matchScore %s to %s", async (matchScore, expected) => {
+    mockCompletion(JSON.stringify({ ...VALID_CAREER, matchScore }));
+
     const response = await analyzeForCareer("resume", "job", "key");
-    expect(response.result.matchScore).toBe(100);
+
+    expect(response.result.matchScore).toBe(expected);
+  });
+
+  it("rejects an empty model response", async () => {
+    mockCompletion(null);
+
+    await expect(analyzeForCareer("resume", "job", "key")).rejects.toThrow(
+      "NO_ANALYSIS",
+    );
+  });
+
+  it("uses zero token counts when OpenAI omits usage", async () => {
+    createCompletion.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(VALID_CAREER) } }],
+    });
+
+    const response = await analyzeForCareer("resume", "job", "key");
+
+    expect(response.usage).toMatchObject({
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+    });
   });
 });
 
@@ -224,99 +272,6 @@ describe("audience-specific summaries (T-2.4)", () => {
     expect(VALID_CAREER.summary).not.toBe(VALID_TALENT.summary);
     expect(VALID_CAREER.summary.toLowerCase()).toContain("before you apply");
     expect(VALID_TALENT.summary.toLowerCase()).toContain("risk");
-  });
-});
-
-describe("analyzeResume", () => {
-  it("builds the expected OpenAI request and returns a validated result with usage", async () => {
-    mockCompletion(JSON.stringify(VALID_ANALYSIS));
-
-    const response = await analyzeResume(
-      "Resume text",
-      "Job description text",
-      "server-api-key",
-    );
-
-    expect(constructOpenAI).toHaveBeenCalledWith({ apiKey: "server-api-key" });
-    expect(createCompletion).toHaveBeenCalledOnce();
-
-    const request = createCompletion.mock.calls[0][0];
-    expect(request.model).toBe(ANALYSIS_MODEL);
-    expect(request.response_format).toEqual({ type: "json_object" });
-    expect(request.temperature).toBe(0.3);
-    expect(request.messages[0]).toMatchObject({
-      role: "system",
-      content: ANALYSIS_PROMPTS.legacy,
-    });
-    expect(JSON.parse(request.messages[1].content)).toMatchObject({
-      resume: "Resume text",
-      jobDescription: "Job description text",
-      missingEvidenceFallback: "Not found in resume.",
-    });
-    expect(response).toEqual({
-      result: VALID_ANALYSIS,
-      usage: {
-        promptTokens: 120,
-        completionTokens: 80,
-        totalTokens: 200,
-        estimatedCostUsd: 0.000066,
-      },
-    });
-  });
-
-  it("rejects invalid JSON and normalizes it as a parse failure", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mockCompletion("{not valid json");
-
-    const thrown = await analyzeResume("resume", "job", "key").catch((error) => error);
-
-    expect(thrown).toBeInstanceOf(SyntaxError);
-    expect(normalizeAnalysisError(thrown)).toMatchObject({
-      code: "JSON_PARSE_FAILED",
-      status: 502,
-    });
-  });
-
-  it("rejects responses with missing or malformed fields", async () => {
-    mockCompletion(JSON.stringify({ ...VALID_ANALYSIS, suggestions: undefined }));
-
-    await expect(analyzeResume("resume", "job", "key")).rejects.toThrow(
-      "MALFORMED_ANALYSIS",
-    );
-  });
-
-  it.each([
-    [-12.6, 0],
-    [101.4, 100],
-    [82.6, 83],
-  ])("rounds and clamps matchScore %s to %s", async (matchScore, expected) => {
-    mockCompletion(JSON.stringify({ ...VALID_ANALYSIS, matchScore }));
-
-    const response = await analyzeResume("resume", "job", "key");
-
-    expect(response.result.matchScore).toBe(expected);
-  });
-
-  it("rejects an empty model response", async () => {
-    mockCompletion(null);
-
-    await expect(analyzeResume("resume", "job", "key")).rejects.toThrow(
-      "NO_ANALYSIS",
-    );
-  });
-
-  it("uses zero token counts when OpenAI omits usage", async () => {
-    createCompletion.mockResolvedValue({
-      choices: [{ message: { content: JSON.stringify(VALID_ANALYSIS) } }],
-    });
-
-    const response = await analyzeResume("resume", "job", "key");
-
-    expect(response.usage).toMatchObject({
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0,
-    });
   });
 });
 

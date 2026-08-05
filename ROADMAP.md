@@ -120,7 +120,7 @@ El mismo hecho — "tiene 3 de 5 must-haves" — se le dice distinto a quien pue
 **Depende de:** T-2.3.
 **Terminado cuando:** los dos summaries se leen distinto sobre el mismo input, y hay un test que lo fija.
 
-### ⬜ T-2.5 — Migrar los consumidores
+### ✅ T-2.5 — Migrar los consumidores
 
 Seis archivos importan `AnalysisResult` hoy:
 
@@ -138,7 +138,7 @@ Seis archivos importan `AnalysisResult` hoy:
 **Depende de:** T-2.3.
 **Terminado cuando:** ningún archivo fuera de `lib/types.ts` importa `AnalysisResult`.
 
-### ⬜ T-2.6 — Retirar `AnalysisResult`
+### ✅ T-2.6 — Retirar `AnalysisResult`
 
 Borrar el tipo deprecado y su unión.
 
@@ -366,6 +366,7 @@ Resumen de todo lo marcado 🤔, para que quien pueda decidir lo vea junto:
 
 ## Bitácora de este archivo
 
+- **2026-08-05** — T-2.5 y T-2.6: consumidores migrados a CareerAnalysis; PDF es de Career; AnalysisResult retirado del código.
 - **2026-08-05** — T-2.3 y T-2.4: `analyzeForCareer` / `assessForTalent` con prompts y schemas por audiencia; `analyzeResume` queda como puente legacy; tests fijan summaries de mejora vs decisión.
 - **2026-08-05** — T-2.1 y T-2.2 completadas: 16 tests nuevos fijan el request, parseo, validación, clamp de score y normalización de errores; `CareerAnalysis` y `TalentAssessment` quedaron declarados con un `AnalysisResult` compuesto y deprecado para mantener compatibles los consumidores hasta T-2.5.
 - **2026-08-05** — Creado tras cerrar la Fase 1. Fases 2–5 heredadas del plan de `AGENT_HANDOFF.md` y desglosadas en tareas; Fase 6 y backlog transversal son nuevos. Los números de la sección "El terreno, hoy" salen de inspección directa del repo en esa fecha, no de estimación.

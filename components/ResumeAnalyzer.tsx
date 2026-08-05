@@ -6,7 +6,7 @@ import ResultCards from "@/components/ResultCards";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 import { DEMO_JOB_DESCRIPTION, DEMO_RESUME } from "@/lib/demo-data";
 import { formatMessage } from "@/lib/i18n/resumex";
-import type { AnalysisResult, AnalyzeResponse } from "@/lib/types";
+import type { AnalyzeResponse, CareerAnalysis } from "@/lib/types";
 
 export default function ResumeAnalyzer() {
   const { t } = useLocale();
@@ -16,7 +16,7 @@ export default function ResumeAnalyzer() {
   const [jobDescription, setJobDescription] = useState("");
   const [company, setCompany] = useState("");
   const [jobTitle, setJobTitle] = useState("");
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [result, setResult] = useState<CareerAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);

@@ -2,10 +2,10 @@
 
 import { generateReportPdf } from "@/lib/generate-report-pdf";
 import { useLocale } from "@/components/LocaleProvider";
-import type { AnalysisResult } from "@/lib/types";
+import type { CareerAnalysis } from "@/lib/types";
 
 interface DownloadReportButtonProps {
-  result: AnalysisResult;
+  result: CareerAnalysis;
 }
 
 export default function DownloadReportButton({ result }: DownloadReportButtonProps) {

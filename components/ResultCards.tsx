@@ -2,23 +2,12 @@
 
 import CopyButton from "@/components/CopyButton";
 import DownloadReportButton from "@/components/DownloadReportButton";
-import SectionHeader from "@/components/SectionHeader";
 import { useLocale } from "@/components/LocaleProvider";
-import {
-  formatClientFacingBullets,
-  formatFullAnalysisSummary,
-  formatPhoneScreenQuestions,
-} from "@/lib/format-analysis";
-import type {
-  AnalysisResult,
-  ConcernLevel,
-  CriteriaItem,
-  RecommendedNextStep,
-  StrongMatch,
-} from "@/lib/types";
+import { formatCareerAnalysisSummary } from "@/lib/format-analysis";
+import type { CareerAnalysis, CriteriaItem } from "@/lib/types";
 
 interface ResultCardsProps {
-  result: AnalysisResult;
+  result: CareerAnalysis;
 }
 
 const API_MISSING_EVIDENCE = "Not found in resume.";
@@ -63,30 +52,6 @@ function ScoreRing({ score, matchLabel }: { score: number; matchLabel: string })
       </div>
     </div>
   );
-}
-
-function concernStyles(level: ConcernLevel) {
-  switch (level) {
-    case "Low":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
-    case "Medium":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
-    case "High":
-      return "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
-  }
-}
-
-function nextStepStyles(step: RecommendedNextStep) {
-  switch (step) {
-    case "Strongly recommend":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
-    case "Interview":
-      return "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
-    case "Screen":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
-    case "Reject":
-      return "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
-  }
 }
 
 function CriteriaChecklist({
@@ -147,51 +112,6 @@ function CriteriaChecklist({
                   </p>
                 </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-zinc-500">{emptyMessage}</p>
-      )}
-    </article>
-  );
-}
-
-function StrongMatchesList({
-  title,
-  matches,
-  missingEvidenceLabel,
-  emptyMessage,
-}: {
-  title: string;
-  matches: StrongMatch[];
-  missingEvidenceLabel: string;
-  emptyMessage: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm dark:border-emerald-400/20 dark:bg-emerald-400/10">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
-        {title}
-      </h3>
-      {matches.length > 0 ? (
-        <ul className="space-y-3">
-          {matches.map((item) => (
-            <li
-              key={item.match}
-              className="rounded-xl border border-emerald-200/80 bg-white/80 p-4 dark:border-emerald-400/20 dark:bg-white/[0.03]"
-            >
-              <h4 className="font-medium text-zinc-900 dark:text-white">{item.match}</h4>
-              <p
-                className={`mt-1 text-sm leading-relaxed ${
-                  item.evidence === API_MISSING_EVIDENCE
-                    ? "italic text-zinc-500"
-                    : "text-zinc-600 dark:text-zinc-400"
-                }`}
-              >
-                {item.evidence === API_MISSING_EVIDENCE
-                  ? missingEvidenceLabel
-                  : item.evidence}
-              </p>
             </li>
           ))}
         </ul>
@@ -284,7 +204,7 @@ function KeywordPills({
 
 export default function ResultCards({ result }: ResultCardsProps) {
   const { t } = useLocale();
-  const fullSummaryText = formatFullAnalysisSummary(result);
+  const fullSummaryText = formatCareerAnalysisSummary(result);
 
   return (
     <section className="space-y-6" aria-live="polite">
@@ -310,24 +230,6 @@ export default function ResultCards({ result }: ResultCardsProps) {
                 {result.summary}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${concernStyles(result.concernLevel)}`}
-              >
-                <span className="text-xs uppercase tracking-wide opacity-80">
-                  {t.results.concern}
-                </span>
-                <span>{t.concernLevels[result.concernLevel]}</span>
-              </div>
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${nextStepStyles(result.recommendedNextStep)}`}
-              >
-                <span className="text-xs uppercase tracking-wide opacity-80">
-                  {t.results.recommendation}
-                </span>
-                <span>{t.nextSteps[result.recommendedNextStep]}</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -348,13 +250,6 @@ export default function ResultCards({ result }: ResultCardsProps) {
           emptyMessage={t.results.noCriteria}
         />
       </div>
-
-      <StrongMatchesList
-        title={t.results.strongMatches}
-        matches={result.strongMatches}
-        missingEvidenceLabel={t.results.missingEvidence}
-        emptyMessage={t.results.noStrongMatches}
-      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <ListCard
@@ -420,50 +315,6 @@ export default function ResultCards({ result }: ResultCardsProps) {
           <p className="text-sm text-zinc-500">{t.results.noSuggestions}</p>
         )}
       </article>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm dark:border-sky-400/20 dark:bg-sky-400/10">
-          <SectionHeader
-            title={t.results.interviewQuestions}
-            copyText={formatPhoneScreenQuestions(result.phoneScreenQuestions)}
-            copyLabel={t.results.copy}
-            copiedLabel={t.results.copied}
-          />
-          <ol className="space-y-3">
-            {result.phoneScreenQuestions.map((question, index) => (
-              <li
-                key={question}
-                className="flex gap-3 rounded-xl border border-sky-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700 dark:border-sky-400/20 dark:bg-white/[0.03] dark:text-zinc-300"
-              >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-800 dark:bg-sky-400/20 dark:text-sky-200">
-                  {index + 1}
-                </span>
-                <span>{question}</span>
-              </li>
-            ))}
-          </ol>
-        </article>
-
-        <article className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-sm dark:border-cyan-400/20 dark:bg-cyan-400/10">
-          <SectionHeader
-            title={t.results.assessmentHighlights}
-            copyText={formatClientFacingBullets(result.clientFacingBullets)}
-            copyLabel={t.results.copy}
-            copiedLabel={t.results.copied}
-          />
-          <ul className="space-y-3">
-            {result.clientFacingBullets.map((bullet) => (
-              <li
-                key={bullet}
-                className="flex gap-2 rounded-xl border border-indigo-200/80 bg-white/80 p-3 text-sm leading-relaxed text-zinc-700 dark:border-cyan-400/20 dark:bg-white/[0.03] dark:text-zinc-300"
-              >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500 dark:bg-cyan-400" />
-                <span>{bullet}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </div>
     </section>
   );
 }
