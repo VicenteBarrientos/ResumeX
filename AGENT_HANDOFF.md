@@ -6,19 +6,19 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 15:30 -04:00 — America/Santiago
+- **Última actualización:** 2026-08-05 15:35 -04:00 — America/Santiago
 - **Versión del handoff:** 1.1
-- **Estado:** **Fase 3 avanzada.** T-3.1 hecha; T-3.2 cancelada; **T-3.4 hecha** — `CriteriaItem` lleva procedencia (status ternario + quote literal + `aiInferred`), con normalización server-side que descarta citas inventadas.
+- **Estado:** **Fase 3 avanzada y en prod.** T-3.1 hecha; T-3.2 cancelada; **T-3.4 desplegada** — procedencia en criterios verificada en `/talent/assess`.
 - **Próximo hito:** T-3.3 (`lib/roles/`) si sigue justificado, o Fase 4 (persistencia Talent).
 - **Bloqueos conocidos:** ninguno. Decisiones humanas restantes: equipos en Talent (T-4.1), Ashby (T-4.7), extensión (T-5.4), Fase 6.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` — **no usar**. Ver R-001 y la bitácora del 2026-08-05.
-- **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com
+- **Prod:** https://resume-x-yixz.vercel.app · https://resumex.talentxrecruiting.com · deploy `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn` (`ae1f837`)
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-Ninguno. T-3.4 lista para commit.
+Ninguno. T-3.4 en prod (`ae1f837` / `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn`).
 
 ## Protocolo para agentes
 
@@ -349,3 +349,11 @@ No hay código que portar: eran declaraciones de tipo sin implementación. Trata
 - **Decisiones:** el contrato tipado vive en `lib/types.ts` + helper en `lib/criteria-evidence.ts` (dos consumidores Career/Assess). No se unifica con `EvidenceMatch`.
 - **Validaciones realizadas:** `npm test` (59), `npm run typecheck`, `npm run lint`.
 - **Siguiente paso:** commit/push + smoke en prod; luego T-3.3 o Fase 4.
+
+### 2026-08-05 15:35 — T-3.4 en prod + smoke
+
+- **Objetivo:** desplegar procedencia y verificar el caso "5+ years" del smoke anterior.
+- **Estado:** completado.
+- **Cambios:** commit `ae1f837` pusheado a `main`; deploy production `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn` READY.
+- **Validaciones realizadas:** demo en `/talent/assess` — match 85, concern Medium, next step Screen. Must-have "5+ years" ahora es ✕ con quote literal `"5 years of experience building scalable web applications."` (antes era "Not found in resume."). Tres estados visibles (✓/✕/?); nice-to-haves con "Not stated in resume."; strong matches con quotes entre comillas. Sin "Not found in resume." en la UI.
+- **Siguiente paso:** T-3.3 o Fase 4.
