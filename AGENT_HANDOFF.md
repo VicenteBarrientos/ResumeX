@@ -13,12 +13,12 @@
 - **Bloqueos conocidos:** ninguno cr?tico. Diferidos conscientes: T-4.7 Ashby, T-6.2/T-6.3, Organization.
 - **Repositorio can?nico:** `C:\Users\hp\Projects\ResumeX` ? rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
 - **Copia archivada:** `C:\Users\hp\CS50\ResumeX` ? **no usar**. Ver R-001 y la bit?cora del 2026-08-05.
-- **Prod:** oficial `https://resumex.talentxrecruiting.com` (alias `resume-x-yixz.vercel.app` redirige 308). Deploy `dpl_4pf5ypfuLRbfJ5vJcKCHMTuiTYFn` (`ae1f837`) ? redeploy pendiente tras fijar `NEXTAUTH_URL`.
+- **Prod:** oficial `https://resumex.talentxrecruiting.com` (alias `resume-x-yixz.vercel.app` ? 308). Deploy `dpl_8FqD9yX7dkSLje3cRe3s68iEAy8B` (`d5f6727`) READY.
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-Código listo (dark-only + URL oficial) sin commit/deploy. Tras deploy: verificar 308 desde `resume-x-yixz.vercel.app` y login OAuth en el dominio oficial.
+C?digo listo (dark-only + URL oficial) sin commit/deploy. Tras deploy: verificar 308 desde `resume-x-yixz.vercel.app` y login OAuth en el dominio oficial.
 
 ## Protocolo para agentes
 
