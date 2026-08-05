@@ -24,14 +24,16 @@ if (result.status === 0) {
 }
 
 const blob = `${result.stdout || ""}\n${result.stderr || ""}`;
-const isTargetFailure = blob.includes("P3018") && blob.includes(FAILED);
+const isTargetFailure =
+  blob.includes(FAILED) &&
+  (blob.includes("P3018") || blob.includes("P3009"));
 
 if (!isTargetFailure) {
   process.exit(result.status || 1);
 }
 
 console.error(
-  `[migrate] Recovering failed unapplied migration ${FAILED} (BOM syntax error), then retrying deploy…`,
+  `[migrate] Recovering failed migration ${FAILED}, then retrying deploy…`,
 );
 const resolve = run(["migrate", "resolve", "--rolled-back", FAILED]);
 if (resolve.status !== 0) {
