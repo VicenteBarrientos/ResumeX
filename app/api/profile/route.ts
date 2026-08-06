@@ -11,6 +11,22 @@ async function resolveUserId(req: Request): Promise<string | null> {
   return session?.user?.id ?? null;
 }
 
+/**
+ * `profileJson` is JSON inside a `String` column, so a malformed value is a
+ * real possibility rather than a type error. Returning null degrades the
+ * AutoApply structured profile to empty — which the client already handles —
+ * instead of failing the whole profile fetch with a 500.
+ */
+function parseProfileJson(raw: string | null): unknown {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.error("[ResumeX] Malformed Profile.profileJson; returning null.");
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   const userId = await resolveUserId(req);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,7 +42,7 @@ export async function GET(req: Request) {
     linkedinUrl: profile.linkedinUrl,
     resumeText: profile.resumeText,
     resumePdfUrl: profile.resumePdfUrl,
-    profileJson: profile.profileJson ? JSON.parse(profile.profileJson) : null,
+    profileJson: parseProfileJson(profile.profileJson),
   });
 }
 

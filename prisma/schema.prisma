@@ -45,6 +45,10 @@ model Application {
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // Composite, not just [userId]: the tracker list filters by userId and sorts
+  // by createdAt desc, so this serves the WHERE and the ORDER BY together.
+  @@index([userId, createdAt])
 }
 
 model Profile {
@@ -70,6 +74,11 @@ model Answer {
   answer    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Same shape as Application: AutoApply lists answers by user, ordered by
+  // createdAt asc. The per-question lookup narrows on userId from here rather
+  // than indexing `question`, which is free-form text.
+  @@index([userId, createdAt])
 }
 
 // Talent Mapper search owned by a single user (R-010 / T-4.1).
