@@ -8,8 +8,8 @@
 
 - **Última actualización:** 2026-08-06 10:00 -04:00 — America/Santiago
 - **Versión del handoff:** 1.6
-- **Estado:** ATS en `main` (`cb4fd5e`) y en prod (`dpl_8wBvuVtn3ZDBF6SNNaHqWxRgTgit`, READY → `resumex.talentxrecruiting.com`). Migración ATS aplicada. QA Demo Ashby en prod: connect → Mapper → Send to ATS → preview → transfer **success** (sin tocar ATS externo). CI en `main` fallaba en `npm ci` por lockfile/`@emnapi` — fix local listo para push.
-- **Próximo hito:** push del fix de lockfile + autocomplete ATS; confirmar CI verde (T-7.3). Opcional: Zoho OAuth env en Vercel; credenciales live Recruitee/Ashby.
+- **Estado:** ATS en `main`/`prod`; Demo Ashby E2E OK; CI **verde** en `9301330` ([Actions](https://github.com/VicenteBarrientos/ResumeX/actions/runs/31108825300)).
+- **Próximo hito:** Zoho OAuth env en Vercel (opcional); live Recruitee/Ashby cuando haya tokens; T-7.4 bordes o Fase 8 a11y.
 - **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
 - **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
@@ -17,7 +17,7 @@
 
 ### Trabajo en vuelo
 
-Fix CI (`package-lock.json` + `@emnapi` 1.11.3) y hardening autocomplete en formularios ATS. Pendiente push.
+Ninguno crítico. T-7.3 desbloqueado (CI verde).
 
 
 ## Protocolo para agentes
@@ -516,11 +516,11 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 ### 2026-08-06 10:00 — QA Demo Ashby + fix CI lockfile
 
 - **Objetivo:** cerrar smoke Demo Mode en prod y desbloquear T-7.3 (CI).
-- **Estado:** parcial (QA OK; CI fix local, pendiente push).
+- **Estado:** completado.
 - **Cambios:**
-  - Prod QA (`tm_e2e_demo`): Demo Mode enabled → Talent Mapper demo → Jordan Exemplar → Send to ATS → job demo virology → name-only confirm → preview → `Run simulated Ashby transfer` → **Status: success** (`create_candidate`, `create_application`, `add_evidence`; disclaimer Demo Mode).
-  - CI: pin `@emnapi/core` + `@emnapi/runtime` `1.11.3` en `package.json`/`package-lock.json` (CI Linux pedía esas versiones; lock tenía `1.10.0`). `npm ci` verificado localmente.
-  - UX: `autoComplete="new-password"` / nombres no-login en formularios Recruitee/Ashby (password manager rellenaba company/token con credenciales de login).
-- **Validaciones:** flujo Demo end-to-end en prod sin errores de consola; `npm ci` OK tras regenerar lock.
-- **Siguiente paso:** commit + push del fix CI/autocomplete; confirmar Actions verde; Zoho env opcional.
+  - Prod QA (`tm_e2e_demo`): Demo Mode → Mapper demo → Jordan Exemplar → Send to ATS → preview → transfer **success**; Transfer history `Jordan Exemplar` / `success`.
+  - CI: pin `@emnapi` 1.11.3; push `9301330`; Actions run `31108825300` **success** (npm ci, prisma generate, typecheck, lint, tests).
+  - UX: autocomplete hardening en formularios Recruitee/Ashby.
+- **Validaciones:** Demo E2E prod; CI verde.
+- **Siguiente paso:** Zoho env opcional; T-7.4 o Fase 8.
 
