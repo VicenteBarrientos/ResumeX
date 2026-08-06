@@ -6,18 +6,18 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 23:12 -04:00 — America/Santiago
-- **Versión del handoff:** 1.5
-- **Estado:** ATS layer desplegado a producción vía `vercel deploy --prod` (`dpl_G4gdxevrmactHpxYkkg4TwFaGH5U`, READY). Migración ATS aplicada en prod. Alias: `resumex.talentxrecruiting.com`. Código ATS aún **sin commit/push** a GitHub (`gitDirty`).
-- **Próximo hito:** QA Demo Ashby en prod (`/talent/integrations`); commit + push a `main` para alinear Git con prod; configurar Zoho OAuth env en Vercel si se quiere live Zoho.
-- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel aún. Live Recruitee/Ashby vía UI. GitHub `main` no incluye aún el deploy CLI.
+- **Última actualización:** 2026-08-06 10:00 -04:00 — America/Santiago
+- **Versión del handoff:** 1.6
+- **Estado:** ATS en `main` (`cb4fd5e`) y en prod (`dpl_8wBvuVtn3ZDBF6SNNaHqWxRgTgit`, READY → `resumex.talentxrecruiting.com`). Migración ATS aplicada. QA Demo Ashby en prod: connect → Mapper → Send to ATS → preview → transfer **success** (sin tocar ATS externo). CI en `main` fallaba en `npm ci` por lockfile/`@emnapi` — fix local listo para push.
+- **Próximo hito:** push del fix de lockfile + autocomplete ATS; confirmar CI verde (T-7.3). Opcional: Zoho OAuth env en Vercel; credenciales live Recruitee/Ashby.
+- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
-- **Prod:** desplegado 2026-08-05 23:12 (CLI, working tree dirty).
+- **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-ATS en producción vía CLI, pero cambios locales sin commit. Pedir commit/push al humano.
+Fix CI (`package-lock.json` + `@emnapi` 1.11.3) y hardening autocomplete en formularios ATS. Pendiente push.
 
 
 ## Protocolo para agentes
@@ -492,7 +492,7 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 ### 2026-08-05 23:10 — ATS integrations layer (Recruitee / Zoho / Ashby)
 
 - **Objetivo:** capa ATS provider-neutral para ResumeX Talent con adapters Recruitee, Zoho Recruit (OAuth) y Ashby (Demo + live).
-- **Estado:** completado localmente (sin push/deploy). Migración aplicada en la DB usada por `npm run build`.
+- **Estado:** SUPERADA por entradas 2026-08-06 (commit `cb4fd5e`, deploy READY, QA Demo OK).
 - **Cambios:**
   - `lib/ats/**`: types, capabilities, encryption (AES-256-GCM), HTTP allowlist, errors, evidence builder, duplicates, idempotency, transfer saga, registry, webhooks.
   - Providers: `recruitee`, `zoho` (OAuth + multi-DC + refresh), `ashby` (+ `DemoAshbyAdapter`).
@@ -503,5 +503,24 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - Tests: `lib/ats/__tests__/*` (37); full suite 152; `vitest.config.mts`.
 - **Decisiones:** ownership por `User` (sin Organization); APIs nuevas bajo `/api/talent/integrations/ats` (no rompe extensión); Zoho webhooks no reclamados.
 - **Validaciones:** lint (0 errors), typecheck, `npm test` 152, `npm run build` OK con rutas ATS en el tree.
-- **Siguiente paso:** QA Demo Ashby en UI; generar `ATS_CREDENTIAL_ENCRYPTION_KEY`; conectar Recruitee/Zoho cuando haya credenciales; commit/PR cuando el humano lo pida.
+- **Siguiente paso:** SUPERADA — ver 2026-08-06.
+
+### 2026-08-06 03:15 — ATS commit + prod deploy vía GitHub
+
+- **Objetivo:** alinear Git con el deploy ATS.
+- **Estado:** completado.
+- **Cambios:** commit `cb4fd5e` en `main`; deploy Vercel `dpl_8wBvuVtn3ZDBF6SNNaHqWxRgTgit` READY; `ATS_CREDENTIAL_ENCRYPTION_KEY` en Vercel.
+- **Validaciones:** prod sirve `/talent/integrations`.
+- **Siguiente paso:** QA Demo Mode; arreglar CI (`npm ci` fallaba).
+
+### 2026-08-06 10:00 — QA Demo Ashby + fix CI lockfile
+
+- **Objetivo:** cerrar smoke Demo Mode en prod y desbloquear T-7.3 (CI).
+- **Estado:** parcial (QA OK; CI fix local, pendiente push).
+- **Cambios:**
+  - Prod QA (`tm_e2e_demo`): Demo Mode enabled → Talent Mapper demo → Jordan Exemplar → Send to ATS → job demo virology → name-only confirm → preview → `Run simulated Ashby transfer` → **Status: success** (`create_candidate`, `create_application`, `add_evidence`; disclaimer Demo Mode).
+  - CI: pin `@emnapi/core` + `@emnapi/runtime` `1.11.3` en `package.json`/`package-lock.json` (CI Linux pedía esas versiones; lock tenía `1.10.0`). `npm ci` verificado localmente.
+  - UX: `autoComplete="new-password"` / nombres no-login en formularios Recruitee/Ashby (password manager rellenaba company/token con credenciales de login).
+- **Validaciones:** flujo Demo end-to-end en prod sin errores de consola; `npm ci` OK tras regenerar lock.
+- **Siguiente paso:** commit + push del fix CI/autocomplete; confirmar Actions verde; Zoho env opcional.
 

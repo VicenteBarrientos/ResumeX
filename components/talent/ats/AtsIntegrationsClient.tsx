@@ -320,13 +320,19 @@ export default function AtsIntegrationsClient() {
                 )}
 
                 {provider === "recruitee" && (
-                  <form className="mt-4 space-y-3" onSubmit={(e) => void connectRecruitee(e)}>
+                  <form
+                    className="mt-4 space-y-3"
+                    autoComplete="off"
+                    onSubmit={(e) => void connectRecruitee(e)}
+                  >
                     <label className="block text-sm">
                       <span className="text-zinc-700">Connection name</span>
                       <input
                         className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                         value={rtName}
                         onChange={(e) => setRtName(e.target.value)}
+                        autoComplete="off"
+                        name="ats-recruitee-connection-name"
                         required
                       />
                     </label>
@@ -336,6 +342,8 @@ export default function AtsIntegrationsClient() {
                         className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                         value={rtCompany}
                         onChange={(e) => setRtCompany(e.target.value)}
+                        autoComplete="off"
+                        name="ats-recruitee-company"
                         required
                       />
                     </label>
@@ -343,7 +351,8 @@ export default function AtsIntegrationsClient() {
                       <span className="text-zinc-700">Personal API token</span>
                       <input
                         type="password"
-                        autoComplete="off"
+                        autoComplete="new-password"
+                        name="ats-recruitee-token"
                         className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                         value={rtToken}
                         onChange={(e) => setRtToken(e.target.value)}
@@ -354,7 +363,8 @@ export default function AtsIntegrationsClient() {
                       <span className="text-zinc-700">Webhook secret (optional)</span>
                       <input
                         type="password"
-                        autoComplete="off"
+                        autoComplete="new-password"
+                        name="ats-recruitee-webhook-secret"
                         className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                         value={rtWebhook}
                         onChange={(e) => setRtWebhook(e.target.value)}
@@ -394,13 +404,19 @@ export default function AtsIntegrationsClient() {
                     >
                       Try Demo Mode
                     </button>
-                    <form className="space-y-3" onSubmit={(e) => void connectAshbyLive(e)}>
+                    <form
+                      className="space-y-3"
+                      autoComplete="off"
+                      onSubmit={(e) => void connectAshbyLive(e)}
+                    >
                       <label className="block text-sm">
                         <span className="text-zinc-700">Connection name</span>
                         <input
                           className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                           value={ashName}
                           onChange={(e) => setAshName(e.target.value)}
+                          autoComplete="off"
+                          name="ats-ashby-connection-name"
                           required
                         />
                       </label>
@@ -408,7 +424,8 @@ export default function AtsIntegrationsClient() {
                         <span className="text-zinc-700">API key</span>
                         <input
                           type="password"
-                          autoComplete="off"
+                          autoComplete="new-password"
+                          name="ats-ashby-api-key"
                           className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2"
                           value={ashKey}
                           onChange={(e) => setAshKey(e.target.value)}
