@@ -6,10 +6,10 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-06 20:10 UTC — America/Santiago
-- **Versión del handoff:** 1.10
-- **Estado:** T-12.1–T-12.4 en prod. **T-12.5 hecha** en `cursor/architecture-debt-t12-5-envelope-8725` (envelope plano R-021). Cuotas de `lib/quota-limits.ts` **confirmadas** (2026-08-06). Auditoría + plan en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md).
-- **Próximo hito:** merge/deploy T-12.5 → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras).
+- **Última actualización:** 2026-08-06 20:15 UTC — America/Santiago
+- **Versión del handoff:** 1.11
+- **Estado:** **T-12.1–T-12.5 en `main`/Production** (`8a1d05c`, Vercel Production `5784547394` READY). Cuotas confirmadas. Envelope plano en prod.
+- **Próximo hito:** **T-12.3** (observabilidad, B-11) → **T-12.6** (Zod en escrituras).
 - **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano**.
 - **Riesgo con dinero en juego:** **cerrado en prod** por T-12.4.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-`cursor/architecture-debt-t12-5-envelope-8725` — T-12.5 (sin mergear al cerrar esta entrada).
+Ninguno: T-12.5 desplegada. Siguiente tomable: **T-12.3**.
 
 
 ## Protocolo para agentes
@@ -255,6 +255,13 @@ La rama `archive/cs50-clerk-2026-08-05` (en la copia CS50) conten?a un redise?o 
 No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarlas como backlog, no como migraci?n.
 
 ## Bit?cora de cambios
+
+### 2026-08-06 20:15 — Deploy Production T-12.5
+
+- **Objetivo:** publicar envelope plano + cuotas confirmadas + AGENTS cloud notes.
+- **Estado:** completado (`8a1d05c`, deploy `5784547394` READY).
+- **Validaciones:** Vercel success; E2E career + talent-mapper verdes antes del merge; prod `/` y `/talent` 200.
+- **Siguiente paso:** T-12.3.
 
 ### 2026-08-06 20:10 — T-12.5 envelope plano + cuotas confirmadas
 
