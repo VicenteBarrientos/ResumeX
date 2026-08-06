@@ -95,7 +95,13 @@ La foto: el producto **funciona y está separado correctamente**, pero tiene deu
 
 **Progreso (2026-08-05):** workflow creado (`prisma generate` + typecheck + lint + test; build omitido a propósito). Falta el smoke en GitHub (PR con test roto → check rojo) para marcar ✅.
 
-**Terminado cuando:** un PR con un test roto a propósito falla el check en GitHub; uno limpio pasa. Documentar el resultado en la bitácora del handoff con el link al run.
+**⚠️ Hallazgo 2026-08-06 — el camino de PR nunca se ejercitó.** El "CI verde" que registra el handoff (`31108825300`) es un run de **push a `main`**, no de `pull_request`: son triggers distintos. Consultando la API, el repo tiene **cero runs con `event=pull_request` en toda su historia** (`gh api "repos/.../actions/runs?event=pull_request" -q .total_count` → `0`), y el PR #2 de la Fase 12 tampoco disparó el workflow: sus únicos checks son los de Vercel.
+
+El `on:` del workflow **está bien** (`pull_request: branches: [main]`) y el workflow está `active`, así que no es un bug de configuración. La causa más probable es que la rama y el PR se crearon con un token de GitHub App: GitHub no dispara workflows con eventos originados por ese tipo de credencial, para evitar recursión. Verificarlo requiere abrir un PR **a mano** desde la web con una cuenta humana.
+
+Consecuencia práctica: hoy **ningún PR está siendo verificado por CI**, sólo por el build de Vercel (que no corre typecheck, lint ni tests). Hasta cerrar esto, la verificación de cualquier rama sigue dependiendo de correr los comandos localmente.
+
+**Terminado cuando:** un PR con un test roto a propósito falla el check en GitHub; uno limpio pasa. Documentar el resultado en la bitácora del handoff con el link al run. **Precondición nueva:** confirmar que el trigger `pull_request` produce runs cuando el PR lo abre una cuenta humana; si no los produce, revisar los ajustes de Actions del repo (requiere permisos de admin que el agente no tiene — `GET /actions/permissions` devuelve 403).
 
 ### ⬜ T-7.4 — Tests de caracterización para `resolve-resume-job-input.ts` y `criteria-evidence.ts` en sus bordes
 
