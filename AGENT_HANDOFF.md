@@ -6,32 +6,19 @@
 
 ## Estado actual
 
-<<<<<<< HEAD
-- **Última actualización:** 2026-08-06 20:15 UTC — America/Santiago
-- **Versión del handoff:** 1.11
-- **Estado:** **T-12.1–T-12.5 en `main`/Production** (`8a1d05c`, Vercel Production `5784547394` READY). Cuotas confirmadas. Envelope plano en prod.
+- **Última actualización:** 2026-08-06 18:05 -04:00 — America/Santiago
+- **Versión del handoff:** 1.12
+- **Estado:** **T-12.1–T-12.5 en `main`/Production**; Talent Ashby-like app chrome (sidebar + tablas densas, R-026) en push a `main`. Paleta R-020 intacta.
 - **Próximo hito:** **T-12.3** (observabilidad, B-11) → **T-12.6** (Zod en escrituras).
 - **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano**.
 - **Riesgo con dinero en juego:** **cerrado en prod** por T-12.4.
-=======
-- **Última actualización:** 2026-08-06 17:20 -04:00 — America/Santiago
-- **Versión del handoff:** 1.8
-- **Estado:** Talent app chrome Ashby-like (sidebar + tablas densas) en código local; paleta R-020 intacta (R-026). ATS en `main`/`prod`; CI último conocido verde en `9301330`. Fase 12 sigue siendo el próximo hito de arquitectura.
-- **Próximo hito:** Fase 12 ola 0 — **T-12.1** (frontera Career/Talent por ESLint), **T-12.2** (índices `Application.userId`/`Answer.userId` + parseo defensivo de `profileJson`), **T-12.3** (observabilidad, cierra B-11). Luego ola 1: T-12.4 cuota durable (cierra B-12) → T-12.5 envelope de error → T-12.6 Zod en escrituras.
-- **Bloqueos conocidos:** Live Recruitee/Ashby solo vía UI con tokens del cliente. Zoho OAuth client configurado en Vercel (Production + Preview). **T-12.10 y T-12.11 requieren decisión/etiquetado humano** — no tomarlas sin eso.
-- **Riesgo con dinero en juego:** `/api/talent-assess` y `/api/talent-mapper/search` llaman a OpenAI y a fuentes externas **sin entitlement ni rate limit**, y `lib/rate-limit.ts` es un `Map` en memoria (inútil en serverless). Es D-2 / B-12 y lo cierra T-12.4.
->>>>>>> 018c971 (Give ResumeX Talent an Ashby-like app shell while keeping ResumeX colors.)
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
 - **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-<<<<<<< HEAD
-Ninguno: T-12.5 desplegada. Siguiente tomable: **T-12.3**.
-=======
-Talent Ashby-like UI implementado localmente (sin commit/push salvo petición).
->>>>>>> 018c971 (Give ResumeX Talent an Ashby-like app shell while keeping ResumeX colors.)
+Talent Ashby-like UI en push a main (post-rebase sobre T-12.5). Siguiente tomable Fase 12: **T-12.3**.
 
 
 ## Protocolo para agentes
@@ -251,7 +238,6 @@ Un contrato tipado delgado (`CriterionVerdict` + procedencia) puede nacer **dent
 4. Centralizar el precio de Pro desde Stripe (**$5/mo** sigue hardcodeado en m?s de un lugar).
 5. Fase 4 puede correr en paralelo (persistencia Prisma de Talent).
 
-<<<<<<< HEAD
 > ⚠️ **La lista de arriba quedó obsoleta** y se conserva sólo como historia (T-3.2 y T-3.3 canceladas, T-3.4 desplegada, tests de `scoring.ts`/`aggregate-authors.ts` escritos en el audit-fix, Fase 4 cerrada). **La lista viva es ésta:**
 
 ### Vigente (post-auditoría 2026-08-06)
@@ -265,21 +251,6 @@ Prioridad real, no orden de numeración. Detalle de cada tarea: [`docs/ARCHITECT
 5. **T-12.3** — observabilidad (cierra B-11). Habilita verificar en prod todo lo demás.
 6. **T-12.6** — Zod en las escrituras de `talent-mapper/searches` y `profile` (R-024).
 7. **T-12.7** — un solo punto de entrada de auth; borrar las tres copias de `resolveUserId`. ⚠️ `match-score` necesita verificar la extensión antes de cambiar su 200→401.
-=======
-> ⚠️ **La lista de arriba quedó obsoleta** y se conserva sólo como historia (T-3.3 y T-3.2 canceladas, T-3.4 desplegada, tests de `scoring.ts`/`aggregate-authors.ts` escritos en el audit-fix, Fase 4 cerrada). **La lista viva es ésta:**
-
-### Vigente (post-auditoría 2026-08-06)
-
-Prioridad real, no orden de numeración. Detalle de cada tarea: **`ObsidianVault/ResumeX/Deuda arquitectónica ResumeX.md`** y `ROADMAP.md` § Fase 12.
-
-1. **T-12.1** — frontera Career/Talent por ESLint `no-restricted-imports` (R-023). Un archivo, beneficio permanente. Mejor relación valor/esfuerzo del plan.
-2. **T-12.4** — cuota durable sobre `UsageEvent` (R-022, cierra B-12). Es la única deuda con dinero en juego.
-3. **T-12.5** — envelope de error único y plano (R-021). ⚠️ La migración va **de ATS hacia Career**, no al revés: leer el motivo en R-021 antes de tocar nada.
-4. **T-12.2** — índices `Application.userId` / `Answer.userId` + `try`/`catch` en el parseo de `profileJson`. Barato. Escribir el SQL **sin BOM** (ya rompió un deploy: `b8a481c`).
-5. **T-12.6** — Zod en las escrituras de `talent-mapper/searches` y `profile` (R-024).
-6. **T-12.7** — un solo punto de entrada de auth; borrar las tres copias de `resolveUserId`. ⚠️ `match-score` necesita verificar la extensión antes de cambiar su 200→401.
-7. **T-12.3** — observabilidad (cierra B-11). Habilita verificar todo lo anterior en prod.
->>>>>>> 018c971 (Give ResumeX Talent an Ashby-like app shell while keeping ResumeX colors.)
 8. **T-12.9** — descomponer `TalentMapperWorkspace.tsx` (1.497 líneas, 36 `useState`). Refactor puro, E2E verde después de cada paso.
 9. Pendiente de antes, sigue válido: centralizar el precio de Pro desde Stripe (**$5/mo** hardcodeado en más de un lugar); T-7.4 (bordes) y Fase 8 (a11y/i18n de Talent).
 10. 🤔 **T-12.10** (calibrar precisión OpenAlex vs dual-source, resuelve la tensión R-013/R-014) y **T-12.11** (`profileJson` a columna `Json`) — requieren humano.
@@ -624,7 +595,6 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Validaciones:** Demo E2E prod; CI verde.
 - **Siguiente paso:** Zoho env opcional; T-7.4 o Fase 8.
 
-<<<<<<< HEAD
 ### 2026-08-06 19:40 — T-12.4: cuota durable sobre UsageEvent (R-022 / B-12)
 
 - **Objetivo:** techo durable de llamadas y gasto para toda ruta autenticada que llame a OpenAI o a fuentes live (cierra D-2 / B-12).
@@ -661,29 +631,11 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Riesgos o bloqueos:** D-2 (gasto sin techo) sigue vivo en producción hasta T-12.4. La rama corrige el 500 de `profileJson` pero **no** se pudo probar contra Postgres real en este entorno (sin base de datos): la ruta de valor corrupto queda como comprobación de deploy. `npm run build` completo no se pudo correr localmente por `DATABASE_URL` (limitación ya registrada); se validó con `prisma validate`/`generate` + typecheck. El wiki de Obsidian **no** está accesible desde el entorno del agente, así que la copia canónica del plan es `docs/ARCHITECTURE_DEBT.md` y el wiki queda pendiente de re-ingest.
 - **Hallazgo aparte — CI no verifica PRs.** El "CI verde" registrado el 2026-08-06 (`31108825300`) es un run de **push a `main`**, no de `pull_request`. El repo tiene **cero runs con `event=pull_request` en toda su historia**, y el PR #2 de esta fase tampoco disparó el workflow (sus únicos checks son los de Vercel, que no corre typecheck ni lint ni tests). El `on:` del workflow está correcto y el workflow está `active`; la causa más probable es que la rama y el PR los creó un token de GitHub App, y GitHub no dispara workflows con eventos de esa credencial. **T-7.3 sigue sin cumplir su definición de terminado** y quedó anotado en `ROADMAP.md` con la precondición nueva. Mientras siga así, la verificación de cada rama depende de correr los comandos a mano.
 - **Siguiente paso:** **T-12.4** (cuota durable sobre `UsageEvent`, cierra B-12). Verificable: agotar la cuota de `talent-assess` devuelve 429/402 con `code`, y el segundo intento en la misma ventana no llega a OpenAI. ⚠️ Requiere fijar los límites por plan — son números de producto, no técnicos: proponer valores y confirmarlos antes de desplegar.
-=======
-### 2026-08-06 12:52 — Auditoría de arquitectura y plan de Fase 12
 
-- **Objetivo:** revisar la arquitectura del repo completo contra el código real (no contra la documentación) y dejar un plan de remediación que otro agente pueda tomar sin releer la bitácora.
-- **Estado:** completado. **Sin cambios de código** — auditoría de sólo lectura más documentación.
-- **Método:** lectura directa de `prisma/schema.prisma` completo, los 50 `route.ts` bajo `app/api/**`, `lib/{analyze,criteria-evidence,types,products,entitlements,require-auth,rate-limit}.ts`, `lib/talent-mapper/scoring.ts`, `lib/ats/http-response.ts`, y grep de imports en `chrome-extension/`. Cada hallazgo tiene `archivo:línea` reproducible.
-- **Cambios:**
-  - `ObsidianVault/ResumeX/Deuda arquitectónica ResumeX.md`: **nueva.** El plan largo — qué no tocar, la restricción del contrato de la extensión, diagnóstico D-1…D-10, Fase 12 en cuatro olas (T-12.1…T-12.11) con pasos y definición de terminado, decisiones propuestas, anti-tareas y orden sugerido.
-  - `ObsidianVault/ResumeX/Reglas duras ResumeX.md`: añadidas R-016…R-020 (faltaban) y R-021…R-025; corregido el texto de R-013, que seguía con la lectura superada.
-  - `ObsidianVault/ResumeX/ResumeX.md`: corregido "las rutas siguen planas" (falso desde la Fase 1) y el dominio de prod (ahora `resumex.talentxrecruiting.com`, con los alias `*.vercel.app` como 308); link a la nota nueva.
-  - `ObsidianVault/ResumeX/_schema.md`: checkpoint al 2026-08-06 y nota nueva en el índice.
-  - `AGENT_HANDOFF.md`: Estado actual (v1.7), decisiones R-021…R-025, § Destino marcado como superado en su bloque `lib/`, lista viva de próximas tareas, y este registro.
-- **Decisiones:** R-021 (envelope plano, `error` string), R-022 (cuota durable sobre `UsageEvent`), R-023 (frontera por lint), R-024 (sin casts en el borde HTTP), R-025 (retirado el destino `lib/career`/`lib/talent`).
-- **Hallazgo que cambia el orden de trabajo:** la extensión desplegada hace `data.error ?? "Login failed."` sobre `textContent` (`chrome-extension/popup.js:275`), así que **la capa ATS tiene la forma de error equivocada para este sistema** pese a ser la más nueva. La unificación va de ATS hacia Career. Un refactor que asuma lo contrario rompe el login de la extensión en producción.
-- **Lo que está bien y no hay que tocar:** el split de prompts en `lib/analyze.ts` (R-005 bien ejecutado), la verificación server-side de citas en `lib/criteria-evidence.ts:64-71` (R-007 no depende del modelo), el scoring determinista de `lib/talent-mapper/scoring.ts` con el LLM afuera, y la capa ATS como adapter+registry+capabilities. Anotado explícitamente en la nota del wiki para que un refactor futuro no los "mejore".
-- **Riesgos o bloqueos:** D-2 (gasto sin techo) está vivo en producción hasta que se haga T-12.4. D-10: PubMed entró antes de calibrar precisión, en tensión con R-014; T-12.10 lo resuelve pero necesita etiquetado humano. Deuda de wiki pendiente: `APIs`, `Modelo de datos ResumeX` y `Features` no reflejan la capa ATS ni los modelos `UsageEvent`/`Ats*`.
-- **Validaciones realizadas:** ninguna suite corrida — no se tocó código. Los hallazgos se verificaron leyendo las líneas citadas, y la restricción de la extensión por grep sobre `chrome-extension/`.
-- **Siguiente paso:** tomar **T-12.1** (lint de frontera). Verificable: agregar a mano un import de `@/lib/talent-mapper/scoring` en un archivo de Career debe hacer fallar `npm run lint`, y `npm run lint` debe quedar limpio sin modificar ningún import existente.
-
-### 2026-08-06 17:20 — Talent Ashby-like app UI (layout, not brand clone)
+### 2026-08-06 18:05 — Talent Ashby-like app UI (layout, not brand clone)
 
 - **Objetivo:** dar a ResumeX Talent el patrón de interfaz de un ATS (sidebar, densidad, tablas, drawer) sin clonar la marca/violeta de Ashby (1B + 2A).
-- **Estado:** completado en local.
+- **Estado:** completado; rebased sobre T-12.5 en `main`.
 - **Cambios:**
   - `components/AppChrome.tsx`: chrome flotante Career vs shell Talent por `isTalentAppPath`.
   - `components/talent/TalentAppShell.tsx`: sidebar 220px + top bar + mobile drawer.
@@ -692,7 +644,6 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - Saved searches → tabla; Assess/ATS densificados; landing `/talent` sin blobs, CTAs `rounded-lg` navy.
   - `lib/products.ts`: `isTalentAppPath`; `app/globals.css`: `--talent-sidebar|canvas|panel-border`.
   - Decisión **R-026** (chrome Talent ≠ Career; paleta R-020).
-- **Validaciones:** `typecheck` OK; `lint` OK (warning preexistente en aggregate-authors); `vitest` 152 pass; `next build` OK con DATABASE_URL de `.env.local`; `test:e2e:talent-mapper` OK (assertion de disclaimer alineada al copy actual).
-- **Siguiente paso:** smoke visual opcional en `/talent/assess` e `/talent/integrations`; commit cuando el usuario lo pida. Fase 12 sigue siendo el hito de arquitectura.
->>>>>>> 018c971 (Give ResumeX Talent an Ashby-like app shell while keeping ResumeX colors.)
+- **Validaciones:** typecheck/lint/vitest/build + `test:e2e:talent-mapper` OK.
+- **Siguiente paso:** T-12.3 (observabilidad) o smoke visual en Assess/ATS.
 
