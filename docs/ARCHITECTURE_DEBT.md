@@ -199,7 +199,7 @@ El repo ya tiene la mitad construida y nadie la generalizó: `UsageEvent` con `@
 
 **Hecha** (2026-08-06, rama `cursor/architecture-debt-t12-4-quota-8725`): `lib/quota.ts`, `lib/quota-limits.ts` (números propuestos), migración `costUsd`, rutas cableadas, demos sin burn, tests de agotamiento + budget.
 
-#### ⬜ T-12.5 · Un envelope de error, en la dirección correcta (R-021)
+#### ✅ T-12.5 · Un envelope de error, en la dirección correcta (R-021)
 
 Leer primero § *La restricción que ordena todo el plan*. La dirección de la migración es lo único que no se puede equivocar acá.
 
@@ -210,6 +210,8 @@ Leer primero § *La restricción que ordena todo el plan*. La dirección de la m
 - ⚠️ **Verificar antes de tocar** el 402 de entitlements: hoy devuelve `upgradeUrl`, que consume el CTA de upgrade. El envelope tiene que preservarlo (`code: "upgrade_required"` + `upgradeUrl`), no aplanarlo a un string.
 
 **Terminado cuando:** ninguna ruta construye `NextResponse.json({error…})` a mano (grep vacío salvo en `lib/api/response.ts`); el login de la extensión desempaquetada contra el dev server sigue mostrando el mensaje real y no `[object Object]`; los dos E2E verdes.
+
+**Hecha** (2026-08-06): envelope plano; ATS → Career; `upgradeUrl` intacto.
 
 #### ⬜ T-12.6 · Zod en el borde de escritura (R-024, mata los casts de D-3)
 

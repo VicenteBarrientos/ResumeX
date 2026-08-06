@@ -290,9 +290,9 @@ La única deuda con **dinero en juego**. Media implementación ya existe y nadie
 
 **Terminado cuando:** un test agota la cuota de `talent-assess` y recibe 429/402 con `code`; el segundo intento no llega a OpenAI (verificable con el mock); hay test de corte por gasto acumulado.
 
-**Hecha** en `cursor/architecture-debt-t12-4-quota-8725` (2026-08-06). Límites Free analyzer/cover letter preservados; el resto (incl. techos Pro y budget diario) vive en `lib/quota-limits.ts` como **propuesta de producto** pendiente de confirmación humana antes de tratarlos como pricing policy.
+**Hecha** en `main`/prod (2026-08-06). Límites en `lib/quota-limits.ts` **confirmados** por humano el 2026-08-06 (Free analyzer/cover letter + techos Pro/budget).
 
-### ⬜ T-12.5 — Envelope de error único y plano (R-021)
+### ✅ T-12.5 — Envelope de error único y plano (R-021)
 
 ⚠️ **Leer R-021 antes de escribir una línea.** La migración va **de ATS hacia Career**, no al revés — la intuición contraria rompe el login de la extensión en producción, porque `chrome-extension/popup.js:275` asigna `data.error` (string) a `textContent`.
 
@@ -303,6 +303,8 @@ La única deuda con **dinero en juego**. Media implementación ya existe y nadie
 - ⚠️ Verificar que el 402 de entitlements siga entregando `upgradeUrl` (lo consume el CTA de upgrade).
 
 **Terminado cuando:** grep de `NextResponse.json({ error` vacío fuera de `lib/api/response.ts`; el login de la extensión desempaquetada muestra el mensaje real y no `[object Object]`; ambos E2E verdes.
+
+**Hecha** en `cursor/architecture-debt-t12-5-envelope-8725` (2026-08-06): `lib/api/response.ts` (`apiError`/`apiOk`); ATS aplanado; consumidores ATS actualizados; rutas Career/Talent migradas sin cambiar strings de `error`; `upgradeUrl` preservado en 402.
 
 ### ⬜ T-12.6 — Zod en el borde de escritura (R-024)
 
@@ -414,6 +416,7 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 
 - **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable (entrada anterior, preservada en el historial de git).
 - **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa (entrada anterior, preservada en el historial de git).
+- **2026-08-06** — **T-12.5 hecha** (envelope plano R-021). Límites de cuota **confirmados**.
 - **2026-08-06** — **T-12.4 hecha** en `cursor/architecture-debt-t12-4-quota-8725` (cuota durable + `costUsd` + techos Pro finitos; B-12 cerrado en código). Siguiente: T-12.5.
 - **2026-08-06** — **Fase 12 abierta y arrancada** tras la auditoría de arquitectura (sólo lectura, contra el código real y no contra este archivo). Diagnóstico D-1…D-10 y razonamiento completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md); decisiones R-021…R-025 en el handoff. Cuatro olas, T-12.1…T-12.11; **T-12.1 y T-12.2 ya hechas** en `cursor/architecture-debt-phase-12-7496`. Prioridad por encima de las Fases 8 y 9 pese al número, porque D-1 (drift de auth) empeora con el tiempo y D-2 (gasto sin techo) cuesta dinero. Backlog: B-11 absorbido por T-12.3, B-12 por T-12.4, B-10 pasa de ⏸️ a ⛔ bloqueada por T-12.10. Hallazgo que reordena el trabajo: la extensión desplegada lee `data.error` como string (`chrome-extension/popup.js:275`), así que la unificación del envelope va **de ATS hacia Career** y no al revés.
 - **2026-08-05** — Nuevo roadmap post-cierre: Fases 1–6 confirmadas completas en producción (`add4208`). Auditoría de terreno (tests, CI, i18n, a11y, tema de extensión, modelos Prisma) y apertura de Fases 7–11: red de seguridad (tests + E2E Career + CI), accesibilidad/i18n de Talent, paridad visual de la extensión, equipos (🤔 condicionada) y comercialización (⏸️ diferida). Backlog transversal actualizado: B-2/B-3/B-8/B-9 absorbidos por tareas nuevas, B-7 cerrado como ya hecho, B-11/B-12 nuevos (observabilidad, límite de costo OpenAI). El detalle tarea-por-tarea de las Fases 1–6 se conserva íntegro en `AGENT_HANDOFF.md` § Bitácora de cambios y en el historial de git de este archivo; no se repite acá para no diluir las fases nuevas.
