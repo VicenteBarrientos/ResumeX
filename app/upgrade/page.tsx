@@ -75,12 +75,12 @@ function UpgradeContent() {
       {/* Success banners */}
       {success === "pro" && (
         <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
-          🎉 <strong>You&apos;re now a ResumeX Pro member!</strong> Thank you — enjoy all features.
+          <strong>Pro is active.</strong> Unlimited analyzer and cover-letter runs are unlocked.
         </div>
       )}
       {success === "donation" && (
         <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
-          ❤️ <strong>Thank you so much for your support!</strong> It means the world to us.
+          <strong>Thanks</strong> — donation received.
         </div>
       )}
 
@@ -89,10 +89,10 @@ function UpgradeContent() {
           ResumeX
         </p>
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
-          Support ResumeX
+          Pro &amp; billing
         </h1>
         <p className="mt-2 text-sm text-zinc-500">
-          Built by a recruiter, for job seekers. Your support keeps this running.
+          Optional. Free tier covers light personal use; Pro raises the AI limits.
         </p>
       </div>
 
@@ -103,31 +103,24 @@ function UpgradeContent() {
       )}
 
       <div className="space-y-4">
-        {/* Pro plan */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-brand-500 bg-white p-6 shadow-sm">
-          <div className="absolute right-4 top-4 rounded-full bg-brand-600 px-2.5 py-0.5 text-xs font-bold text-white">
-            MOST POPULAR
-          </div>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-zinc-900">ResumeX Pro</h2>
+            <h2 className="text-lg font-bold text-zinc-900">Pro</h2>
             <div className="mt-1 flex items-baseline gap-1">
               <span className="text-4xl font-bold text-zinc-900">$5</span>
               <span className="text-sm text-zinc-500">/month</span>
             </div>
-            <p className="mt-1 text-xs text-brand-600 font-medium">
-              Founding member price — locked in forever
+            <p className="mt-1 text-sm text-zinc-500">
+              Raises free-tier AI limits (analyzer and cover letters).
             </p>
           </div>
           <ul className="mb-6 space-y-2">
             {[
-              "Unlimited job tracking",
-              "AI match scoring on every job",
-              "Chrome extension auto-fill & auto-save",
-              "Resume parsing & profile auto-fill",
-              "Answer learning across applications",
-              "Job search with 200+ sources",
-              "Export to CSV",
-              "Priority support",
+              "Unlimited resume analysis",
+              "Unlimited cover letters",
+              "AutoApply Chrome extension",
+              "PDF resume storage",
+              "Weekly job digest emails",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2 text-sm text-zinc-700">
                 <span className="text-emerald-500">✓</span>
@@ -138,17 +131,16 @@ function UpgradeContent() {
           <button
             onClick={() => startCheckout("pro")}
             disabled={loading !== null}
-            className="w-full rounded-full bg-brand-600 py-3 text-sm font-bold text-white transition hover:bg-brand-500 disabled:opacity-60"
+            className="w-full rounded-full bg-brand-600 py-3 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:opacity-60"
           >
-            {loading === "pro" ? "Redirecting…" : "Get Pro — $5/month"}
+            {loading === "pro" ? "Redirecting…" : "Subscribe to Pro"}
           </button>
         </div>
 
-        {/* Donation */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-1 text-lg font-bold text-zinc-900">Make a Donation ❤️</h2>
+          <h2 className="mb-1 text-lg font-bold text-zinc-900">One-time donation</h2>
           <p className="mb-4 text-sm text-zinc-500">
-            Love what we&apos;re building? A one-time contribution goes a long way.
+            Optional. Helps cover hosting and API costs.
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
             {[3, 5, 10, 25].map((amt) => (
@@ -168,9 +160,9 @@ function UpgradeContent() {
           <button
             onClick={() => startCheckout("donation")}
             disabled={loading !== null}
-            className="w-full rounded-full border-2 border-rose-400 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
+            className="w-full rounded-full border border-zinc-300 py-3 text-sm font-semibold text-zinc-700 transition hover:border-brand-400 hover:text-brand-700 disabled:opacity-60"
           >
-            {loading === "donation" ? "Redirecting…" : `Donate $${donationAmount} ❤️`}
+            {loading === "donation" ? "Redirecting…" : `Donate $${donationAmount}`}
           </button>
         </div>
 

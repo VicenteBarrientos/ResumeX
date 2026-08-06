@@ -34,7 +34,7 @@ export default function AppNav() {
       ]
     : [
         { href: "/login", label: "Sign in" },
-        { href: "/register", label: "Get started" },
+        { href: "/register", label: "Create account" },
       ];
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export default function AppNav() {
             href="/register"
             className="rounded-full border border-brand-500 bg-brand-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-brand-500"
           >
-            Get started
+            Create account
           </Link>
         </div>
       )}

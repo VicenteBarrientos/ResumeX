@@ -44,7 +44,7 @@ export async function POST(request: Request) {
               <li>Track every application in one dashboard</li>
             </ul>
             <a href="${RESUMEX_URL}/career/tracker" style="display:inline-block;background:#1d3559;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600">Go to my dashboard →</a>
-            <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">ResumeX — AI-Powered Job Search Platform</p>
+            <p style="color:#a1a1aa;font-size:12px;margin:32px 0 0">ResumeX — personal job-search tools</p>
           </div>
         `,
       }).catch(() => null);

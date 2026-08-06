@@ -22,20 +22,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumeX — AI-Powered Job Search Platform",
+  title: "ResumeX — personal job-search tools",
   description:
-    "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place. Free to start.",
+    "Private workspace: format a CV, check job fit, draft cover letters, and track applications. For personal use for now.",
   metadataBase: new URL(RESUMEX_URL),
   openGraph: {
-    title: "ResumeX — AI-Powered Job Search Platform",
-    description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
+    title: "ResumeX — personal job-search tools",
+    description:
+      "Private workspace for CV formatting, job-fit analysis, cover letters, and application tracking.",
     siteName: "ResumeX",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ResumeX — AI-Powered Job Search Platform",
-    description: "Format your CV, analyze job fit, generate cover letters, auto-apply, and track every application — all in one place.",
+    title: "ResumeX — personal job-search tools",
+    description:
+      "Private workspace for CV formatting, job-fit analysis, cover letters, and application tracking.",
   },
 };
 

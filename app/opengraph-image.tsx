@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "ResumeX — AI-Powered Job Search Platform";
+export const alt = "ResumeX — personal job-search tools";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,6 @@ export default function OGImage() {
           fontFamily: "Arial, sans-serif",
         }}
       >
-        {/* Logo text */}
         <div
           style={{
             display: "flex",
@@ -52,17 +51,16 @@ export default function OGImage() {
           </span>
         </div>
 
-        {/* Subtitle */}
         <div
           style={{
             fontSize: "22px",
             fontWeight: "400",
             color: "#6b7280",
-            letterSpacing: "6px",
+            letterSpacing: "4px",
             textTransform: "uppercase",
           }}
         >
-          AI-Powered Job Search
+          Personal job-search tools
         </div>
       </div>
     ),

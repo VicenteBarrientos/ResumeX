@@ -77,9 +77,11 @@ export default async function TalentLandingPage() {
             <span className="text-emerald-700">not by their job title</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600">
-            Scientific roles are hard to fill because the people who can do the work do not
-            describe themselves the way a job board does. Talent Mapper reads what they
-            actually published.
+            Source candidates from public research publications, with paper-level evidence
+            and an explainable relevance score.
+          </p>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-zinc-500">
+            Private use for now — not a public product launch.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <TrackedLink
@@ -94,11 +96,11 @@ export default async function TalentLandingPage() {
               href={session ? TALENT.home : "/register"}
               className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700"
             >
-              {session ? "Run the demo search →" : "Create a free account →"}
+              {session ? "Run demo search →" : "Create account →"}
             </TrackedLink>
           </div>
           <p className="mt-4 text-sm text-zinc-500">
-            A saved public-data snapshot runs the full flow without any API key.
+            Demo snapshot works without an OpenAlex key.
           </p>
         </section>
 

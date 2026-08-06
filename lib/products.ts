@@ -1,5 +1,3 @@
-import { formatProPriceLabel } from "@/lib/stripe";
-
 /**
  * ResumeX ships two products on one codebase (R-002). Their names are exact
  * (R-003) and live here so nav, metadata and copy read them from one place
@@ -37,7 +35,7 @@ export const CAREER: Product = {
   name: "ResumeX Career",
   suffix: "Career",
   audience: "Job seekers",
-  tagline: "Format your CV, analyze job fit, apply faster, and track every application.",
+  tagline: "Format a CV, check job fit, draft cover letters, and track applications.",
   basePath: "/career",
   home: "/career/tracker",
   nav: [
@@ -47,7 +45,7 @@ export const CAREER: Product = {
     { href: "/career/cover-letter", label: "Cover Letter" },
     { href: "/career/autoapply", label: "AutoApply" },
     { href: "/career/tracker", label: "Tracker" },
-    { href: "/upgrade", label: `⭐ Go Pro — ${formatProPriceLabel()}` },
+    { href: "/upgrade", label: "Pro" },
   ],
 };
 
