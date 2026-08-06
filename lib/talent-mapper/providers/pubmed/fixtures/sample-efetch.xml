@@ -1,0 +1,201 @@
+<?xml version="1.0" ?>
+<!DOCTYPE PubmedArticleSet>
+<PubmedArticleSet>
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>99900001</PMID>
+      <Article>
+        <ArticleTitle>Reverse genetics and <i>viral rescue</i> of influenza A</ArticleTitle>
+        <Abstract>
+          <AbstractText Label="BACKGROUND" NlmCategory="BACKGROUND">Influenza reverse genetics enables controlled virus generation.</AbstractText>
+          <AbstractText Label="METHODS" NlmCategory="METHODS">We performed viral rescue using transfection in mammalian cell culture.</AbstractText>
+          <AbstractText Label="RESULTS" NlmCategory="RESULTS">Recombinant viruses were recovered with high efficiency.</AbstractText>
+          <AbstractText Label="CONCLUSIONS" NlmCategory="CONCLUSIONS">The platform supports infectious clone workflows.</AbstractText>
+        </Abstract>
+        <AuthorList>
+          <Author>
+            <LastName>Exemplar</LastName>
+            <ForeName>Jordan</ForeName>
+            <Initials>J</Initials>
+            <Identifier Source="ORCID">https://orcid.org/0000-0002-1825-0097</Identifier>
+            <AffiliationInfo>
+              <Affiliation>Demo Institute for Viral Systems, Boston, MA, USA. https://ror.org/03yrm5c26</Affiliation>
+              <Identifier Source="ROR">https://ror.org/03yrm5c26</Identifier>
+            </AffiliationInfo>
+            <AffiliationInfo>
+              <Affiliation>Department of Microbiology, Demo University Medical School, Boston, MA, USA</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author>
+            <LastName>Middle</LastName>
+            <ForeName>Sam</ForeName>
+            <Initials>S</Initials>
+            <AffiliationInfo>
+              <Affiliation>Demo Institute for Viral Systems, Boston, MA, USA</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author>
+            <LastName>Lead</LastName>
+            <ForeName>Riley</ForeName>
+            <Initials>R</Initials>
+            <AffiliationInfo>
+              <Affiliation>Demo Institute for Viral Systems, Boston, MA, USA</Affiliation>
+            </AffiliationInfo>
+          </Author>
+        </AuthorList>
+        <Journal>
+          <Title>Demo Virology Methods</Title>
+          <JournalIssue>
+            <PubDate>
+              <Year>2023</Year>
+              <Month>Mar</Month>
+              <Day>15</Day>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <ArticleDate DateType="Electronic">
+          <Year>2023</Year>
+          <Month>02</Month>
+          <Day>10</Day>
+        </ArticleDate>
+        <PublicationTypeList>
+          <PublicationType>Journal Article</PublicationType>
+        </PublicationTypeList>
+        <ELocationID EIdType="doi">10.1000/demo.influenza.rg.2023</ELocationID>
+      </Article>
+      <MeshHeadingList>
+        <MeshHeading>
+          <DescriptorName>Reverse Genetics</DescriptorName>
+        </MeshHeading>
+        <MeshHeading>
+          <DescriptorName>Influenza A Virus</DescriptorName>
+        </MeshHeading>
+      </MeshHeadingList>
+      <KeywordList>
+        <Keyword>infectious clone</Keyword>
+        <Keyword>viral rescue</Keyword>
+      </KeywordList>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">99900001</ArticleId>
+        <ArticleId IdType="doi">10.1000/demo.influenza.rg.2023</ArticleId>
+        <ArticleId IdType="pmc">PMC9990001</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>99900002</PMID>
+      <Article>
+        <ArticleTitle>A narrative review of reverse genetics platforms</ArticleTitle>
+        <AuthorList>
+          <Author>
+            <LastName>Review</LastName>
+            <ForeName>Casey</ForeName>
+          </Author>
+        </AuthorList>
+        <Journal>
+          <Title>Demo Annual Reviews</Title>
+          <JournalIssue>
+            <PubDate>
+              <Year>2021</Year>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <PublicationTypeList>
+          <PublicationType>Review</PublicationType>
+        </PublicationTypeList>
+      </Article>
+      <MeshHeadingList>
+        <MeshHeading>
+          <DescriptorName>Virology</DescriptorName>
+        </MeshHeading>
+      </MeshHeadingList>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">99900002</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>99900003</PMID>
+      <Article>
+        <ArticleTitle>Collective statement on transfection methods</ArticleTitle>
+        <AuthorList>
+          <Author CollectiveName="Y">
+            <CollectiveName>International Virology Consortium</CollectiveName>
+          </Author>
+        </AuthorList>
+        <Journal>
+          <Title>Demo Methods Notes</Title>
+          <JournalIssue>
+            <PubDate>
+              <MedlineDate>Winter 2020</MedlineDate>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <PublicationTypeList>
+          <PublicationType>Journal Article</PublicationType>
+        </PublicationTypeList>
+      </Article>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">99900003</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>99900004</PMID>
+      <Article>
+        <ArticleTitle>Retracted: flawed viral rescue claim</ArticleTitle>
+        <Abstract>
+          <AbstractText>This record describes viral rescue but is retracted.</AbstractText>
+        </Abstract>
+        <AuthorList>
+          <Author>
+            <LastName>Withdrawn</LastName>
+            <ForeName>Pat</ForeName>
+          </Author>
+        </AuthorList>
+        <Journal>
+          <Title>Demo Retracted Journal</Title>
+          <JournalIssue>
+            <PubDate>
+              <Year>2019</Year>
+              <Month>01</Month>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <PublicationTypeList>
+          <PublicationType>Retracted Publication</PublicationType>
+        </PublicationTypeList>
+      </Article>
+      <CommentsCorrectionsList>
+        <CommentsCorrections RefType="RetractionIn">
+          <RefSource>Demo Retracted Journal. 2020</RefSource>
+        </CommentsCorrections>
+      </CommentsCorrectionsList>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">99900004</ArticleId>
+        <ArticleId IdType="doi">10.1000/demo.retracted.2019</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+
+  <PubmedArticle>
+    <UnexpectedOptionalField>keep-going</UnexpectedOptionalField>
+    <MedlineCitation>
+      <PMID>not-a-real-pmid</PMID>
+    </MedlineCitation>
+  </PubmedArticle>
+</PubmedArticleSet>

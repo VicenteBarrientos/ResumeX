@@ -1,5 +1,6 @@
 import type {
   EvidenceConfidence,
+  EvidenceField,
   EvidenceMatch,
   EvidenceMatchType,
   ScholarlyWork,
@@ -18,14 +19,24 @@ type CriterionBucket =
 
 /**
  * Match a scholarly work against sourcing criteria using title, abstract,
- * topics, and keywords. Prefer exact phrases; fall back to adjacent terms
- * and loose token overlap.
+ * topics, keywords, and MeSH headings. Prefer exact phrases in title/abstract;
+ * MeSH-only hits are topical evidence (weaker than direct textual evidence).
  */
 export function matchEvidence(
   work: ScholarlyWork,
   criteria: SourcingCriteria,
 ): EvidenceMatch[] {
-  const corpus = buildCorpus(work);
+  // Retracted / retraction notices never produce positive evidence
+  if (
+    work.isRetracted ||
+    work.retractionStatus === "retracted" ||
+    work.retractionStatus === "retraction-notice"
+  ) {
+    return [];
+  }
+
+  const textCorpus = buildTextCorpus(work);
+  const meshCorpus = buildMeshCorpus(work);
   const matches: EvidenceMatch[] = [];
   const seen = new Set<string>();
 
@@ -38,6 +49,8 @@ export function matchEvidence(
     { bucket: "seniority", terms: criteria.senioritySignals },
   ];
 
+  const pubTypeWeight = publicationTypeEvidenceWeight(work.publicationTypes);
+
   for (const { terms } of buckets) {
     for (const term of terms) {
       const criterion = term.trim();
@@ -45,20 +58,22 @@ export function matchEvidence(
         continue;
       }
 
-      const exact = findExactPhrase(corpus.normalized, criterion);
+      const exact = findExactPhrase(textCorpus.normalized, criterion);
       if (exact) {
+        const field = locateField(work, criterion);
         pushMatch(matches, seen, {
           criterion,
           matchType: "exact",
-          confidence: "direct",
+          confidence: scaleConfidence("direct", pubTypeWeight),
           work,
-          snippet: excerptAround(corpus.display, exact.index, criterion.length),
+          snippet: excerptAround(textCorpus.display, exact.index, criterion.length),
+          evidenceField: field,
         });
         continue;
       }
 
       const adjacentHit = findAdjacentMatch(
-        corpus.normalized,
+        textCorpus.normalized,
         criterion,
         criteria.adjacentTerms,
       );
@@ -66,25 +81,45 @@ export function matchEvidence(
         pushMatch(matches, seen, {
           criterion,
           matchType: "adjacent",
-          confidence: "strong_adjacent",
+          confidence: scaleConfidence("strong_adjacent", pubTypeWeight),
           work,
           snippet: excerptAround(
-            corpus.display,
+            textCorpus.display,
             adjacentHit.index,
             adjacentHit.length,
           ),
+          evidenceField: locateField(work, criterion) || "abstract",
         });
         continue;
       }
 
-      const loose = findLooseTokenOverlap(corpus.normalized, criterion);
+      // MeSH / keyword topical evidence (weaker than title/abstract)
+      const meshHit = findExactPhrase(meshCorpus.normalized, criterion);
+      if (meshHit) {
+        pushMatch(matches, seen, {
+          criterion,
+          matchType: "inferred",
+          confidence: "topical",
+          work,
+          snippet: excerptAround(
+            meshCorpus.display,
+            meshHit.index,
+            criterion.length,
+          ),
+          evidenceField: "mesh",
+        });
+        continue;
+      }
+
+      const loose = findLooseTokenOverlap(textCorpus.normalized, criterion);
       if (loose) {
         pushMatch(matches, seen, {
           criterion,
           matchType: "inferred",
-          confidence: "possible",
+          confidence: scaleConfidence("possible", pubTypeWeight),
           work,
-          snippet: excerptAround(corpus.display, loose.index, loose.length),
+          snippet: excerptAround(textCorpus.display, loose.index, loose.length),
+          evidenceField: locateField(work, criterion) || "topic",
         });
       }
     }
@@ -102,6 +137,7 @@ function pushMatch(
     confidence: EvidenceConfidence;
     work: ScholarlyWork;
     snippet: string;
+    evidenceField?: EvidenceField;
   },
 ): void {
   const key = `${normalizeText(args.criterion)}::${args.work.id}`;
@@ -117,21 +153,25 @@ function pushMatch(
     year: args.work.year,
     snippet: args.snippet,
     doi: args.work.doi,
+    pmid: args.work.pmid,
     openAlexUrl: args.work.openAlexUrl,
+    pubmedUrl: args.work.pubmedUrl,
     confidence: args.confidence,
     workId: args.work.id,
+    evidenceField: args.evidenceField,
+    sources: args.work.sources,
   });
 }
 
-function buildCorpus(work: ScholarlyWork): {
+function buildTextCorpus(work: ScholarlyWork): {
   display: string;
   normalized: string;
 } {
   const parts = [
     work.title,
     work.abstract ?? "",
-    ...(work.topics ?? []),
     ...(work.keywords ?? []),
+    ...(work.topics ?? []),
     work.sourceName ?? "",
   ];
   const display = parts.filter(Boolean).join(" \n ");
@@ -139,6 +179,91 @@ function buildCorpus(work: ScholarlyWork): {
     display,
     normalized: normalizeText(display),
   };
+}
+
+function buildMeshCorpus(work: ScholarlyWork): {
+  display: string;
+  normalized: string;
+} {
+  const display = (work.meshTerms ?? []).join(" \n ");
+  return {
+    display,
+    normalized: normalizeText(display),
+  };
+}
+
+function locateField(
+  work: ScholarlyWork,
+  criterion: string,
+): EvidenceField | undefined {
+  const needle = normalizeText(criterion);
+  if (!needle) return undefined;
+  if (normalizeText(work.title).includes(needle)) return "title";
+  if (normalizeText(work.abstract ?? "").includes(needle)) return "abstract";
+  if ((work.keywords ?? []).some((k) => normalizeText(k).includes(needle))) {
+    return "keyword";
+  }
+  if ((work.topics ?? []).some((t) => normalizeText(t).includes(needle))) {
+    return "topic";
+  }
+  if ((work.meshTerms ?? []).some((m) => normalizeText(m).includes(needle))) {
+    return "mesh";
+  }
+  return undefined;
+}
+
+/**
+ * Reviews / editorials / letters provide weaker hands-on technique evidence.
+ * Methods/protocol papers keep full weight.
+ */
+export function publicationTypeEvidenceWeight(
+  types: string[] | undefined,
+): number {
+  if (!types || types.length === 0) return 1;
+  const lower = types.map((t) => t.toLowerCase());
+  if (lower.some((t) => t.includes("retracted") || t.includes("retraction"))) {
+    return 0;
+  }
+  if (
+    lower.some(
+      (t) =>
+        t.includes("editorial") ||
+        t.includes("letter") ||
+        t.includes("comment") ||
+        t.includes("news"),
+    )
+  ) {
+    return 0.35;
+  }
+  if (lower.some((t) => t.includes("review"))) {
+    return 0.5;
+  }
+  if (
+    lower.some(
+      (t) =>
+        t.includes("protocol") ||
+        t.includes("methods") ||
+        t.includes("technical report"),
+    )
+  ) {
+    return 1.1;
+  }
+  return 1;
+}
+
+function scaleConfidence(
+  base: EvidenceConfidence,
+  weight: number,
+): EvidenceConfidence {
+  if (weight <= 0) return "possible";
+  if (weight >= 1) return base;
+  if (base === "direct") {
+    return weight >= 0.7 ? "strong_adjacent" : "possible";
+  }
+  if (base === "strong_adjacent") {
+    return "possible";
+  }
+  return base;
 }
 
 export function normalizeText(value: string): string {

@@ -33,29 +33,36 @@ The names are exact and belong in UI, copy and metadata; Talent Mapper is a feat
 Talent Mapper helps recruiters source hard-to-fill scientific roles by:
 
 1. Extracting editable sourcing criteria from a job description
-2. Building transparent OpenAlex search queries
-3. Aggregating public works into potential researcher profiles
-4. Scoring **research relevance** with an explainable breakdown
-5. Showing paper-level evidence for every important match
-6. Drafting editable outreach (no automated sending)
-7. Shortlisting and exporting CSV
+2. Building source-specific OpenAlex and PubMed search queries
+3. Searching selected sources and merging duplicate publications
+4. Aggregating public works into potential researcher profiles
+5. Scoring **research relevance** with an explainable breakdown
+6. Showing paper-level evidence for every important match
+7. Drafting editable outreach (no automated sending)
+8. Shortlisting and exporting CSV
 
 **Limitations (important):**
 
 - Publication affiliation is not guaranteed current employment
 - Scores measure relevance to search criteria, not hiring quality, availability, or eligibility
-- OpenAlex metadata can be incomplete or stale — always validate with candidates
+- OpenAlex/PubMed metadata can be incomplete or stale — always validate with candidates
 - The MVP does not scrape LinkedIn, Google Scholar, or private contact data
-- Demo snapshot mode uses a saved public-data fixture when live search is unavailable
+- Demo snapshot mode uses saved fixtures when live search is unavailable
 
 ### Environment
 
 ```env
 OPENAI_API_KEY=...          # criteria extraction + outreach (falls back safely if missing)
 OPENALEX_API_KEY=...        # optional; enables Live OpenAlex search (server-side only)
+NCBI_EMAIL=...              # required for live PubMed
+NCBI_API_KEY=...            # optional; higher NCBI rate limit
+NCBI_TOOL=ResumeXTalentMapper
+PUBMED_ENABLED=true
 ```
 
-Obtain an OpenAlex key (free) from [openalex.org/settings/api](https://openalex.org/settings/api). Set `OPENALEX_API_KEY` in `.env.local` and in Vercel → Environment Variables (Production + Preview). Never expose the key to the browser.
+Obtain an OpenAlex key (free) from [openalex.org/settings/api](https://openalex.org/settings/api). For PubMed, set `NCBI_EMAIL` (and optionally an [NCBI API key](https://www.ncbi.nlm.nih.gov/account/settings/)). Never expose keys to the browser.
+
+See [`docs/PUBMED_INTEGRATION.md`](./docs/PUBMED_INTEGRATION.md) for the dual-source architecture.
 
 ### Demo snapshot (interview-friendly)
 
@@ -186,6 +193,8 @@ Optional for live Talent Mapper search:
 
 ```env
 OPENALEX_API_KEY="your-openalex-key"
+NCBI_EMAIL="your-email@example.com"
+NCBI_API_KEY=""   # optional
 ```
 
 Then apply the checked-in migrations and start the app:

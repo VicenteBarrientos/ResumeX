@@ -6,19 +6,18 @@
 
 ## Estado actual
 
-- **?ltima actualizaci?n:** 2026-08-05 19:10 -04:00 ? America/Santiago
-- **Versi?n del handoff:** 1.3
-- **Estado:** **Roadmap de fases 1?6 cerrado y en producci?n** (`add4208`). Nuevo `ROADMAP.md` escrito para el trabajo siguiente: Fase 7 (red de seguridad ? tests Career, E2E Career, CI), Fase 8 (a11y + i18n de Talent), Fase 9 (paridad visual de la extensi?n Chrome), Fase 10 (equipos, ?? condicionada) y Fase 11 (comercializaci?n, ??? diferida).
-- **Pr?ximo hito:** T-7.1 (tests de `format-resume`/`merge-profile`/`parse-profile`) o T-7.2 (E2E Career) ? ambas sin precondiciones, ver `ROADMAP.md`.
-- **Bloqueos conocidos:** ninguno cr?tico. Diferidos conscientes: T-4.7 Ashby, T-6.2/T-6.3, Organization.
-- **Repositorio can?nico:** `C:\Users\hp\Projects\ResumeX` ? rama observada `main`, remote `github.com/VicenteBarrientos/ResumeX.git`.
-- **Copia archivada:** `C:\Users\hp\CS50\ResumeX` ? **no usar**. Ver R-001 y la bit?cora del 2026-08-05.
-- **Prod:** oficial `https://resumex.talentxrecruiting.com` (alias `resume-x-yixz.vercel.app` ? 308). Deploy `dpl_DxsnSUvBXxaaanFx1p57Ff7b5Dp4` (`b7ffc87`) READY.
+- **Última actualización:** 2026-08-05 22:10 -04:00 — America/Santiago
+- **Versión del handoff:** 1.4
+- **Estado:** PubMed integrado como segunda fuente en Talent Mapper (local, sin push). OpenAlex intacto. Demo dual-source funciona sin NCBI credentials.
+- **Próximo hito:** Manual QA del flujo demo en `/talent/mapper`; configurar `NCBI_EMAIL` (+ opcional `NCBI_API_KEY`) para live PubMed; luego commit/PR cuando el humano lo pida.
+- **Bloqueos conocidos:** ninguno crítico. Live PubMed requiere `NCBI_EMAIL`.
+- **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
+- **Prod:** sin deploy de esta integración aún (no se pidió).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-Nada en vuelo crítico. T-7.1 y T-7.2 cerrados. Pendiente humano: Stripe env vars + smoke free-tier analyzer no-demo.
+PubMed Talent Mapper integration implementada localmente (sin commit/push). Pendiente: revisión humana + commit.
 
 
 ## Protocolo para agentes
@@ -78,7 +77,7 @@ Nada en vuelo crítico. T-7.1 y T-7.2 cerrados. Pendiente humano: Stripe env var
 | R-010 | Prisma es la capa de datos. `localStorage` s?lo como cach? de UI y como contrato con la extensi?n Chrome, nunca como almac?n de verdad. | Los datos del recruiter (shortlists, notas, b?squedas) deben sobrevivir al navegador y ser compartibles. | Vigente |
 | R-011 | La convenci?n de Next 16 es `proxy.ts`, no `middleware.ts`. Ya migrado; no reintroducir el nombre viejo. | `middleware` est? deprecado y renombrado en esta versi?n. Codemod: `npx @next/codemod@latest middleware-to-proxy .` | Vigente |
 | R-012 | Antes de modificar `scoring.ts` o `aggregate-authors.ts` debe existir cobertura de tests que fije el comportamiento actual. | Es la l?gica que define la calidad del producto y la que regresa en silencio: no rompe el build, s?lo empeora los resultados. | Vigente |
-| R-013 | OpenAlex es la fuente primaria. Una segunda fuente s?lo despu?s de calibrar precisi?n contra roles reales. | Seis integraciones superficiales valen menos que una fuente bien calibrada. Prioridad si se agrega una segunda: NIH RePORTER (financiamiento activo) o Europe PMC. | Vigente |
+| R-013 | OpenAlex is the broad scholarly discovery source; PubMed is an optional complementary biomedical source with source-specific queries, conservative merge, and no double-counting. | Dual-source Talent Mapper requested 2026-08-05; complements OpenAlex without replacing it. SUPERSEDES the earlier “second source only after calibration” reading for PubMed specifically. | Vigente |
 | R-014 | Precisi?n sobre recall en resultados de sourcing. Ante la duda, mostrar menos candidatos y declarar lo que no se sabe. | Un experto de dominio detecta un mal candidato al instante y cada falso positivo cuesta credibilidad. Los campos `unknowns` y `possibleConcerns` existen para eso. | Vigente |
 | R-015 | Nunca secretos en el repo, el handoff ni el wiki: s?lo nombres de variables y su ubicaci?n. Las keys de OpenAI y OpenAlex son server-side exclusivamente. | ? | Vigente |
 
@@ -473,4 +472,20 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - Try demo en `/career/cover-letter`; docs en `README.md` / `AGENTS.md` / `ROADMAP.md` (B-3 cerrado).
 - **Validaciones:** `npm test`; `npm run lint`; `npm run test:e2e:career` → `ok: true`.
 - **Siguiente paso:** humano Stripe keys; o T-7.4 (bordes) / T-9.1 (`/extension-auth`) / retirar `jobsearcher`.
+
+### 2026-08-05 22:10 — PubMed as second Talent Mapper source
+
+- **Objetivo:** añadir PubMed junto a OpenAlex en Talent Mapper sin reemplazar OpenAlex ni reconstruir el producto.
+- **Estado:** completado localmente (sin commit/push/deploy).
+- **Cambios:**
+  - Provider PubMed (ESearch → RRF PMID merge → EFetch XML → normalize) en `lib/talent-mapper/providers/pubmed/`.
+  - Merge canónico + reconciliación de autores conservadora; evidence/scoring conscientes de MeSH, publication type y retractados.
+  - Orquestación dual-source en `search-orchestrator.ts` + route `/api/talent-mapper/search` backward-compatible.
+  - UI: selector de fuentes, queries OpenAlex/PubMed separadas, diagnósticos, badges, disclaimers NCBI.
+  - Demo PubMed simulado (`data/talent-mapper-pubmed-demo.json`) + docs `docs/PUBMED_INTEGRATION.md`.
+  - Env: `NCBI_EMAIL`, `NCBI_API_KEY`, `NCBI_TOOL`, `PUBMED_*` en `.env.local.example`.
+  - Dependencia: `fast-xml-parser`.
+  - R-013 actualizada: PubMed es fuente biomédica complementaria permitida.
+- **Validaciones:** `npm test` (116 passed, 1 skipped live), `npm run typecheck`, `npm run lint`, `npm run build` OK.
+- **Siguiente paso:** QA manual del demo en `/talent/mapper`; añadir `NCBI_EMAIL` para live; commit cuando el humano lo pida.
 

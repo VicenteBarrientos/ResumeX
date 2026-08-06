@@ -4,12 +4,13 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/require-auth";
 import {
   toCriteriaJson,
+  toQueriesJson,
   toSearchDetail,
   worksReviewedFromResult,
   type TalentSearchUiStep,
   type TalentSearchWriteInput,
 } from "@/lib/talent-mapper/search-store";
-import type { SearchMode, SearchQuery, TalentSearchResult } from "@/lib/talent-mapper/types";
+import type { SearchMode, TalentSearchResult } from "@/lib/talent-mapper/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     roleTitle?: string;
     jobDescription?: string;
     criteriaJson?: ReturnType<typeof toCriteriaJson>;
-    queriesJson?: SearchQuery[];
+    queriesJson?: ReturnType<typeof toQueriesJson>;
     mode?: SearchMode;
     resultJson?: TalentSearchResult | typeof Prisma.JsonNull;
     worksReviewed?: number;
@@ -76,8 +77,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       body.extractedCriteria ?? null,
     );
   }
-  if (Array.isArray(body.queries)) {
-    data.queriesJson = body.queries;
+  if (
+    Array.isArray(body.queries) ||
+    Array.isArray(body.pubmedQueries) ||
+    Array.isArray(body.sources)
+  ) {
+    data.queriesJson = toQueriesJson(
+      body.queries,
+      body.pubmedQueries,
+      body.sources,
+    );
   }
   if (body.mode === "live" || body.mode === "demo") {
     data.mode = body.mode;

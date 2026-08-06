@@ -120,6 +120,8 @@ function scoreRequiredTechniques(
       points += perCriterion;
     } else if (conf === "strong_adjacent") {
       points += perCriterion * 0.7;
+    } else if (conf === "topical") {
+      points += perCriterion * 0.25;
     } else {
       points += perCriterion * 0.35;
     }
@@ -160,6 +162,8 @@ function scoreResearchArea(
       points += per;
     } else if (conf === "strong_adjacent") {
       points += per * 0.7;
+    } else if (conf === "topical") {
+      points += per * 0.3;
     } else {
       points += per * 0.35;
     }
@@ -429,9 +433,10 @@ function bestConfidenceByCriterion(
   matches: EvidenceMatch[],
 ): Map<string, EvidenceMatch["confidence"]> {
   const rank: Record<EvidenceMatch["confidence"], number> = {
-    direct: 3,
-    strong_adjacent: 2,
-    possible: 1,
+    direct: 4,
+    strong_adjacent: 3,
+    possible: 2,
+    topical: 1,
   };
   const map = new Map<string, EvidenceMatch["confidence"]>();
   for (const match of matches) {

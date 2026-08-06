@@ -10,6 +10,13 @@ export type TalentMapperErrorCode =
   | "openalex_timeout"
   | "openalex_unavailable"
   | "openalex_aborted"
+  | "PUBMED_NOT_CONFIGURED"
+  | "PUBMED_RATE_LIMITED"
+  | "PUBMED_TIMEOUT"
+  | "PUBMED_INVALID_QUERY"
+  | "PUBMED_INVALID_RESPONSE"
+  | "PUBMED_UNAVAILABLE"
+  | "PUBMED_ABORTED"
   | "no_queries"
   | "no_works"
   | "no_authors"
@@ -56,6 +63,12 @@ const ACTIONS: Partial<Record<string, string>> = {
     "Retry the search, or use the demo snapshot.",
   openalex_unavailable:
     "Retry shortly, or use the demo snapshot.",
+  PUBMED_NOT_CONFIGURED:
+    "Add NCBI_EMAIL (and optionally NCBI_API_KEY) for live PubMed, or continue with OpenAlex / demo snapshot.",
+  PUBMED_RATE_LIMITED:
+    "Wait briefly and retry PubMed, or continue with OpenAlex / demo snapshot.",
+  PUBMED_TIMEOUT:
+    "Retry the PubMed search, or continue with available sources.",
   no_queries:
     "Enable or add at least one search query before searching.",
   empty_job_description:

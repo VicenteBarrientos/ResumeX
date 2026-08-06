@@ -3,16 +3,16 @@
 import type { EvidenceMatch } from "@/lib/talent-mapper/types";
 
 const confidenceLabel: Record<EvidenceMatch["confidence"], string> = {
-  direct: "Direct evidence",
+  direct: "Direct textual evidence",
   strong_adjacent: "Strong adjacent evidence",
+  topical: "Topical evidence (MeSH/keyword)",
   possible: "Possible evidence",
 };
 
 const confidenceClass: Record<EvidenceMatch["confidence"], string> = {
-  direct:
-    "bg-emerald-50 text-emerald-800",
-  strong_adjacent:
-    "bg-sky-50 text-sky-800",
+  direct: "bg-emerald-50 text-emerald-800",
+  strong_adjacent: "bg-sky-50 text-sky-800",
+  topical: "bg-violet-50 text-violet-800",
   possible: "bg-zinc-100 text-zinc-700",
 };
 
@@ -63,6 +63,15 @@ export default function EvidenceList({
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">{m.snippet}</p>
             )}
             <div className="mt-2 flex flex-wrap gap-3 text-xs">
+              {m.sources && m.sources.length > 0 && (
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
+                  {m.sources.includes("openalex") && m.sources.includes("pubmed")
+                    ? "PubMed + OpenAlex"
+                    : m.sources.includes("pubmed")
+                      ? "PubMed"
+                      : "OpenAlex"}
+                </span>
+              )}
               {m.openAlexUrl && (
                 <a
                   href={m.openAlexUrl}
@@ -71,6 +80,16 @@ export default function EvidenceList({
                   className="text-brand-600 hover:underline"
                 >
                   OpenAlex
+                </a>
+              )}
+              {m.pubmedUrl && (
+                <a
+                  href={m.pubmedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-600 hover:underline"
+                >
+                  PubMed{m.pmid ? ` ${m.pmid}` : ""}
                 </a>
               )}
               {m.doi && (

@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type {
+  ResearchSource,
   SearchMode,
   SearchQuery,
   SourcingCriteria,
@@ -32,6 +33,8 @@ export type TalentSearchDetail = {
   criteria: SourcingCriteria | null;
   extractedCriteria: SourcingCriteria | null;
   queries: SearchQuery[];
+  pubmedQueries: SearchQuery[];
+  sources: ResearchSource[];
   mode: SearchMode;
   result: TalentSearchResult | null;
   shortlist: string[];
@@ -47,6 +50,8 @@ export type TalentSearchWriteInput = {
   criteria?: SourcingCriteria | null;
   extractedCriteria?: SourcingCriteria | null;
   queries?: SearchQuery[];
+  pubmedQueries?: SearchQuery[];
+  sources?: ResearchSource[];
   mode?: SearchMode;
   result?: TalentSearchResult | null;
   uiStep?: TalentSearchUiStep | null;
@@ -82,8 +87,63 @@ export function toCriteriaJson(
   };
 }
 
+export type ParsedQueriesPayload = {
+  queries: SearchQuery[];
+  pubmedQueries: SearchQuery[];
+  sources: ResearchSource[];
+};
+
+/**
+ * Backward-compatible queries JSON:
+ * - legacy: SearchQuery[]
+ * - current: { openalex, pubmed, sources }
+ */
+export function parseQueriesPayload(value: unknown): ParsedQueriesPayload {
+  if (Array.isArray(value)) {
+    return {
+      queries: value as SearchQuery[],
+      pubmedQueries: [],
+      sources: ["openalex", "pubmed"],
+    };
+  }
+  const obj = asObject(value);
+  if (!obj) {
+    return { queries: [], pubmedQueries: [], sources: ["openalex", "pubmed"] };
+  }
+  const sourcesRaw = Array.isArray(obj.sources) ? obj.sources : [];
+  const sources = sourcesRaw.filter(
+    (s): s is ResearchSource => s === "openalex" || s === "pubmed",
+  );
+  return {
+    queries: Array.isArray(obj.openalex)
+      ? (obj.openalex as SearchQuery[])
+      : Array.isArray(obj.queries)
+        ? (obj.queries as SearchQuery[])
+        : [],
+    pubmedQueries: Array.isArray(obj.pubmed)
+      ? (obj.pubmed as SearchQuery[])
+      : Array.isArray(obj.pubmedQueries)
+        ? (obj.pubmedQueries as SearchQuery[])
+        : [],
+    sources:
+      sources.length > 0 ? sources : (["openalex", "pubmed"] as ResearchSource[]),
+  };
+}
+
 export function parseQueries(value: unknown): SearchQuery[] {
-  return Array.isArray(value) ? (value as SearchQuery[]) : [];
+  return parseQueriesPayload(value).queries;
+}
+
+export function toQueriesJson(
+  queries: SearchQuery[] | undefined,
+  pubmedQueries?: SearchQuery[],
+  sources?: ResearchSource[],
+): Prisma.InputJsonValue {
+  return {
+    openalex: queries ?? [],
+    pubmed: pubmedQueries ?? [],
+    sources: sources ?? ["openalex", "pubmed"],
+  };
 }
 
 export function parseResult(value: unknown): TalentSearchResult | null {
@@ -147,6 +207,8 @@ export function toSearchDetail(row: SearchRow): TalentSearchDetail {
       ? row.uiStep
       : null;
 
+  const q = parseQueriesPayload(row.queriesJson);
+
   return {
     id: row.id,
     step,
@@ -154,7 +216,9 @@ export function toSearchDetail(row: SearchRow): TalentSearchDetail {
     jobDescription: row.jobDescription,
     criteria,
     extractedCriteria,
-    queries: parseQueries(row.queriesJson),
+    queries: q.queries,
+    pubmedQueries: q.pubmedQueries,
+    sources: q.sources,
     mode: row.mode === "live" ? "live" : "demo",
     result: parseResult(row.resultJson),
     shortlist: (row.shortlist ?? []).map((entry) => entry.authorId),

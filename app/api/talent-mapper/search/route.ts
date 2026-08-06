@@ -1,23 +1,19 @@
 import { NextResponse } from "next/server";
-import { aggregateAuthors } from "@/lib/talent-mapper/aggregate-authors";
-import { searchDemoWorks } from "@/lib/talent-mapper/demo-data";
 import { normalizeUnknownError } from "@/lib/talent-mapper/errors";
-import {
-  getOpenAlexApiKey,
-  isOpenAlexConfigured,
-  searchOpenAlexWorks,
-} from "@/lib/talent-mapper/openalex";
 import { enabledQueries } from "@/lib/talent-mapper/query-builder";
+import { buildPubmedQueries } from "@/lib/talent-mapper/providers/pubmed/query-builder";
+import { runTalentMapperSearch } from "@/lib/talent-mapper/search-orchestrator";
 import { searchRequestSchema } from "@/lib/talent-mapper/schemas";
-import type { SearchMode, TalentSearchResult } from "@/lib/talent-mapper/types";
+import type { ResearchSource, SearchMode } from "@/lib/talent-mapper/types";
+import {
+  isOpenAlexConfigured,
+} from "@/lib/talent-mapper/openalex";
+import { isPubmedConfigured } from "@/lib/talent-mapper/providers/pubmed";
 import { requireSession } from "@/lib/require-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-const DISCLAIMER =
-  "Talent Mapper prioritizes public research evidence for recruiter review. Scores reflect relevance to the search criteria, not overall candidate quality, availability or hiring eligibility.";
 
 export async function POST(req: Request) {
   const { error: authError } = await requireSession();
@@ -28,8 +24,11 @@ export async function POST(req: Request) {
     body = await req.json();
   } catch {
     return NextResponse.json(
-      { error: "Invalid JSON body.", action: "Retry the search from the Talent Mapper UI." },
-      { status: 400 }
+      {
+        error: "Invalid JSON body.",
+        action: "Retry the search from the Talent Mapper UI.",
+      },
+      { status: 400 },
     );
   }
 
@@ -41,44 +40,64 @@ export async function POST(req: Request) {
         action: "Review criteria and enable at least one search query.",
         details: parsed.error.flatten(),
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   let mode: SearchMode = parsed.data.mode;
   const criteria = parsed.data.criteria;
-  const queries = enabledQueries(parsed.data.queries);
+  const sources = (parsed.data.sources ?? [
+    "openalex",
+    "pubmed",
+  ]) as ResearchSource[];
 
-  if (queries.length === 0) {
+  const openAlexQueries = enabledQueries(parsed.data.queries ?? []);
+  const pubmedQueries = enabledQueries(
+    parsed.data.pubmedQueries?.length
+      ? parsed.data.pubmedQueries
+      : buildPubmedQueries(criteria),
+  );
+
+  const needsOpenAlex = sources.includes("openalex");
+  const needsPubmed = sources.includes("pubmed");
+
+  if (needsOpenAlex && openAlexQueries.length === 0 && needsPubmed && pubmedQueries.length === 0) {
     return NextResponse.json(
       {
         error: "No enabled queries.",
-        action: "Enable or add at least one search query before running the search.",
+        action: "Enable or add at least one OpenAlex or PubMed query before running the search.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const queryTexts = queries.map((q) => q.query.trim().toLowerCase());
-  if (new Set(queryTexts).size !== queryTexts.length) {
+  if (needsOpenAlex && openAlexQueries.length === 0 && !needsPubmed) {
     return NextResponse.json(
       {
-        error: "Duplicate query detected.",
-        action: "Remove or edit duplicate queries before searching.",
+        error: "No enabled OpenAlex queries.",
+        action: "Enable or add at least one OpenAlex query before searching.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  if (mode === "live" && !isOpenAlexConfigured()) {
-    mode = "demo";
+  if (needsPubmed && pubmedQueries.length === 0 && !needsOpenAlex) {
+    return NextResponse.json(
+      {
+        error: "No enabled PubMed queries.",
+        action: "Enable or add at least one PubMed query before searching.",
+      },
+      { status: 400 },
+    );
   }
 
-  const warnings: string[] = [];
-  if (parsed.data.mode === "live" && mode === "demo") {
-    warnings.push(
-      "Live search is not configured. Add OPENALEX_API_KEY to use current public research data, or continue with the demo snapshot."
-    );
+  // Live mode may fall back to demo when no source is configured
+  if (mode === "live") {
+    const openAlexOk = !needsOpenAlex || isOpenAlexConfigured();
+    const pubmedOk = !needsPubmed || isPubmedConfigured();
+    if (!openAlexOk && !pubmedOk) {
+      mode = "demo";
+    }
   }
 
   try {
@@ -86,71 +105,46 @@ export async function POST(req: Request) {
     const deadlineMs = 55_000;
     const deadline = setTimeout(() => controller.abort(), deadlineMs);
 
-    let searchOutcome;
+    let result;
     try {
-      searchOutcome =
-        mode === "live"
-          ? await searchOpenAlexWorks(queries, {
-              apiKey: getOpenAlexApiKey(),
-              perPage: parsed.data.perPage ?? 25,
-              signal: controller.signal,
-              timeoutMs: 15_000,
-            })
-          : searchDemoWorks(queries);
+      result = await runTalentMapperSearch({
+        criteria,
+        mode,
+        sources,
+        openAlexQueries:
+          needsOpenAlex && openAlexQueries.length > 0
+            ? openAlexQueries
+            : needsOpenAlex
+              ? parsed.data.queries.filter((q) => q.enabled)
+              : [],
+        pubmedQueries: needsPubmed ? pubmedQueries : [],
+        limitPerQuery: parsed.data.limits?.perQuery ?? parsed.data.perPage ?? 25,
+        totalPerSource: parsed.data.limits?.totalPerSource ?? 150,
+        signal: controller.signal,
+      });
     } finally {
       clearTimeout(deadline);
     }
 
-    warnings.push(...searchOutcome.warnings);
-
-    if (searchOutcome.works.length === 0) {
-      return NextResponse.json(
-        {
-          error: "No works found.",
-          action:
-            "No strong matches were found. Try adding adjacent terminology, broadening the publication window or removing one required technique.",
-          warnings,
-        },
-        { status: 404 }
-      );
+    if (parsed.data.mode === "live" && mode === "demo") {
+      result.meta.warnings = [
+        "Live search is not fully configured for the selected sources. Showing the demo snapshot instead.",
+        ...result.meta.warnings,
+      ];
     }
 
-    const candidates = aggregateAuthors(searchOutcome.works, criteria, {
-      limit: 60,
-    }).filter(
-      (c) =>
-        c.matchedRequiredCriteria.length > 0 ||
-        c.matchedResearchAreas.length + c.matchedOrganismsOrSystems.length >= 2,
-    );
-
-    // Keep meta.uniqueResearchers aligned with returned list
-    const ranked = candidates.slice(0, 50);
-
-    if (ranked.length === 0) {
+    if (result.candidates.length === 0) {
       return NextResponse.json(
         {
           error: "Works found but no author metadata matched the criteria.",
           action:
             "Broaden required techniques, enable adjacent queries, or lower specificity, then search again.",
-          warnings,
+          warnings: result.meta.warnings,
+          diagnostics: result.meta.diagnostics,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
-
-    const result: TalentSearchResult = {
-      candidates: ranked,
-      meta: {
-        roleTitle: criteria.roleTitle,
-        worksReviewed: searchOutcome.works.length,
-        uniqueResearchers: ranked.length,
-        mode,
-        queriesUsed: searchOutcome.queriesRun,
-        searchedAt: new Date().toISOString(),
-        disclaimer: DISCLAIMER,
-        warnings,
-      },
-    };
 
     return NextResponse.json(result);
   } catch (error) {
@@ -158,21 +152,25 @@ export async function POST(req: Request) {
     const code = (error as { code?: string }).code || normalized.code;
     const action =
       (error as { action?: string }).action || normalized.action;
+
     const status =
-      code === "missing_openalex_key" || code === "invalid_openalex_key"
+      code === "missing_openalex_key" ||
+      code === "invalid_openalex_key" ||
+      code === "PUBMED_NOT_CONFIGURED"
         ? 503
-        : code === "openalex_rate_limit"
+        : code === "openalex_rate_limit" || code === "PUBMED_RATE_LIMITED"
           ? 429
-          : 502;
+          : code === "no_works"
+            ? 404
+            : 502;
 
     return NextResponse.json(
       {
         error: normalized.message,
         action,
         code,
-        warnings,
       },
-      { status }
+      { status },
     );
   }
 }

@@ -81,8 +81,9 @@ export function DemoTalkingPoints({
           <li>3. Keeps the recruiter in control of criteria and outreach.</li>
           <li>4. Works without LinkedIn Recruiter.</li>
           <li>5. Uses AI for synthesis, not automatic hiring decisions.</li>
-          <li>6. Demo snapshot is deterministic — no OpenAlex key required for the pitch.</li>
+          <li>6. Demo snapshot is deterministic — no OpenAlex/PubMed keys required for the pitch.</li>
           <li>7. Scores are research relevance to criteria, not hireability or employment status.</li>
+          <li>8. OpenAlex + PubMed can run together; duplicate publications are merged once.</li>
         </ol>
       )}
     </div>

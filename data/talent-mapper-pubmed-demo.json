@@ -1,0 +1,221 @@
+{
+  "mode": "demo",
+  "label": "Saved public-data snapshot",
+  "disclaimer": "Simulated PubMed-style demonstration data aligned to the OpenAlex snapshot for dual-source merge demos. PMIDs in this file are illustrative — run a live PubMed search for current NCBI results.",
+  "fetchedAt": "2026-08-05T21:00:00.000Z",
+  "source": "pubmed-demo",
+  "works": [
+    {
+      "id": "pmid:99958612",
+      "canonicalKey": "doi:10.1128/jvi.00488-22",
+      "title": "Using Species a Rotavirus Reverse Genetics to Engineer Chimeric Viruses Expressing SARS-CoV-2 Spike Epitopes",
+      "year": 2022,
+      "publicationDate": "2022-06-27",
+      "doi": "10.1128/jvi.00488-22",
+      "pmid": "99958612",
+      "pmcid": "PMC9260154",
+      "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/99958612/",
+      "sourceName": "Journal of Virology",
+      "abstract": "BACKGROUND: Reverse genetics systems enable viral rescue of recombinant rotaviruses.\nMETHODS: We used reverse genetics and mammalian cell culture transfection to generate chimeric viruses.\nRESULTS: Chimeric viruses expressing SARS-CoV-2 spike epitopes were rescued.\nCONCLUSIONS: Reverse genetics supports recombinant virus generation for coronavirus antigen display.",
+      "topics": [],
+      "keywords": ["reverse genetics", "viral rescue", "rotavirus"],
+      "meshTerms": ["Reverse Genetics", "Rotavirus", "SARS-CoV-2", "Transfection"],
+      "publicationTypes": ["Journal Article"],
+      "isRetracted": false,
+      "retractionStatus": "none",
+      "sources": ["pubmed"],
+      "sourceRefs": [
+        {
+          "source": "pubmed",
+          "sourceId": "99958612",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/99958612/"
+        }
+      ],
+      "authorships": [
+        {
+          "authorId": "pubmed-provisional:ola diebold|roslin institute",
+          "name": "Ola Diebold",
+          "lastName": "Diebold",
+          "foreName": "Ola",
+          "authorPosition": "first",
+          "isFirstAuthor": true,
+          "isLastAuthor": false,
+          "identityConfidence": "name-affiliation-cluster",
+          "institutions": [
+            {
+              "name": "Roslin Institute, University of Edinburgh",
+              "type": "publication_affiliation",
+              "countryCode": "GB"
+            }
+          ],
+          "affiliationTexts": [
+            "Roslin Institute, University of Edinburgh, Edinburgh, United Kingdom"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pmid:90000001",
+      "canonicalKey": "pmid:90000001",
+      "title": "An infectious clone platform for influenza A reverse-genetic systems",
+      "year": 2023,
+      "publicationDate": "2023-03-15",
+      "doi": "10.1000/demo.influenza.rg.2023",
+      "pmid": "90000001",
+      "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/90000001/",
+      "sourceName": "Demo Virology Methods",
+      "abstract": "METHODS: We describe an infectious clone and reverse genetic system for influenza viral rescue in mammalian cell culture.\nRESULTS: Recombinant virus generation was reproducible across independent rescues.",
+      "topics": [],
+      "keywords": ["infectious clone", "influenza", "reverse genetics"],
+      "meshTerms": ["Influenza A Virus", "Reverse Genetics", "Molecular Cloning"],
+      "publicationTypes": ["Journal Article"],
+      "isRetracted": false,
+      "retractionStatus": "none",
+      "sources": ["pubmed"],
+      "sourceRefs": [
+        {
+          "source": "pubmed",
+          "sourceId": "90000001",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/90000001/"
+        }
+      ],
+      "authorships": [
+        {
+          "authorId": "orcid:0000-0002-1825-0097",
+          "name": "Jordan Exemplar",
+          "lastName": "Exemplar",
+          "foreName": "Jordan",
+          "orcid": "https://orcid.org/0000-0002-1825-0097",
+          "authorPosition": "first",
+          "isFirstAuthor": true,
+          "isLastAuthor": false,
+          "identityConfidence": "verified-orcid",
+          "institutions": [
+            {
+              "name": "Demo Institute for Viral Systems",
+              "type": "publication_affiliation",
+              "countryCode": "US"
+            }
+          ],
+          "affiliationTexts": [
+            "Demo Institute for Viral Systems, Boston, MA, USA",
+            "Department of Microbiology, Demo University Medical School, Boston, MA, USA"
+          ]
+        },
+        {
+          "authorId": "pubmed-provisional:sam middle|demo institute",
+          "name": "Sam Middle",
+          "lastName": "Middle",
+          "foreName": "Sam",
+          "authorPosition": "middle",
+          "isFirstAuthor": false,
+          "isLastAuthor": false,
+          "identityConfidence": "name-affiliation-cluster",
+          "institutions": [
+            {
+              "name": "Demo Institute for Viral Systems",
+              "type": "publication_affiliation"
+            }
+          ],
+          "affiliationTexts": ["Demo Institute for Viral Systems, Boston, MA, USA"]
+        },
+        {
+          "authorId": "pubmed-provisional:riley lead|demo institute",
+          "name": "Riley Lead",
+          "lastName": "Lead",
+          "foreName": "Riley",
+          "authorPosition": "last",
+          "isFirstAuthor": false,
+          "isLastAuthor": true,
+          "identityConfidence": "name-affiliation-cluster",
+          "institutions": [
+            {
+              "name": "Demo Institute for Viral Systems",
+              "type": "publication_affiliation"
+            }
+          ],
+          "affiliationTexts": ["Demo Institute for Viral Systems, Boston, MA, USA"]
+        }
+      ]
+    },
+    {
+      "id": "pmid:90000002",
+      "canonicalKey": "pmid:90000002",
+      "title": "Virology methods: a narrative review of reverse genetics platforms",
+      "year": 2021,
+      "pmid": "90000002",
+      "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/90000002/",
+      "sourceName": "Demo Annual Reviews of Virology",
+      "abstract": "This review summarizes reverse genetics and viral rescue literature across RNA virus systems without presenting new primary experiments.",
+      "topics": [],
+      "keywords": ["virology", "reverse genetics"],
+      "meshTerms": ["Virology", "Review", "Reverse Genetics"],
+      "publicationTypes": ["Review"],
+      "isRetracted": false,
+      "retractionStatus": "none",
+      "sources": ["pubmed"],
+      "sourceRefs": [
+        {
+          "source": "pubmed",
+          "sourceId": "90000002",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/90000002/"
+        }
+      ],
+      "authorships": [
+        {
+          "authorId": "pubmed-provisional:casey review|demo university",
+          "name": "Casey Review",
+          "lastName": "Review",
+          "foreName": "Casey",
+          "authorPosition": "first",
+          "isFirstAuthor": true,
+          "isLastAuthor": true,
+          "identityConfidence": "name-affiliation-cluster",
+          "institutions": [
+            {
+              "name": "Demo University",
+              "type": "publication_affiliation"
+            }
+          ],
+          "affiliationTexts": ["Demo University, Department of Microbiology"]
+        }
+      ]
+    },
+    {
+      "id": "pmid:90000003",
+      "canonicalKey": "pmid:90000003",
+      "title": "Transfection optimization notes for recombinant viral systems",
+      "year": 2020,
+      "pmid": "90000003",
+      "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/90000003/",
+      "sourceName": "Demo Methods Notes",
+      "topics": [],
+      "keywords": ["transfection", "mammalian cell culture"],
+      "meshTerms": ["Transfection", "Cell Culture Techniques"],
+      "publicationTypes": ["Journal Article"],
+      "isRetracted": false,
+      "retractionStatus": "none",
+      "sources": ["pubmed"],
+      "sourceRefs": [
+        {
+          "source": "pubmed",
+          "sourceId": "90000003",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/90000003/"
+        }
+      ],
+      "authorships": [
+        {
+          "authorId": "pubmed-collective:international-virology-consortium",
+          "name": "International Virology Consortium",
+          "isCollectiveAuthor": true,
+          "authorPosition": "first",
+          "isFirstAuthor": true,
+          "isLastAuthor": true,
+          "identityConfidence": "unresolved",
+          "institutions": [],
+          "affiliationTexts": []
+        }
+      ]
+    }
+  ]
+}

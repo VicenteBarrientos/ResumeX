@@ -4,11 +4,12 @@ import { requireSession } from "@/lib/require-auth";
 import {
   candidateCountFromResult,
   toCriteriaJson,
+  toQueriesJson,
   toSearchSummary,
   worksReviewedFromResult,
   type TalentSearchWriteInput,
 } from "@/lib/talent-mapper/search-store";
-import type { SearchMode, SearchQuery, TalentSearchResult } from "@/lib/talent-mapper/types";
+import type { SearchMode, TalentSearchResult } from "@/lib/talent-mapper/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,7 +48,6 @@ export async function POST(request: Request) {
   }
 
   const mode: SearchMode = body.mode === "live" ? "live" : "demo";
-  const queries: SearchQuery[] = Array.isArray(body.queries) ? body.queries : [];
   const result: TalentSearchResult | null = body.result ?? null;
   const shortlist = Array.isArray(body.shortlist)
     ? [...new Set(body.shortlist.filter(Boolean))]
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       roleTitle,
       jobDescription: body.jobDescription?.trim() || "",
       criteriaJson: toCriteriaJson(body.criteria ?? null, body.extractedCriteria ?? null),
-      queriesJson: queries,
+      queriesJson: toQueriesJson(body.queries, body.pubmedQueries, body.sources),
       mode,
       resultJson: result ?? undefined,
       worksReviewed: worksReviewedFromResult(result),

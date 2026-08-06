@@ -5,11 +5,48 @@
 
 export type SearchMode = "live" | "demo";
 
+export type ResearchSource = "openalex" | "pubmed";
+
 export type EvidenceMatchType = "exact" | "adjacent" | "inferred";
 export type EvidenceConfidence =
   | "direct"
   | "strong_adjacent"
-  | "possible";
+  | "possible"
+  | "topical";
+
+export type EvidenceField =
+  | "title"
+  | "abstract"
+  | "keyword"
+  | "mesh"
+  | "topic"
+  | "publication_type"
+  | "journal";
+
+export type RetractionStatus =
+  | "none"
+  | "retracted"
+  | "retraction-notice"
+  | "corrected"
+  | "unknown";
+
+export type AuthorIdentityConfidence =
+  | "verified-orcid"
+  | "cross-source-work-match"
+  | "name-affiliation-cluster"
+  | "unresolved";
+
+export type ResearchSourceReference = {
+  source: ResearchSource;
+  sourceId: string;
+  url: string;
+};
+
+export type QueryMatchReference = {
+  source: ResearchSource;
+  queryId: string;
+  rank: number;
+};
 
 export type LocationCriteria = {
   city?: string;
@@ -33,7 +70,7 @@ export type SourcingCriteria = {
   recruiterNotes: string[];
 };
 
-export type SearchQueryGroup = "core" | "adjacent";
+export type SearchQueryGroup = "core" | "adjacent" | "broadening";
 
 export type SearchQuery = {
   id: string;
@@ -41,6 +78,8 @@ export type SearchQuery = {
   group: SearchQueryGroup;
   query: string;
   enabled: boolean;
+  /** Human-readable reason this query exists (source-specific strategy). */
+  purpose?: string;
 };
 
 export type EvidenceMatch = {
@@ -50,9 +89,13 @@ export type EvidenceMatch = {
   year?: number;
   snippet: string;
   doi?: string;
+  pmid?: string;
   openAlexUrl?: string;
+  pubmedUrl?: string;
   confidence: EvidenceConfidence;
   workId: string;
+  evidenceField?: EvidenceField;
+  sources?: ResearchSource[];
 };
 
 /**
@@ -82,11 +125,19 @@ export type RelevantWork = {
   title: string;
   year?: number;
   doi?: string;
+  pmid?: string;
+  pmcid?: string;
   openAlexUrl?: string;
+  pubmedUrl?: string;
   citedByCount?: number;
   sourceName?: string;
   abstractSnippet?: string;
   isRetracted?: boolean;
+  publicationTypes?: string[];
+  meshTerms?: string[];
+  authorPosition?: string;
+  publicationAffiliations?: string[];
+  sources?: ResearchSource[];
   matchedCriteria: string[];
 };
 
@@ -105,7 +156,12 @@ export type ResearcherCandidate = {
   name: string;
   orcid?: string;
   openAlexUrl: string;
+  pubmedUrl?: string;
+  identityConfidence?: AuthorIdentityConfidence;
+  possibleDuplicate?: boolean;
   likelyInstitution?: LikelyInstitution;
+  /** Publication affiliation wording — not current employment. */
+  publicationAffiliationNote?: string;
   relevantWorks: RelevantWork[];
   matchedRequiredCriteria: EvidenceMatch[];
   matchedPreferredCriteria: EvidenceMatch[];
@@ -135,6 +191,28 @@ export type SearchResult = {
   warnings: string[];
 };
 
+export type SourceDiagnostics = {
+  status: "success" | "failed" | "skipped" | "unconfigured";
+  queryCount?: number;
+  rawRecordCount?: number;
+  uniquePmidCount?: number;
+  fetchedRecordCount?: number;
+  durationMs?: number;
+  warnings: string[];
+  errorCode?: string;
+};
+
+export type DeduplicationDiagnostics = {
+  sourceRecordCount: number;
+  canonicalWorkCount: number;
+  mergedDuplicateCount: number;
+};
+
+export type SearchDiagnostics = {
+  sources: Partial<Record<ResearchSource, SourceDiagnostics>>;
+  deduplication?: DeduplicationDiagnostics;
+};
+
 export type SearchMeta = {
   roleTitle: string;
   worksReviewed: number;
@@ -142,9 +220,12 @@ export type SearchMeta = {
   shortlistedCount?: number;
   mode: SearchMode;
   queriesUsed: string[];
+  pubmedQueriesUsed?: string[];
+  sourcesUsed?: ResearchSource[];
   searchedAt: string;
   disclaimer: string;
   warnings: string[];
+  diagnostics?: SearchDiagnostics;
 };
 
 export type TalentSearchResult = {
@@ -156,24 +237,46 @@ export type TalentSearchResult = {
 export type ScholarlyWorkAuthor = {
   authorId: string;
   name: string;
+  lastName?: string;
+  foreName?: string;
+  initials?: string;
   orcid?: string;
   authorPosition?: string;
+  isFirstAuthor?: boolean;
+  isLastAuthor?: boolean;
+  isCollectiveAuthor?: boolean;
+  identityConfidence?: AuthorIdentityConfidence;
   institutions: LikelyInstitution[];
+  /** Raw affiliation strings at publication time (PubMed). */
+  affiliationTexts?: string[];
 };
 
 export type ScholarlyWork = {
   id: string;
+  /** Stable merge key (doi:, pmid:, pmcid:, openalex:, or titleyear:). */
+  canonicalKey?: string;
   title: string;
   year?: number;
   publicationDate?: string;
   doi?: string;
+  pmid?: string;
+  pmcid?: string;
+  openAlexId?: string;
   openAlexUrl?: string;
+  pubmedUrl?: string;
   citedByCount?: number;
   sourceName?: string;
+  /** Transient full abstract for server-side matching — trim before client persistence. */
   abstract?: string;
   topics: string[];
   keywords: string[];
+  meshTerms?: string[];
+  publicationTypes?: string[];
   isRetracted: boolean;
+  retractionStatus?: RetractionStatus;
+  sources?: ResearchSource[];
+  sourceRefs?: ResearchSourceReference[];
+  queryMatches?: QueryMatchReference[];
   authorships: ScholarlyWorkAuthor[];
 };
 

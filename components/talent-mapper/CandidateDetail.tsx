@@ -58,19 +58,31 @@ export default function CandidateDetail({
               {candidate.likelyInstitution?.name || "Unknown"}
             </p>
             <Disclaimer className="mt-3">
-              Publication affiliation is not confirmed current employment. Validate
-              role, location, and eligibility with the candidate before outreach or
-              pipeline decisions.
+              Affiliation reflects publication metadata and may not represent current
+              employment. Validate role, location, and eligibility with the candidate
+              before outreach or pipeline decisions.
             </Disclaimer>
             <div className="mt-2 flex flex-wrap gap-3 text-xs">
-              <a
-                href={candidate.openAlexUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-600 hover:underline"
-              >
-                OpenAlex profile
-              </a>
+              {candidate.openAlexUrl && (
+                <a
+                  href={candidate.openAlexUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-600 hover:underline"
+                >
+                  OpenAlex profile
+                </a>
+              )}
+              {candidate.pubmedUrl && (
+                <a
+                  href={candidate.pubmedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-600 hover:underline"
+                >
+                  PubMed
+                </a>
+              )}
               {candidate.orcid && (
                 <a
                   href={candidate.orcid}
@@ -82,6 +94,11 @@ export default function CandidateDetail({
                 </a>
               )}
             </div>
+            {candidate.possibleDuplicate && (
+              <p className="mt-2 text-xs text-amber-800">
+                Possible duplicate researcher — identity unresolved across sources.
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -121,10 +138,33 @@ export default function CandidateDetail({
                     {w.title}
                   </p>
                   <p className="mt-1 text-xs text-zinc-500">
-                    {[w.year, w.sourceName, w.citedByCount != null ? `${w.citedByCount} citations (context only)` : null]
+                    {[
+                      w.year,
+                      w.sourceName,
+                      w.publicationTypes?.[0],
+                      w.citedByCount != null
+                        ? `${w.citedByCount} citations (context only)`
+                        : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
+                  {w.sources && w.sources.length > 0 && (
+                    <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
+                      {w.sources.includes("openalex") &&
+                      w.sources.includes("pubmed")
+                        ? "PubMed + OpenAlex"
+                        : w.sources.includes("pubmed")
+                          ? "PubMed"
+                          : "OpenAlex"}
+                      {w.pmid ? ` · PMID ${w.pmid}` : ""}
+                    </p>
+                  )}
+                  {w.meshTerms && w.meshTerms.length > 0 && (
+                    <p className="mt-1 text-xs text-zinc-500">
+                      MeSH: {w.meshTerms.slice(0, 5).join(", ")}
+                    </p>
+                  )}
                   {w.matchedCriteria.length > 0 && (
                     <p className="mt-1 text-xs text-zinc-600">
                       Matching: {w.matchedCriteria.join(", ")}
@@ -133,7 +173,7 @@ export default function CandidateDetail({
                   {w.abstractSnippet && (
                     <p className="mt-1 text-xs text-zinc-500">{w.abstractSnippet}</p>
                   )}
-                  <div className="mt-2 flex gap-3 text-xs">
+                  <div className="mt-2 flex flex-wrap gap-3 text-xs">
                     {w.openAlexUrl && (
                       <a
                         href={w.openAlexUrl}
@@ -141,7 +181,17 @@ export default function CandidateDetail({
                         rel="noopener noreferrer"
                         className="text-brand-600 hover:underline"
                       >
-                        Source
+                        OpenAlex
+                      </a>
+                    )}
+                    {w.pubmedUrl && (
+                      <a
+                        href={w.pubmedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-600 hover:underline"
+                      >
+                        PubMed
                       </a>
                     )}
                     {w.doi && (

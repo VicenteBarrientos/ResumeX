@@ -30,10 +30,13 @@ export const sourcingCriteriaSchema = z.object({
 export const searchQuerySchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  group: z.enum(["core", "adjacent"]),
+  group: z.enum(["core", "adjacent", "broadening"]),
   query: z.string().min(1),
   enabled: z.boolean(),
+  purpose: z.string().optional(),
 });
+
+export const researchSourceSchema = z.enum(["openalex", "pubmed"]);
 
 export const searchModeSchema = z.enum(["live", "demo"]);
 
@@ -49,12 +52,30 @@ export const extractCriteriaResponseSchema = z.object({
 
 export const searchRequestSchema = z.object({
   criteria: sourcingCriteriaSchema,
+  /** OpenAlex queries (legacy field name preserved for backward compatibility). */
   queries: z
     .array(searchQuerySchema)
-    .min(1, "At least one query is required")
-    .max(12, "At most 12 queries per search"),
+    .max(12, "At most 12 OpenAlex queries per search")
+    .default([]),
+  pubmedQueries: z
+    .array(searchQuerySchema)
+    .max(12, "At most 12 PubMed queries per search")
+    .optional()
+    .default([]),
+  sources: z
+    .array(researchSourceSchema)
+    .min(1)
+    .max(2)
+    .optional()
+    .default(["openalex", "pubmed"]),
   mode: searchModeSchema.default("live"),
   perPage: z.number().int().min(1).max(100).optional(),
+  limits: z
+    .object({
+      perQuery: z.number().int().min(1).max(100).optional(),
+      totalPerSource: z.number().int().min(1).max(300).optional(),
+    })
+    .optional(),
 });
 
 export const scoreBreakdownSchema = z.object({
@@ -74,9 +95,23 @@ export const evidenceMatchSchema = z.object({
   year: z.number().optional(),
   snippet: z.string(),
   doi: z.string().optional(),
+  pmid: z.string().optional(),
   openAlexUrl: z.string().optional(),
-  confidence: z.enum(["direct", "strong_adjacent", "possible"]),
+  pubmedUrl: z.string().optional(),
+  confidence: z.enum(["direct", "strong_adjacent", "possible", "topical"]),
   workId: z.string(),
+  evidenceField: z
+    .enum([
+      "title",
+      "abstract",
+      "keyword",
+      "mesh",
+      "topic",
+      "publication_type",
+      "journal",
+    ])
+    .optional(),
+  sources: z.array(z.enum(["openalex", "pubmed"])).optional(),
 });
 
 export const relevantWorkSchema = z.object({
@@ -84,11 +119,19 @@ export const relevantWorkSchema = z.object({
   title: z.string(),
   year: z.number().optional(),
   doi: z.string().optional(),
+  pmid: z.string().optional(),
+  pmcid: z.string().optional(),
   openAlexUrl: z.string().optional(),
+  pubmedUrl: z.string().optional(),
   citedByCount: z.number().optional(),
   sourceName: z.string().optional(),
   abstractSnippet: z.string().optional(),
   isRetracted: z.boolean().optional(),
+  publicationTypes: z.array(z.string()).optional(),
+  meshTerms: z.array(z.string()).optional(),
+  authorPosition: z.string().optional(),
+  publicationAffiliations: z.array(z.string()).optional(),
+  sources: z.array(z.enum(["openalex", "pubmed"])).optional(),
   matchedCriteria: z.array(z.string()),
 });
 

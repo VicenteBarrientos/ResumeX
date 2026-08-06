@@ -407,6 +407,7 @@ export function normalizeOpenAlexWork(
         : undefined,
     publicationDate: raw.publication_date ?? undefined,
     doi: raw.doi?.replace(/^https?:\/\/doi\.org\//i, "") || undefined,
+    openAlexId: id,
     openAlexUrl: `https://openalex.org/${id}`,
     citedByCount:
       typeof raw.cited_by_count === "number" ? raw.cited_by_count : undefined,
@@ -415,6 +416,15 @@ export function normalizeOpenAlexWork(
     topics: uniqueStrings(topics),
     keywords: uniqueStrings(keywords),
     isRetracted: Boolean(raw.is_retracted),
+    retractionStatus: raw.is_retracted ? "retracted" : "none",
+    sources: ["openalex"],
+    sourceRefs: [
+      {
+        source: "openalex",
+        sourceId: id,
+        url: `https://openalex.org/${id}`,
+      },
+    ],
     authorships,
   };
 }

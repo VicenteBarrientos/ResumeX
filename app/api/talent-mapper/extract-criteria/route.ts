@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { extractSourcingCriteria } from "@/lib/talent-mapper/ai";
 import { SCIENTIFIC_DEMO_JD, getDemoCriteria } from "@/lib/talent-mapper/criteria";
 import { buildSearchQueries } from "@/lib/talent-mapper/query-builder";
+import { buildPubmedQueries } from "@/lib/talent-mapper/providers/pubmed/query-builder";
 import { extractCriteriaRequestSchema } from "@/lib/talent-mapper/schemas";
 import { requireSession } from "@/lib/require-auth";
 
@@ -46,11 +47,15 @@ export async function POST(req: Request) {
     return NextResponse.json({
       criteria,
       queries: buildSearchQueries(criteria),
+      pubmedQueries: buildPubmedQueries(criteria),
       usedAi: false,
       demo: true,
     });
   }
 
   const result = await extractSourcingCriteria({ jobDescription, roleTitle });
-  return NextResponse.json(result);
+  return NextResponse.json({
+    ...result,
+    pubmedQueries: buildPubmedQueries(result.criteria),
+  });
 }

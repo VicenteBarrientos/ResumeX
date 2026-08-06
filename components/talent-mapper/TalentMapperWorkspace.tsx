@@ -11,6 +11,10 @@ import {
   HowItWorks,
   WhyTalentMapper,
 } from "@/components/talent-mapper/Disclaimer";
+import SearchDiagnosticsView from "@/components/talent-mapper/SearchDiagnostics";
+import SourceSelector, {
+  type SourceConfigStatus,
+} from "@/components/talent-mapper/SourceSelector";
 import {
   SCIENTIFIC_DEMO_JD,
   SCIENTIFIC_DEMO_LABEL,
@@ -26,7 +30,9 @@ import {
 import { trackEvent } from "@/lib/analytics";
 import { exportShortlistCsv } from "@/lib/talent-mapper/export-csv";
 import { buildSearchQueries, hashQueryId } from "@/lib/talent-mapper/query-builder";
+import { buildPubmedQueries, validatePubmedQuery } from "@/lib/talent-mapper/providers/pubmed/query-builder";
 import type {
+  ResearchSource,
   ResearcherCandidate,
   SearchMode,
   SearchQuery,
@@ -55,6 +61,8 @@ type PersistedState = {
   criteria: SourcingCriteria | null;
   extractedCriteria: SourcingCriteria | null;
   queries: SearchQuery[];
+  pubmedQueries: SearchQuery[];
+  sources: ResearchSource[];
   mode: SearchMode;
   result: TalentSearchResult | null;
   shortlist: string[];
@@ -91,8 +99,16 @@ export default function TalentMapperWorkspace() {
   const [criteria, setCriteria] = useState<SourcingCriteria | null>(null);
   const [extractedCriteria, setExtractedCriteria] = useState<SourcingCriteria | null>(null);
   const [queries, setQueries] = useState<SearchQuery[]>([]);
+  const [pubmedQueries, setPubmedQueries] = useState<SearchQuery[]>([]);
+  const [sources, setSources] = useState<ResearchSource[]>([
+    "openalex",
+    "pubmed",
+  ]);
   const [mode, setMode] = useState<SearchMode>("demo");
   const [openAlexConfigured, setOpenAlexConfigured] = useState(false);
+  const [pubmedStatus, setPubmedStatus] =
+    useState<SourceConfigStatus>("not_configured");
+  const [searchProgress, setSearchProgress] = useState<string | null>(null);
   const [result, setResult] = useState<TalentSearchResult | null>(null);
   const [shortlist, setShortlist] = useState<Set<string>>(new Set());
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -131,6 +147,8 @@ export default function TalentMapperWorkspace() {
     if (saved.criteria) setCriteria(saved.criteria);
     if (saved.extractedCriteria) setExtractedCriteria(saved.extractedCriteria);
     if (saved.queries) setQueries(saved.queries);
+    if (saved.pubmedQueries) setPubmedQueries(saved.pubmedQueries);
+    if (saved.sources) setSources(saved.sources);
     if (saved.mode) setMode(saved.mode);
     if (saved.result) setResult(saved.result);
     if (saved.shortlist) setShortlist(new Set(saved.shortlist));
@@ -156,6 +174,8 @@ export default function TalentMapperWorkspace() {
             criteria: detail.criteria,
             extractedCriteria: detail.extractedCriteria,
             queries: detail.queries,
+            pubmedQueries: detail.pubmedQueries,
+            sources: detail.sources,
             mode: detail.mode,
             result: detail.result,
             shortlist: detail.shortlist,
@@ -178,6 +198,8 @@ export default function TalentMapperWorkspace() {
             criteria: saved.criteria || null,
             extractedCriteria: saved.extractedCriteria || null,
             queries: saved.queries || [],
+            pubmedQueries: saved.pubmedQueries || [],
+            sources: saved.sources || ["openalex", "pubmed"],
             mode: saved.mode || "demo",
             result: null,
             shortlist: [],
@@ -207,6 +229,12 @@ export default function TalentMapperWorkspace() {
           if (!data || cancelled) return;
           startTransition(() => {
             setOpenAlexConfigured(Boolean(data.openAlexConfigured));
+            setPubmedStatus(
+              (data.pubmedStatus as SourceConfigStatus) ||
+                (data.pubmedConfigured
+                  ? "available_without_key"
+                  : "not_configured"),
+            );
           });
         })
         .catch(() => undefined);
@@ -231,6 +259,8 @@ export default function TalentMapperWorkspace() {
           criteria,
           extractedCriteria,
           queries,
+          pubmedQueries,
+          sources,
           mode,
         }),
       );
@@ -245,6 +275,8 @@ export default function TalentMapperWorkspace() {
     criteria,
     extractedCriteria,
     queries,
+    pubmedQueries,
+    sources,
     mode,
   ]);
 
@@ -259,6 +291,8 @@ export default function TalentMapperWorkspace() {
       criteria,
       extractedCriteria,
       queries,
+      pubmedQueries,
+      sources,
       mode,
       result: snapshotResult,
       uiStep: uiStepOverride ?? step,
@@ -407,6 +441,8 @@ export default function TalentMapperWorkspace() {
     setCriteria(demo);
     setExtractedCriteria(demo);
     setQueries(buildSearchQueries(demo));
+    setPubmedQueries(buildPubmedQueries(demo));
+    setSources(["openalex", "pubmed"]);
     setMode("demo");
     setError(null);
     setActionHint("Demo criteria loaded. Review them, then continue to search strategy.");
@@ -424,6 +460,8 @@ export default function TalentMapperWorkspace() {
     setCriteria(null);
     setExtractedCriteria(null);
     setQueries([]);
+    setPubmedQueries([]);
+    setSources(["openalex", "pubmed"]);
     setResult(null);
     setShortlist(new Set());
     setNotes({});
@@ -431,6 +469,7 @@ export default function TalentMapperWorkspace() {
     setError(null);
     setActionHint(null);
     setMinScore(0);
+    setSearchProgress(null);
     window.history.replaceState(null, "", "/talent/mapper");
   }, []);
 
@@ -458,6 +497,10 @@ export default function TalentMapperWorkspace() {
       setCriteria(data.criteria);
       setExtractedCriteria(data.criteria);
       setQueries(data.queries || buildSearchQueries(data.criteria));
+      setPubmedQueries(
+        data.pubmedQueries || buildPubmedQueries(data.criteria),
+      );
+      setSources(["openalex", "pubmed"]);
       if (data.warning) setActionHint(data.warning);
       setStep("criteria");
     } catch {
@@ -470,20 +513,47 @@ export default function TalentMapperWorkspace() {
 
   async function runSearch() {
     if (!criteria) return;
-    const enabled = queries.filter((q) => q.enabled);
-    if (enabled.length === 0) {
+    const enabledOpenAlex = queries.filter((q) => q.enabled && q.query.trim());
+    const enabledPubmed = pubmedQueries.filter(
+      (q) => q.enabled && q.query.trim(),
+    );
+    if (
+      (sources.includes("openalex") && enabledOpenAlex.length === 0) &&
+      (sources.includes("pubmed") && enabledPubmed.length === 0)
+    ) {
       setError("No enabled queries.");
-      setActionHint("Enable or add at least one search query.");
+      setActionHint("Enable or add at least one search query for a selected source.");
       return;
+    }
+    if (sources.includes("pubmed")) {
+      for (const q of enabledPubmed) {
+        const issue = validatePubmedQuery(q.query);
+        if (issue) {
+          setError(`PubMed query “${q.label}”: ${issue}`);
+          setActionHint("Fix parentheses or empty PubMed queries before searching.");
+          return;
+        }
+      }
     }
     setBusy(true);
     setError(null);
     setActionHint(null);
+    setSearchProgress(
+      sources.includes("pubmed")
+        ? "Searching selected sources…"
+        : "Searching OpenAlex…",
+    );
     try {
       const res = await fetch("/api/talent-mapper/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ criteria, queries, mode }),
+        body: JSON.stringify({
+          criteria,
+          queries,
+          pubmedQueries,
+          sources,
+          mode,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -491,6 +561,7 @@ export default function TalentMapperWorkspace() {
         setActionHint(data.action || null);
         return;
       }
+      setSearchProgress("Building researcher evidence…");
       setResult(data as TalentSearchResult);
       setStep("results");
       void persistSnapshot(data as TalentSearchResult, "results");
@@ -499,6 +570,7 @@ export default function TalentMapperWorkspace() {
       setActionHint("Retry, or switch to Demo snapshot.");
     } finally {
       setBusy(false);
+      setSearchProgress(null);
     }
   }
 
@@ -952,6 +1024,7 @@ export default function TalentMapperWorkspace() {
               type="button"
               onClick={() => {
                 setQueries(buildSearchQueries(criteria));
+                setPubmedQueries(buildPubmedQueries(criteria));
                 setStep("strategy");
               }}
               className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white"
@@ -975,8 +1048,8 @@ export default function TalentMapperWorkspace() {
             Search strategy
           </h2>
           <p className="text-sm text-zinc-500">
-            Enable 4–8 focused queries. Talent Mapper will not send one enormous query
-            containing every term.
+            OpenAlex and PubMed use different query languages. Review each source
+            separately — Talent Mapper will not send identical queries to both.
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -986,9 +1059,7 @@ export default function TalentMapperWorkspace() {
                 type="button"
                 onClick={() => setMode("demo")}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                  mode === "demo"
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-600"
+                  mode === "demo" ? "bg-zinc-900 text-white" : "text-zinc-600"
                 }`}
               >
                 Demo snapshot
@@ -996,108 +1067,227 @@ export default function TalentMapperWorkspace() {
               <button
                 type="button"
                 onClick={() => setMode("live")}
-                disabled={!openAlexConfigured}
-                title={
-                  openAlexConfigured
-                    ? "Live OpenAlex search"
-                    : "Add OPENALEX_API_KEY to enable live search"
-                }
+                disabled={!openAlexConfigured && pubmedStatus === "not_configured"}
+                title="Live search against configured sources"
                 className={`rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-40 ${
-                  mode === "live"
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-600"
+                  mode === "live" ? "bg-zinc-900 text-white" : "text-zinc-600"
                 }`}
               >
-                Live OpenAlex search
+                Live search
               </button>
             </div>
-            {!openAlexConfigured && (
-              <div className="w-full rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
-                Live OpenAlex search needs <code className="font-mono">OPENALEX_API_KEY</code>{" "}
-                (free at openalex.org/settings/api). For interviews, use{" "}
-                <strong>Demo snapshot</strong> — it is deterministic and does not call the network.
-              </div>
-            )}
-            {openAlexConfigured && (
-              <span className="text-xs text-emerald-700">
-                Live OpenAlex search is configured. Demo snapshot remains available as a fallback.
-              </span>
-            )}
           </div>
 
-          <ul className="space-y-3">
-            {queries.map((q, idx) => (
-              <li
-                key={q.id}
-                className="flex flex-wrap items-start gap-2 rounded-xl border border-zinc-100 p-3"
-              >
-                <input
-                  type="checkbox"
-                  checked={q.enabled}
-                  onChange={(e) =>
-                    setQueries((prev) =>
-                      prev.map((item, i) =>
-                        i === idx ? { ...item, enabled: e.target.checked } : item
-                      )
-                    )
-                  }
-                  aria-label={`Enable query ${q.label}`}
-                  className="mt-2"
-                />
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                      {q.group === "core" ? "Core technique searches" : "Adjacent searches"}
-                    </span>
-                    <span className="text-xs text-zinc-500">{q.label}</span>
-                  </div>
-                  <input
-                    value={q.query}
-                    onChange={(e) =>
-                      setQueries((prev) =>
-                        prev.map((item, i) =>
-                          i === idx
-                            ? {
-                                ...item,
-                                query: e.target.value,
-                                id: hashQueryId(e.target.value),
-                              }
-                            : item
-                        )
-                      )
-                    }
-                    className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 font-mono text-sm"
-                  />
-                </div>
+          <SourceSelector
+            sources={sources}
+            onChange={setSources}
+            openAlexStatus={openAlexConfigured ? "connected" : "not_configured"}
+            pubmedStatus={pubmedStatus}
+            mode={mode}
+          />
+
+          {sources.includes("openalex") && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-zinc-800">OpenAlex queries</h3>
                 <button
                   type="button"
-                  onClick={() => setQueries((prev) => prev.filter((_, i) => i !== idx))}
-                  className="text-xs text-zinc-400 hover:text-rose-500"
+                  onClick={() => setQueries(buildSearchQueries(criteria))}
+                  className="text-xs text-zinc-500 hover:text-zinc-800"
                 >
-                  Remove
+                  Reset generated
                 </button>
-              </li>
-            ))}
-          </ul>
+              </div>
+              <ul className="space-y-3">
+                {queries.map((q, idx) => (
+                  <li
+                    key={q.id}
+                    className="flex flex-wrap items-start gap-2 rounded-xl border border-zinc-100 p-3"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={q.enabled}
+                      onChange={(e) =>
+                        setQueries((prev) =>
+                          prev.map((item, i) =>
+                            i === idx ? { ...item, enabled: e.target.checked } : item,
+                          ),
+                        )
+                      }
+                      aria-label={`Enable OpenAlex query ${q.label}`}
+                      className="mt-2"
+                    />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                          {q.group}
+                        </span>
+                        <span className="text-xs text-zinc-500">{q.label}</span>
+                      </div>
+                      <input
+                        value={q.query}
+                        onChange={(e) =>
+                          setQueries((prev) =>
+                            prev.map((item, i) =>
+                              i === idx
+                                ? {
+                                    ...item,
+                                    query: e.target.value,
+                                    id: hashQueryId(e.target.value),
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
+                        className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 font-mono text-sm"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQueries((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      className="text-xs text-zinc-400 hover:text-rose-500"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() =>
+                  setQueries((prev) => [
+                    ...prev,
+                    {
+                      id: hashQueryId(`oa-custom-${prev.length}`),
+                      label: "Custom OpenAlex query",
+                      group: "adjacent",
+                      query: "",
+                      enabled: true,
+                    },
+                  ])
+                }
+                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+              >
+                Add OpenAlex query
+              </button>
+            </div>
+          )}
 
-          <button
-            type="button"
-            onClick={() =>
-              setQueries((prev) => [
-                ...prev,
-                {
-                  id: hashQueryId(`custom-${prev.length}`),
-                  label: "Custom query",
-                  group: "adjacent",
-                  query: "",
-                  enabled: true,
-                },
-              ])
-            }
-            className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
-          >
-            Add query
-          </button>
+          {sources.includes("pubmed") && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-zinc-800">PubMed queries</h3>
+                <button
+                  type="button"
+                  onClick={() => setPubmedQueries(buildPubmedQueries(criteria))}
+                  className="text-xs text-zinc-500 hover:text-zinc-800"
+                >
+                  Reset generated
+                </button>
+              </div>
+              <p className="text-xs text-zinc-500">
+                Uses PubMed field tags such as [tiab], [mh], and [dp]. MeSH matches are
+                topical evidence, not proof of hands-on technique performance.
+              </p>
+              <ul className="space-y-3">
+                {pubmedQueries.map((q, idx) => {
+                  const warning = validatePubmedQuery(q.query);
+                  return (
+                    <li
+                      key={q.id}
+                      className="flex flex-wrap items-start gap-2 rounded-xl border border-zinc-100 p-3"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={q.enabled}
+                        onChange={(e) =>
+                          setPubmedQueries((prev) =>
+                            prev.map((item, i) =>
+                              i === idx
+                                ? { ...item, enabled: e.target.checked }
+                                : item,
+                            ),
+                          )
+                        }
+                        aria-label={`Enable PubMed query ${q.label}`}
+                        className="mt-2"
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                            {q.group}
+                          </span>
+                          <span className="text-xs text-zinc-500">{q.label}</span>
+                        </div>
+                        {q.purpose && (
+                          <p className="text-[11px] text-zinc-400">{q.purpose}</p>
+                        )}
+                        <textarea
+                          value={q.query}
+                          onChange={(e) =>
+                            setPubmedQueries((prev) =>
+                              prev.map((item, i) =>
+                                i === idx
+                                  ? {
+                                      ...item,
+                                      query: e.target.value,
+                                      id: `pm_${hashQueryId(e.target.value)}`,
+                                    }
+                                  : item,
+                              ),
+                            )
+                          }
+                          rows={3}
+                          className="w-full rounded-lg border border-zinc-200 px-3 py-1.5 font-mono text-xs leading-relaxed"
+                        />
+                        {warning && q.enabled && (
+                          <p className="text-[11px] text-amber-700">{warning}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPubmedQueries((prev) =>
+                            prev.filter((_, i) => i !== idx),
+                          )
+                        }
+                        className="text-xs text-zinc-400 hover:text-rose-500"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <button
+                type="button"
+                onClick={() =>
+                  setPubmedQueries((prev) => [
+                    ...prev,
+                    {
+                      id: `pm_${hashQueryId(`custom-${prev.length}`)}`,
+                      label: "Custom PubMed query",
+                      group: "adjacent",
+                      query: "",
+                      enabled: true,
+                      purpose: "Recruiter-authored PubMed Boolean query",
+                    },
+                  ])
+                }
+                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+              >
+                Add PubMed query
+              </button>
+            </div>
+          )}
+
+          {searchProgress && (
+            <p className="text-sm text-zinc-600" aria-live="polite">
+              {searchProgress}
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-2">
             <button
@@ -1106,7 +1296,11 @@ export default function TalentMapperWorkspace() {
               onClick={runSearch}
               className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
             >
-              {busy ? "Searching…" : mode === "live" ? "Run live search" : "Run demo snapshot"}
+              {busy
+                ? "Searching…"
+                : mode === "live"
+                  ? "Run live search"
+                  : "Run demo snapshot"}
             </button>
             <button
               type="button"
@@ -1129,21 +1323,36 @@ export default function TalentMapperWorkspace() {
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600">
                   {result.meta.uniqueResearchers} potential researchers identified from{" "}
-                  {result.meta.worksReviewed} public works
+                  {result.meta.worksReviewed} unique publications
                 </p>
                 <p className="mt-1 text-xs text-zinc-500">
                   Mode:{" "}
                   <span className="font-semibold">
-                    {result.meta.mode === "live" ? "Live OpenAlex search" : "Demo snapshot"}
+                    {result.meta.mode === "live" ? "Live search" : "Demo snapshot"}
                   </span>
+                  {result.meta.sourcesUsed && (
+                    <>
+                      {" · "}
+                      Sources: {result.meta.sourcesUsed.join(" + ")}
+                    </>
+                  )}
                   {" · "}
                   Shortlisted: {shortlist.size}
                   {" · "}
                   {new Date(result.meta.searchedAt).toLocaleString()}
                 </p>
                 <p className="mt-2 text-xs text-zinc-500">
-                  Queries: {result.meta.queriesUsed.join(" · ") || "—"}
+                  OpenAlex queries: {result.meta.queriesUsed.join(" · ") || "—"}
                 </p>
+                {result.meta.pubmedQueriesUsed &&
+                  result.meta.pubmedQueriesUsed.length > 0 && (
+                    <p className="mt-1 text-xs text-zinc-500">
+                      PubMed queries:{" "}
+                      {result.meta.pubmedQueriesUsed
+                        .map((q) => q.slice(0, 80) + (q.length > 80 ? "…" : ""))
+                        .join(" · ")}
+                    </p>
+                  )}
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -1163,6 +1372,22 @@ export default function TalentMapperWorkspace() {
               </div>
             </div>
             <Disclaimer className="mt-4">{result.meta.disclaimer}</Disclaimer>
+            <p className="mt-2 text-xs text-zinc-500">
+              Research relevance scores measure alignment with the selected search
+              criteria. They are not candidate-quality or hiring-decision scores.
+            </p>
+            <SearchDiagnosticsView diagnostics={result.meta.diagnostics} />
+            <p className="mt-2 text-[11px] text-zinc-400">
+              PubMed data via NCBI E-utilities.{" "}
+              <a
+                href="https://www.ncbi.nlm.nih.gov/home/about/policies/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                NCBI disclaimer
+              </a>
+            </p>
             {result.meta.warnings.length > 0 && (
               <ul className="mt-3 space-y-1 text-xs text-amber-800">
                 {result.meta.warnings.map((w) => (

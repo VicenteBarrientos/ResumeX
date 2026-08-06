@@ -53,6 +53,9 @@ export function aggregateAuthors(
     }
 
     for (const authorship of work.authorships) {
+      if (authorship.isCollectiveAuthor) {
+        continue;
+      }
       const authorId = normalizeAuthorId(authorship.authorId);
       if (!authorId) {
         continue;
@@ -60,7 +63,7 @@ export function aggregateAuthors(
 
       const credit = authorshipCredit(
         authorship.authorPosition,
-        work.authorships.length,
+        work.authorships.filter((a) => !a.isCollectiveAuthor).length,
       );
       if (credit <= 0) {
         continue;
@@ -182,7 +185,11 @@ export function aggregateAuthors(
           authorId: acc.authorId,
           name: acc.name,
           orcid: acc.orcid,
-          openAlexUrl: toOpenAlexAuthorUrl(acc.authorId),
+          openAlexUrl: toAuthorProfileUrl(acc.authorId),
+          pubmedUrl: firstPubmedUrl(acc.works),
+          identityConfidence: bestIdentityConfidence(acc.works, acc.authorId),
+          publicationAffiliationNote:
+            "Affiliation reflects publication metadata and may not represent current employment.",
           likelyInstitution,
           relevantWorks,
           matchedRequiredCriteria: dedupeEvidence(matchedRequired),
@@ -365,13 +372,19 @@ function buildRelevantWorks(
       title: work.title,
       year: work.year,
       doi: work.doi,
-      openAlexUrl: work.openAlexUrl ?? toOpenAlexWorkUrl(id),
+      pmid: work.pmid,
+      pmcid: work.pmcid,
+      openAlexUrl: work.openAlexUrl ?? (extractOpenAlexWorkId(id) ? toOpenAlexWorkUrl(id) : undefined),
+      pubmedUrl: work.pubmedUrl,
       citedByCount: work.citedByCount,
       sourceName: work.sourceName,
       abstractSnippet: work.abstract
         ? softClip(work.abstract, 240)
         : undefined,
       isRetracted: work.isRetracted,
+      publicationTypes: work.publicationTypes,
+      meshTerms: work.meshTerms?.slice(0, 8),
+      sources: work.sources,
       matchedCriteria: [...matched],
     });
   }
@@ -397,7 +410,14 @@ function deriveLikelyInstitution(
     );
     const institution = authorship?.institutions[0];
     if (institution?.name) {
-      return { ...institution };
+      return {
+        ...institution,
+        // PubMed affiliations are publication-time, not current employment
+        type:
+          institution.type === "publication_affiliation"
+            ? "publication_affiliation"
+            : institution.type,
+      };
     }
   }
 
@@ -414,9 +434,10 @@ function filterEvidence(
 
 function dedupeEvidence(matches: EvidenceMatch[]): EvidenceMatch[] {
   const rank: Record<EvidenceMatch["confidence"], number> = {
-    direct: 3,
-    strong_adjacent: 2,
-    possible: 1,
+    direct: 4,
+    strong_adjacent: 3,
+    possible: 2,
+    topical: 1,
   };
   // One best match per criterion for summary tags; paper-level detail lives on relevantWorks.
   const best = new Map<string, EvidenceMatch>();
@@ -465,6 +486,15 @@ function normalizeAuthorId(id: string): string {
   if (match) {
     return match[0].toUpperCase();
   }
+  // Preserve ORCID and PubMed provisional keys
+  if (
+    trimmed.startsWith("orcid:") ||
+    trimmed.startsWith("pubmed-provisional:") ||
+    trimmed.startsWith("pubmed-collective:") ||
+    trimmed.startsWith("https://orcid.org/")
+  ) {
+    return trimmed.replace(/^https?:\/\/orcid\.org\//i, "orcid:");
+  }
   return trimmed.replace(/^https?:\/\/openalex\.org\//i, "");
 }
 
@@ -477,7 +507,26 @@ function normalizeWorkId(id: string): string {
   if (match) {
     return match[0].toUpperCase();
   }
+  if (trimmed.startsWith("pmid:") || /^\d+$/.test(trimmed)) {
+    return trimmed.startsWith("pmid:") ? trimmed : `pmid:${trimmed}`;
+  }
   return trimmed.replace(/^https?:\/\/openalex\.org\//i, "");
+}
+
+function extractOpenAlexWorkId(id: string): string | null {
+  const match = id.trim().match(/W\d+/i);
+  return match ? match[0].toUpperCase() : null;
+}
+
+function toAuthorProfileUrl(authorId: string): string {
+  const id = normalizeAuthorId(authorId);
+  if (/^A\d+$/i.test(id)) {
+    return `https://openalex.org/${id}`;
+  }
+  if (id.startsWith("orcid:")) {
+    return `https://orcid.org/${id.replace(/^orcid:/, "")}`;
+  }
+  return "";
 }
 
 function toOpenAlexAuthorUrl(authorId: string): string {
@@ -488,6 +537,37 @@ function toOpenAlexAuthorUrl(authorId: string): string {
 function toOpenAlexWorkUrl(workId: string): string {
   const id = normalizeWorkId(workId);
   return `https://openalex.org/${id}`;
+}
+
+function firstPubmedUrl(works: ScholarlyWork[]): string | undefined {
+  for (const work of works) {
+    if (work.pubmedUrl) return work.pubmedUrl;
+    if (work.pmid) return `https://pubmed.ncbi.nlm.nih.gov/${work.pmid}/`;
+  }
+  return undefined;
+}
+
+function bestIdentityConfidence(
+  works: ScholarlyWork[],
+  authorId: string,
+): ScholarlyWork["authorships"][number]["identityConfidence"] {
+  const target = normalizeAuthorId(authorId);
+  let best: ScholarlyWork["authorships"][number]["identityConfidence"] =
+    "unresolved";
+  const rank = {
+    "verified-orcid": 4,
+    "cross-source-work-match": 3,
+    "name-affiliation-cluster": 2,
+    unresolved: 1,
+  } as const;
+  for (const work of works) {
+    for (const a of work.authorships) {
+      if (normalizeAuthorId(a.authorId) !== target) continue;
+      const conf = a.identityConfidence ?? "unresolved";
+      if (!best || rank[conf] > rank[best]) best = conf;
+    }
+  }
+  return best;
 }
 
 function uniqueNumbers(values: number[]): number[] {

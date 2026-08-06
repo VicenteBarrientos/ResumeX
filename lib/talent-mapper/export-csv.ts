@@ -5,7 +5,7 @@ import type {
 
 const CSV_COLUMNS = [
   "Name",
-  "OpenAlex Author ID",
+  "Author ID",
   "ORCID",
   "Likely Institution",
   "Country",
@@ -17,6 +17,8 @@ const CSV_COLUMNS = [
   "Most Recent Relevant Publication",
   "Top Evidence",
   "OpenAlex URL",
+  "PubMed URLs",
+  "PMIDs",
   "Recruiter Notes",
   "Search Mode",
 ] as const;
@@ -64,6 +66,18 @@ export function exportShortlistCsv(
       ...candidate.possibleConcerns.map((c) => `Concern: ${c}`),
     ].filter(Boolean);
 
+    const pubmedUrls = uniqueCriteria(
+      candidate.relevantWorks
+        .map((w) => w.pubmedUrl)
+        .filter((u): u is string => Boolean(u)),
+    ).join("; ");
+
+    const pmids = uniqueCriteria(
+      candidate.relevantWorks
+        .map((w) => w.pmid)
+        .filter((u): u is string => Boolean(u)),
+    ).join("; ");
+
     const row = [
       candidate.name,
       candidate.authorId,
@@ -80,6 +94,8 @@ export function exportShortlistCsv(
         : "",
       topEvidence,
       candidate.openAlexUrl,
+      pubmedUrls,
+      pmids,
       notesParts.join(" | "),
       meta.searchMode,
     ];
