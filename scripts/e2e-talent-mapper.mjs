@@ -67,7 +67,8 @@ async function main() {
 
   await page.getByRole("button", { name: /view evidence/i }).first().click();
   await page.getByRole("dialog").waitFor({ timeout: 10000 });
-  await page.getByText(/publication affiliation is not confirmed/i).waitFor();
+  // CandidateDetail disclaimer (R-007 / R-014): affiliation is publication metadata, not employment.
+  await page.getByText(/affiliation reflects publication metadata/i).waitFor();
 
   await page.getByRole("button", { name: /add to shortlist/i }).click();
   await page.getByRole("button", { name: /remove from shortlist/i }).waitFor();

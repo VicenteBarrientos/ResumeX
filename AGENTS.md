@@ -56,3 +56,19 @@ npm run test:e2e:career          # requiere npm run dev en otra terminal
 ## Al terminar
 
 Actualizar `AGENT_HANDOFF.md`: estado si cambió, archivos tocados, entrada de bitácora y siguiente paso comprobable. No borrar historia; una decisión superada se marca `SUPERADA`.
+
+## Cursor Cloud specific instructions
+
+Runtime already provisioned by the startup update script: Node deps (`npm install`) and the Prisma client (`prisma generate`). Standard commands live in the `## Comandos` section above and in `package.json`; this section only covers the non-obvious cloud caveats.
+
+- **Postgres is required and is NOT auto-started by the update script.** The dev DB is a local PostgreSQL 16 cluster. At session start, ensure it is running and migrations are applied:
+  - `sudo pg_ctlcluster 16 main start` (idempotent; ignore "already running").
+  - `node scripts/prisma-migrate-deploy.cjs` (wraps `prisma migrate deploy` with recovery for the known BOM migration `20260806010000_usage_events`).
+  - Local dev role/db: user `resumex`, password `resumex`, database `resumex`. Recreate with `sudo -u postgres psql` if missing.
+- **Env files are git-ignored and must exist locally.** Both `.env` (read by Prisma CLI) and `.env.local` (read by Next.js) are needed, with the same `DATABASE_URL`. Local uses `postgresql://resumex:resumex@localhost:5432/resumex?sslmode=disable` (no SSL locally — do not use `sslmode=require`). `NEXTAUTH_SECRET` must be set; `OPENAI_API_KEY` can stay empty (see next point).
+- **No external API keys are needed to run or test.** Demo paths are deterministic and skip OpenAI/OpenAlex/PubMed: Career analyzer/cover-letter via "Try demo", and Talent Mapper via "Run demo snapshot". Real (non-demo) AI routes return an error without `OPENAI_API_KEY`; that is expected, not a broken environment.
+- **Auth uses `username` (not email) as the login field.** Register via `POST /api/auth/register` with `{"username","password"}` (email optional). Every tool route and AI API requires a signed-in session.
+- **`npm run build` requires a reachable database** (it runs `prisma migrate deploy` before `next build`). With the local Postgres up it works; if you only need to validate the compile, `npx next build` plus `prisma validate` is the historical fallback used when no DB was available.
+- **E2E scripts (`npm run test:e2e:career`, `npm run test:e2e:talent-mapper`) need the dev server running** and a one-time `npx playwright install --with-deps chromium`.
+- **After editing `app/globals.css`, Turbopack may keep serving stale CSS** — delete `.next` and restart `npm run dev` (noted in `AGENT_HANDOFF.md`).
+- **After `npm run build`, restart `npm run dev`** (and delete `.next` if Turbopack looks stale). The production build overwrites `.next` and the previous Turbopack dev session will no longer serve correctly.
