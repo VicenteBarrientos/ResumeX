@@ -5,9 +5,11 @@ import {
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import { parseProfileFromResume } from "@/lib/parse-profile";
 import { extractTextFromPdf } from "@/lib/pdf";
+import { quotaDenialResponse } from "@/lib/quota";
 import { requireSession } from "@/lib/require-auth";
 
 export const runtime = "nodejs";
@@ -81,7 +83,7 @@ async function resolveResumeFromJson(request: Request): Promise<{
 }
 
 export async function POST(request: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
 
   const apiKey = getOpenAiApiKey();
@@ -114,8 +116,12 @@ export async function POST(request: Request) {
     );
   }
 
+  const denial = await assertAiQuota(userId, "parse_profile");
+  if (denial) return quotaDenialResponse(denial);
+
   try {
     const { profile, usage } = await parseProfileFromResume(resume, apiKey);
+    await recordUsage(userId, "parse_profile", usage.estimatedCostUsd);
     return NextResponse.json({
       profile,
       ...(isDev ? { usage } : {}),

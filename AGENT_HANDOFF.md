@@ -6,19 +6,21 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-06 17:30 UTC — America/Santiago
-- **Versión del handoff:** 1.7
-- **Estado:** ATS en `main`/`prod`; Demo Ashby E2E OK; CI **verde** en `9301330` ([Actions](https://github.com/VicenteBarrientos/ResumeX/actions/runs/31108825300)). **Auditoría de arquitectura del 2026-08-06** hecha; plan completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md). **Fase 12 arrancada** en la rama `cursor/architecture-debt-phase-12-7496`: T-12.1 y T-12.2 hechas y verificadas, todavía **sin mergear ni desplegar**.
-- **Próximo hito:** cerrar la ola 0 con **T-12.3** (observabilidad, cierra B-11) y seguir con **T-12.4** (cuota durable, cierra B-12) → **T-12.5** (envelope de error) → **T-12.6** (Zod en escrituras).
-- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano** — no tomarlas sin eso.
-- **Riesgo con dinero en juego:** `/api/talent-assess` y `/api/talent-mapper/search` llaman a OpenAI y a fuentes externas **sin entitlement ni rate limit**, y `lib/rate-limit.ts` es un `Map` en memoria (por instancia, o sea nada en serverless). Es D-2 / B-12 y lo cierra T-12.4.
+- **Última actualización:** 2026-08-06 19:40 UTC — America/Santiago
+- **Versión del handoff:** 1.8
+- **Estado:** ATS en `main`/`prod`; Demo Ashby E2E OK; CI **verde** en `9301330` ([Actions](https://github.com/VicenteBarrientos/ResumeX/actions/runs/31108825300)). **Auditoría de arquitectura del 2026-08-06** hecha; plan completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md). **Fase 12:** T-12.1 y T-12.2 en `cursor/architecture-debt-phase-12-7496` (sin mergear); **T-12.4 hecha** en `cursor/architecture-debt-t12-4-quota-8725` (cuota durable + `costUsd`, sin mergear).
+- **Próximo hito:** **T-12.5** (envelope de error plano, cierra hacia R-021) → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras). Mergear las ramas de Fase 12 cuando esté listo el humano.
+- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano** — no tomarlas sin eso. **Los números de `lib/quota-limits.ts` (excepto Free analyzer 1/semana y cover letter 1/día) son propuesta de producto** — confirmar antes de tratarlos como pricing policy.
+- **Riesgo con dinero en juego:** cerrado en código por T-12.4 (falta merge/deploy). `/api/talent-assess` y `/api/talent-mapper/search` (live) ahora pasan por `assertAiQuota`; `UsageEvent.costUsd` alimenta el techo diario.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
 - **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-**Fase 12 en la rama `cursor/architecture-debt-phase-12-7496`** (no mergeada): T-12.1 (frontera por ESLint) y T-12.2 (índices `[userId, createdAt]` + parseo defensivo de `profileJson`, migración `20260806130000_userid_indexes`). Al mergear, el próximo deploy aplica esa migración.
+**Fase 12:**
+- `cursor/architecture-debt-phase-12-7496` — T-12.1, T-12.2 (sin mergear).
+- `cursor/architecture-debt-t12-4-quota-8725` — T-12.4 (sin mergear).
 
 
 ## Protocolo para agentes
@@ -233,7 +235,7 @@ Prioridad real, no orden de numeración. Detalle de cada tarea: [`docs/ARCHITECT
 
 1. ✅ **T-12.1** — frontera Career/Talent por ESLint (R-023). Hecha en `cursor/architecture-debt-phase-12-7496`.
 2. ✅ **T-12.2** — índices `[userId, createdAt]` en `Application`/`Answer` + parseo defensivo de `profileJson`. Hecha en la misma rama.
-3. **T-12.4** — cuota durable sobre `UsageEvent` (R-022, cierra B-12). **La única deuda con dinero en juego.**
+3. ✅ **T-12.4** — cuota durable sobre `UsageEvent` (R-022, cierra B-12). Hecha en `cursor/architecture-debt-t12-4-quota-8725`. ⚠️ Confirmar números de `lib/quota-limits.ts` (salvo Free analyzer/cover letter ya shipped).
 4. **T-12.5** — envelope de error único y plano (R-021). ⚠️ La migración va **de ATS hacia Career**, no al revés: leer R-021 antes de tocar nada.
 5. **T-12.3** — observabilidad (cierra B-11). Habilita verificar en prod todo lo demás.
 6. **T-12.6** — Zod en las escrituras de `talent-mapper/searches` y `profile` (R-024).
@@ -557,6 +559,22 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - UX: autocomplete hardening en formularios Recruitee/Ashby.
 - **Validaciones:** Demo E2E prod; CI verde.
 - **Siguiente paso:** Zoho env opcional; T-7.4 o Fase 8.
+
+### 2026-08-06 19:40 — T-12.4: cuota durable sobre UsageEvent (R-022 / B-12)
+
+- **Objetivo:** techo durable de llamadas y gasto para toda ruta autenticada que llame a OpenAI o a fuentes live (cierra D-2 / B-12).
+- **Estado:** completado en rama `cursor/architecture-debt-t12-4-quota-8725` (sin mergear).
+- **Cambios:**
+  - `lib/quota.ts`: `assertQuota`, `assertDailyBudget`, `recordUsage` (con `costUsd?`), `quotaDenialResponse` (error string plano + `code` / `upgradeUrl` / `Retry-After`).
+  - `lib/quota-limits.ts`: límites Free/Pro + budget diario USD (**propuesta** salvo analyzer 1/semana y cover letter 1/día ya shipped).
+  - `lib/entitlements.ts`: reescrito sobre `assertAiQuota`; Pro finito; API pública de analyzer/cover letter preservada.
+  - `prisma`: `UsageEvent.costUsd Float?` + migración `20260806193452_usage_event_cost_usd`.
+  - Rutas cableadas: `analyze`, `cover-letter`, `talent-assess`, `talent-mapper/search` (sólo live; demo no quema), `format`, `extract-job`, `extract-criteria` (demo JD sin burn), `outreach`, `match-score`, `autoapply/parse-profile`, `profile/resume` (sólo si hay `OPENAI_API_KEY`).
+  - `lib/rate-limit.ts`: documentado como best-effort pre-auth por instancia.
+  - Tests: `lib/__tests__/quota.test.ts`, `app/api/talent-assess/route.test.ts` (segundo intento no llega a OpenAI).
+- **Decisiones:** números nuevos de cuota = propuesta en `quota-limits.ts` hasta confirmación humana. Denegaciones Free → 402 `upgrade_required`; Pro agotado / budget → 429 `quota_exceeded`.
+- **Validaciones:** `npm test` 163 passed; `npm run typecheck`; `npm run lint` 0 errors; migración aplicada en Postgres local.
+- **Siguiente paso:** T-12.5 (envelope plano). Confirmar o ajustar `lib/quota-limits.ts` antes de tratar los techos Pro/budget como pricing.
 
 ### 2026-08-06 17:30 — Auditoría de arquitectura + Fase 12 (T-12.1, T-12.2)
 

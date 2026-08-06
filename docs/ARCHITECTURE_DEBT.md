@@ -183,7 +183,7 @@ Hecha. `@@index([userId, createdAt])` en `Application` y `Answer` — compuesto 
 
 ### Ola 1 — Frenar la sangría
 
-#### ⬜ T-12.4 · Cuota durable sobre `UsageEvent` (R-022, cierra B-12)
+#### ✅ T-12.4 · Cuota durable sobre `UsageEvent` (R-022, cierra B-12)
 
 El repo ya tiene la mitad construida y nadie la generalizó: `UsageEvent` con `@@index([userId, name, createdAt])` y `countUsage`/`recordUsage` en `lib/entitlements.ts:24-36`.
 
@@ -196,6 +196,8 @@ El repo ya tiene la mitad construida y nadie la generalizó: `UsageEvent` con `@
 - Las denegaciones salen con el envelope de T-12.5: `code: "quota_exceeded"` o `"upgrade_required"`, 402 o 429 según corresponda, `Retry-After` cuando aplique.
 
 **Terminado cuando:** un test agota la cuota de `talent-assess` y recibe 429/402 con `code`; el segundo intento del mismo usuario en la misma ventana no llega a OpenAI (verificable con el mock); y existe test de que el gasto acumulado corta.
+
+**Hecha** (2026-08-06, rama `cursor/architecture-debt-t12-4-quota-8725`): `lib/quota.ts`, `lib/quota-limits.ts` (números propuestos), migración `costUsd`, rutas cableadas, demos sin burn, tests de agotamiento + budget.
 
 #### ⬜ T-12.5 · Un envelope de error, en la dirección correcta (R-021)
 

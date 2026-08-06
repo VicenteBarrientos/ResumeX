@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
+import { quotaDenialResponse } from "@/lib/quota";
 import { extractSourcingCriteria } from "@/lib/talent-mapper/ai";
 import { SCIENTIFIC_DEMO_JD, getDemoCriteria } from "@/lib/talent-mapper/criteria";
 import { buildSearchQueries } from "@/lib/talent-mapper/query-builder";
@@ -11,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
 
   let body: unknown;
@@ -53,7 +55,11 @@ export async function POST(req: Request) {
     });
   }
 
+  const denial = await assertAiQuota(userId, "extract_criteria");
+  if (denial) return quotaDenialResponse(denial);
+
   const result = await extractSourcingCriteria({ jobDescription, roleTitle });
+  await recordUsage(userId, "extract_criteria");
   return NextResponse.json({
     ...result,
     pubmedQueries: buildPubmedQueries(result.criteria),

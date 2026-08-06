@@ -277,7 +277,7 @@ Verificado: `prisma validate`, `prisma generate`, migración sin BOM, typecheck/
 
 ## Ola 1 — Frenar la sangría
 
-### ⬜ T-12.4 — Cuota durable sobre `UsageEvent` (R-022, cierra B-12)
+### ✅ T-12.4 — Cuota durable sobre `UsageEvent` (R-022, cierra B-12)
 
 La única deuda con **dinero en juego**. Media implementación ya existe y nadie la generalizó: `UsageEvent` con `@@index([userId, name, createdAt])` y `countUsage`/`recordUsage` en `lib/entitlements.ts:24-36`.
 
@@ -289,6 +289,8 @@ La única deuda con **dinero en juego**. Media implementación ya existe y nadie
 - Pro con límite **alto, no infinito**: un límite ausente no es un plan de precios.
 
 **Terminado cuando:** un test agota la cuota de `talent-assess` y recibe 429/402 con `code`; el segundo intento no llega a OpenAI (verificable con el mock); hay test de corte por gasto acumulado.
+
+**Hecha** en `cursor/architecture-debt-t12-4-quota-8725` (2026-08-06). Límites Free analyzer/cover letter preservados; el resto (incl. techos Pro y budget diario) vive en `lib/quota-limits.ts` como **propuesta de producto** pendiente de confirmación humana antes de tratarlos como pricing policy.
 
 ### ⬜ T-12.5 — Envelope de error único y plano (R-021)
 
@@ -393,7 +395,7 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 | ⬜ B-9 | a11y `/talent` pendiente | Absorbido por **T-8.1**/**T-8.2** |
 | ⛔ B-10 | Segunda fuente de evidencia (NIH RePORTER o Europe PMC) | **Bloqueada por T-12.10.** Ya entró PubMed sin medir precisión (R-013); no agregar una tercera fuente hasta tener la línea base. No es "diferida por falta de tiempo": sin medición no se puede saber si ayuda |
 | ⬜ B-11 | Observabilidad de errores en producción | Absorbido por **T-12.3**. Sube de prioridad: sin esto no se puede verificar en prod ninguna corrección de la Fase 12 |
-| ⬜ B-12 | Límite de costo/uso de OpenAI | Absorbido por **T-12.4**. Confirmado peor de lo anotado: `/api/talent-assess` y `/api/talent-mapper/search` no tienen **ni entitlement ni rate limit**, y `lib/rate-limit.ts` es un `Map` en memoria — por instancia, o sea nada en serverless |
+| ⬜ B-12 | Límite de costo/uso de OpenAI | ✅ Absorbido y cerrado por **T-12.4** (`lib/quota.ts` + `costUsd` + techos Pro finitos). Confirmado peor de lo anotado originalmente: `/api/talent-assess` y `/api/talent-mapper/search` no tenían ni entitlement ni rate limit; `lib/rate-limit.ts` queda documentado como best-effort pre-auth por instancia |
 
 ---
 
@@ -412,5 +414,6 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 
 - **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable (entrada anterior, preservada en el historial de git).
 - **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa (entrada anterior, preservada en el historial de git).
+- **2026-08-06** — **T-12.4 hecha** en `cursor/architecture-debt-t12-4-quota-8725` (cuota durable + `costUsd` + techos Pro finitos; B-12 cerrado en código). Siguiente: T-12.5.
 - **2026-08-06** — **Fase 12 abierta y arrancada** tras la auditoría de arquitectura (sólo lectura, contra el código real y no contra este archivo). Diagnóstico D-1…D-10 y razonamiento completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md); decisiones R-021…R-025 en el handoff. Cuatro olas, T-12.1…T-12.11; **T-12.1 y T-12.2 ya hechas** en `cursor/architecture-debt-phase-12-7496`. Prioridad por encima de las Fases 8 y 9 pese al número, porque D-1 (drift de auth) empeora con el tiempo y D-2 (gasto sin techo) cuesta dinero. Backlog: B-11 absorbido por T-12.3, B-12 por T-12.4, B-10 pasa de ⏸️ a ⛔ bloqueada por T-12.10. Hallazgo que reordena el trabajo: la extensión desplegada lee `data.error` como string (`chrome-extension/popup.js:275`), así que la unificación del envelope va **de ATS hacia Career** y no al revés.
 - **2026-08-05** — Nuevo roadmap post-cierre: Fases 1–6 confirmadas completas en producción (`add4208`). Auditoría de terreno (tests, CI, i18n, a11y, tema de extensión, modelos Prisma) y apertura de Fases 7–11: red de seguridad (tests + E2E Career + CI), accesibilidad/i18n de Talent, paridad visual de la extensión, equipos (🤔 condicionada) y comercialización (⏸️ diferida). Backlog transversal actualizado: B-2/B-3/B-8/B-9 absorbidos por tareas nuevas, B-7 cerrado como ya hecho, B-11/B-12 nuevos (observabilidad, límite de costo OpenAI). El detalle tarea-por-tarea de las Fases 1–6 se conserva íntegro en `AGENT_HANDOFF.md` § Bitácora de cambios y en el historial de git de este archivo; no se repite acá para no diluir las fases nuevas.

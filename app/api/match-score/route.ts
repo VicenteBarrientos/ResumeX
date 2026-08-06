@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import { getUserIdFromBearer } from "@/lib/extension-auth";
+import { quotaDenialResponse } from "@/lib/quota";
+import { buildTokenUsage } from "@/lib/token-usage";
 import OpenAI from "openai";
 
 function getOpenAI() {
@@ -32,9 +35,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ score: null, error: "Upload your resume first." });
   }
 
+  const denial = await assertAiQuota(userId, "match_score");
+  if (denial) {
+    // Preserve score:null shape the extension already tolerates; still use durable status.
+    const res = quotaDenialResponse(denial);
+    const body = await res.json();
+    return NextResponse.json(
+      { score: null, ...body },
+      { status: res.status, headers: res.headers },
+    );
+  }
+
   try {
+    const model = "gpt-4o-mini";
     const completion = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       messages: [
         {
           role: "system",
@@ -55,6 +70,12 @@ Respond ONLY with valid JSON, no markdown.`,
 
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const result = JSON.parse(raw);
+    const usage = buildTokenUsage(
+      model,
+      completion.usage?.prompt_tokens ?? 0,
+      completion.usage?.completion_tokens ?? 0,
+    );
+    await recordUsage(userId, "match_score", usage.estimatedCostUsd);
     return NextResponse.json(result);
   } catch {
     return NextResponse.json({ score: null, error: "Analysis failed." });

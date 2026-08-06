@@ -28,6 +28,9 @@ model UsageEvent {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
+  /// Estimated OpenAI spend for this event (from `buildTokenUsage`). Null for
+  /// count-only events (e.g. live Talent Mapper search against OpenAlex/PubMed).
+  costUsd   Float?
   createdAt DateTime @default(now())
 
   @@index([userId, name, createdAt])
