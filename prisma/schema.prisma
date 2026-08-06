@@ -20,6 +20,7 @@ model User {
   answers          Answer[]
   talentSearches   TalentSearch[]
   usageEvents      UsageEvent[]
+  atsConnections   AtsConnection[]
 }
 
 model UsageEvent {
@@ -115,4 +116,153 @@ model CandidateNote {
 
   @@unique([searchId, authorId])
   @@index([searchId])
+}
+
+// ─── ATS integrations (ResumeX Talent) ───────────────────────────────────────
+// Ownership is per-user until an Organization model exists (R-010 / Fase 10).
+// Credentials are AES-256-GCM encrypted; never store plaintext tokens.
+
+enum AtsProvider {
+  RECRUITEE
+  ZOHO_RECRUIT
+  ASHBY
+}
+
+enum AtsConnectionMode {
+  LIVE
+  SANDBOX
+  DEMO
+}
+
+enum AtsConnectionStatus {
+  CONNECTED
+  NEEDS_REAUTHENTICATION
+  PERMISSION_ERROR
+  CONFIGURATION_ERROR
+  TEMPORARILY_UNAVAILABLE
+  DISCONNECTED
+}
+
+model AtsConnection {
+  id                   String              @id @default(cuid())
+  userId               String
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider             AtsProvider
+  mode                 AtsConnectionMode
+  displayName          String
+  status               AtsConnectionStatus
+
+  encryptedCredentials String?
+  encryptionKeyVersion Int                 @default(1)
+
+  /// Non-secret provider configuration only (company id, DC, field maps, …).
+  metadata             Json?
+  capabilities         Json?
+
+  lastTestedAt         DateTime?
+  lastSuccessfulSyncAt DateTime?
+  lastErrorCode        String?
+  lastErrorMessage     String?
+
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  mappings             AtsExternalMapping[]
+  transfers            AtsTransfer[]
+  webhookEvents        AtsWebhookEvent[]
+  oauthStates          AtsOauthState[]
+
+  @@index([userId, provider])
+  @@index([provider])
+  @@index([status])
+}
+
+model AtsExternalMapping {
+  id                 String        @id @default(cuid())
+  connectionId       String
+  connection         AtsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  localEntityType    String
+  localEntityId      String
+  externalEntityType String
+  externalEntityId   String
+  externalUrl        String?
+  metadata           Json?
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@unique([connectionId, localEntityType, localEntityId, externalEntityType])
+  @@index([connectionId, externalEntityId])
+}
+
+model AtsTransfer {
+  id                    String        @id @default(cuid())
+  connectionId          String
+  connection            AtsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  localCandidateKey     String
+  localSearchProjectId  String?
+  externalJobId         String
+
+  idempotencyKey        String
+  status                String
+
+  candidateSnapshot     Json
+  requestSummary        Json
+  resultSummary         Json?
+
+  externalCandidateId   String?
+  externalApplicationId String?
+
+  completedOperations   Json?
+  failedOperation       String?
+
+  errorCode             String?
+  safeErrorMessage      String?
+
+  confirmedByUserId     String?
+  confirmedAt           DateTime?
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@unique([connectionId, idempotencyKey])
+  @@index([connectionId, localCandidateKey])
+}
+
+model AtsWebhookEvent {
+  id               String        @id @default(cuid())
+  connectionId     String
+  connection       AtsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  providerEventId  String
+  eventType        String
+  payloadHash      String
+
+  status           String
+  receivedAt       DateTime      @default(now())
+  processedAt      DateTime?
+  safeErrorMessage String?
+
+  @@unique([connectionId, providerEventId])
+  @@index([connectionId, receivedAt])
+}
+
+/// Short-lived Zoho OAuth state (server-side; not a cookie-only store).
+model AtsOauthState {
+  id           String         @id @default(cuid())
+  userId       String
+  provider     AtsProvider
+  nonce        String         @unique
+  connectionId String?
+  connection   AtsConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  redirectTo   String?
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  createdAt    DateTime       @default(now())
+
+  @@index([userId, provider])
+  @@index([expiresAt])
 }

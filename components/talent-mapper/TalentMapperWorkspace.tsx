@@ -1550,6 +1550,7 @@ export default function TalentMapperWorkspace() {
           onToggleShortlist={() => toggleShortlist(selected.authorId)}
           onClose={() => setSelectedId(null)}
           focusOutreach={focusOutreach}
+          searchProjectId={searchId || undefined}
         />
       )}
     </div>

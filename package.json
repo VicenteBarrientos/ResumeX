@@ -12,6 +12,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:pubmed:live": "vitest run lib/talent-mapper/providers/pubmed/__tests__/pubmed.live.test.ts",
+    "test:ats:e2e": "node scripts/e2e-ats.mjs",
+    "test:ats:recruitee:live": "node scripts/ats-live-recruitee.mjs",
+    "test:ats:zoho:live": "node scripts/ats-live-zoho.mjs",
+    "test:ats:ashby:live": "node scripts/ats-live-ashby.mjs",
     "test:e2e:career": "node scripts/e2e-career.mjs",
     "test:e2e:talent-mapper": "node scripts/e2e-talent-mapper.mjs",
     "typecheck": "tsc --noEmit"

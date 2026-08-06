@@ -6,18 +6,18 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-05 22:10 -04:00 — America/Santiago
-- **Versión del handoff:** 1.4
-- **Estado:** PubMed integrado como segunda fuente en Talent Mapper (local, sin push). OpenAlex intacto. Demo dual-source funciona sin NCBI credentials.
-- **Próximo hito:** Manual QA del flujo demo en `/talent/mapper`; configurar `NCBI_EMAIL` (+ opcional `NCBI_API_KEY`) para live PubMed; luego commit/PR cuando el humano lo pida.
-- **Bloqueos conocidos:** ninguno crítico. Live PubMed requiere `NCBI_EMAIL`.
+- **Última actualización:** 2026-08-05 23:12 -04:00 — America/Santiago
+- **Versión del handoff:** 1.5
+- **Estado:** ATS layer desplegado a producción vía `vercel deploy --prod` (`dpl_G4gdxevrmactHpxYkkg4TwFaGH5U`, READY). Migración ATS aplicada en prod. Alias: `resumex.talentxrecruiting.com`. Código ATS aún **sin commit/push** a GitHub (`gitDirty`).
+- **Próximo hito:** QA Demo Ashby en prod (`/talent/integrations`); commit + push a `main` para alinear Git con prod; configurar Zoho OAuth env en Vercel si se quiere live Zoho.
+- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel aún. Live Recruitee/Ashby vía UI. GitHub `main` no incluye aún el deploy CLI.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
-- **Prod:** sin deploy de esta integración aún (no se pidió).
+- **Prod:** desplegado 2026-08-05 23:12 (CLI, working tree dirty).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-PubMed Talent Mapper integration implementada localmente (sin commit/push). Pendiente: revisión humana + commit.
+ATS en producción vía CLI, pero cambios locales sin commit. Pedir commit/push al humano.
 
 
 ## Protocolo para agentes
@@ -488,4 +488,20 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
   - R-013 actualizada: PubMed es fuente biomédica complementaria permitida.
 - **Validaciones:** `npm test` (116 passed, 1 skipped live), `npm run typecheck`, `npm run lint`, `npm run build` OK.
 - **Siguiente paso:** QA manual del demo en `/talent/mapper`; añadir `NCBI_EMAIL` para live; commit cuando el humano lo pida.
+
+### 2026-08-05 23:10 — ATS integrations layer (Recruitee / Zoho / Ashby)
+
+- **Objetivo:** capa ATS provider-neutral para ResumeX Talent con adapters Recruitee, Zoho Recruit (OAuth) y Ashby (Demo + live).
+- **Estado:** completado localmente (sin push/deploy). Migración aplicada en la DB usada por `npm run build`.
+- **Cambios:**
+  - `lib/ats/**`: types, capabilities, encryption (AES-256-GCM), HTTP allowlist, errors, evidence builder, duplicates, idempotency, transfer saga, registry, webhooks.
+  - Providers: `recruitee`, `zoho` (OAuth + multi-DC + refresh), `ashby` (+ `DemoAshbyAdapter`).
+  - Prisma: `AtsConnection`, `AtsExternalMapping`, `AtsTransfer`, `AtsWebhookEvent`, `AtsOauthState` + migration `20260806020000_ats_integrations`.
+  - API: `/api/talent/integrations/ats/**` (connect, test, jobs, search, preview, transfers, webhooks).
+  - UI: `/talent/integrations`, `SendToAtsModal` desde Talent Mapper candidate detail; nav link en `lib/products.ts`.
+  - Docs: `docs/ATS_INTEGRATIONS.md`, `docs/integrations/{RECRUITEE,ZOHO_RECRUIT,ASHBY}.md`, `docs/ATS_MANUAL_QA.md`; README + `.env.local.example`.
+  - Tests: `lib/ats/__tests__/*` (37); full suite 152; `vitest.config.mts`.
+- **Decisiones:** ownership por `User` (sin Organization); APIs nuevas bajo `/api/talent/integrations/ats` (no rompe extensión); Zoho webhooks no reclamados.
+- **Validaciones:** lint (0 errors), typecheck, `npm test` 152, `npm run build` OK con rutas ATS en el tree.
+- **Siguiente paso:** QA Demo Ashby en UI; generar `ATS_CREDENTIAL_ENCRYPTION_KEY`; conectar Recruitee/Zoho cuando haya credenciales; commit/PR cuando el humano lo pida.
 

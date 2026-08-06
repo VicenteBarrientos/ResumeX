@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import EvidenceList from "@/components/talent-mapper/EvidenceList";
 import OutreachEditor from "@/components/talent-mapper/OutreachEditor";
 import ScoreBreakdownView from "@/components/talent-mapper/ScoreBreakdown";
 import { Disclaimer } from "@/components/talent-mapper/Disclaimer";
+import SendToAtsModal from "@/components/talent/ats/SendToAtsModal";
 import type { ResearcherCandidate } from "@/lib/talent-mapper/types";
 
 export default function CandidateDetail({
@@ -16,6 +17,7 @@ export default function CandidateDetail({
   onToggleShortlist,
   onClose,
   focusOutreach,
+  searchProjectId,
 }: {
   candidate: ResearcherCandidate;
   roleTitle: string;
@@ -25,14 +27,17 @@ export default function CandidateDetail({
   onToggleShortlist: () => void;
   onClose: () => void;
   focusOutreach?: boolean;
+  searchProjectId?: string;
 }) {
+  const [sendToAtsOpen, setSendToAtsOpen] = useState(false);
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" && !sendToAtsOpen) onClose();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [onClose, sendToAtsOpen]);
 
   return (
     <div
@@ -281,7 +286,7 @@ export default function CandidateDetail({
           </div>
         </div>
 
-        <div className="flex gap-2 border-t border-zinc-100 px-5 py-3">
+        <div className="flex flex-wrap gap-2 border-t border-zinc-100 px-5 py-3">
           <button
             type="button"
             onClick={onToggleShortlist}
@@ -293,8 +298,24 @@ export default function CandidateDetail({
           >
             {shortlisted ? "Remove from shortlist" : "Add to shortlist"}
           </button>
+          <button
+            type="button"
+            onClick={() => setSendToAtsOpen(true)}
+            className="rounded-full border border-emerald-700 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
+          >
+            Send to ATS
+          </button>
         </div>
       </aside>
+
+      {sendToAtsOpen && (
+        <SendToAtsModal
+          candidate={candidate}
+          roleTitle={roleTitle}
+          searchProjectId={searchProjectId}
+          onClose={() => setSendToAtsOpen(false)}
+        />
+      )}
     </div>
   );
 }

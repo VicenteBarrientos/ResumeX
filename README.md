@@ -18,7 +18,7 @@ ResumeX ships **two products on one deployment and one database**:
 | Product | Users | Lives at | What it does |
 |---|---|---|---|
 | **ResumeX Career** | Job seekers | `/career/*` | AI resume formatting, resume/job match analysis, cover letters, job search, application tracking, and profile-backed AutoApply with a Chrome extension. |
-| **ResumeX Talent** | Recruiters and hiring teams | `/talent/*` | **Talent Mapper**: evidence-based scientific candidate discovery from public scholarly data. |
+| **ResumeX Talent** | Recruiters and hiring teams | `/talent/*` | **Talent Mapper**: evidence-based scientific candidate discovery from public scholarly data. **ATS Integrations**: send shortlisted researchers into Recruitee, Zoho Recruit, or Ashby (ATS remains system of record). |
 
 The names are exact and belong in UI, copy and metadata; Talent Mapper is a feature inside ResumeX Talent, not a brand. `lib/products.ts` is the single source for both. See [`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md) for the decisions behind the split.
 
@@ -40,6 +40,15 @@ Talent Mapper helps recruiters source hard-to-fill scientific roles by:
 6. Showing paper-level evidence for every important match
 7. Drafting editable outreach (no automated sending)
 8. Shortlisting and exporting CSV
+9. Sending recruiter-reviewed candidates to a connected ATS (Recruitee, Zoho Recruit, Ashby Demo/Live)
+
+**ATS-agnostic positioning:** ResumeX discovers and evaluates talent outside the ATS. The ATS remains the system of record. See [`docs/ATS_INTEGRATIONS.md`](./docs/ATS_INTEGRATIONS.md).
+
+| Provider | Status |
+|---|---|
+| Recruitee | Live (personal API token) |
+| Zoho Recruit | Live (OAuth 2.0) |
+| Ashby | Demo Mode always; Live with API key |
 
 **Limitations (important):**
 
@@ -58,11 +67,15 @@ NCBI_EMAIL=...              # required for live PubMed
 NCBI_API_KEY=...            # optional; higher NCBI rate limit
 NCBI_TOOL=ResumeXTalentMapper
 PUBMED_ENABLED=true
+ATS_CREDENTIAL_ENCRYPTION_KEY=...   # required for ATS connections (32-byte base64)
+ZOHO_RECRUIT_CLIENT_ID=...          # optional; Zoho OAuth
+ZOHO_RECRUIT_CLIENT_SECRET=...
+ZOHO_RECRUIT_REDIRECT_URI=http://localhost:3000/api/talent/integrations/ats/zoho/callback
 ```
 
 Obtain an OpenAlex key (free) from [openalex.org/settings/api](https://openalex.org/settings/api). For PubMed, set `NCBI_EMAIL` (and optionally an [NCBI API key](https://www.ncbi.nlm.nih.gov/account/settings/)). Never expose keys to the browser.
 
-See [`docs/PUBMED_INTEGRATION.md`](./docs/PUBMED_INTEGRATION.md) for the dual-source architecture.
+See [`docs/PUBMED_INTEGRATION.md`](./docs/PUBMED_INTEGRATION.md) for the dual-source architecture. ATS setup: [`docs/ATS_INTEGRATIONS.md`](./docs/ATS_INTEGRATIONS.md).
 
 ### Demo snapshot (interview-friendly)
 

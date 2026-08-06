@@ -61,6 +61,7 @@ export const TALENT: Product = {
     { href: "/talent/mapper", label: "Talent Mapper" },
     { href: "/talent/assess", label: "Assess" },
     { href: "/talent/searches", label: "Saved searches" },
+    { href: "/talent/integrations", label: "ATS Integrations" },
   ],
 };
 
