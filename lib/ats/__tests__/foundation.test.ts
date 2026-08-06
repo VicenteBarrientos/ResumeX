@@ -176,8 +176,10 @@ describe("Zoho domains and criteria", () => {
 
   it("lists minimum scopes without delete", () => {
     const scopes = zohoScopeString();
-    expect(scopes).toContain("candidates.CREATE");
+    expect(scopes).toContain("ZohoRecruit.modules.CREATE");
+    expect(scopes).toContain("ZohoRecruit.settings.READ");
     expect(scopes).not.toContain("DELETE");
+    expect(scopes).not.toContain("candidates.");
   });
 });
 

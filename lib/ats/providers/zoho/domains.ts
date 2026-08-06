@@ -73,21 +73,16 @@ export function zohoAccountsServerForLocation(location: string | undefined): str
 
 /**
  * Minimum scopes for ResumeX ATS transfer.
- * Documented reasons:
- * - candidates READ/CREATE/UPDATE: search, create, update evidence fields
- * - jobopenings READ: list jobs
- * - notes CREATE: evidence notes
- * - settings.modules / settings.fields READ: mandatory field metadata
- * No DELETE, offers, interviews, reports, clients, contacts.
+ * Zoho Recruit group scopes (documented) — granular `modules.candidates.*`
+ * names return "Invalid OAuth Scope / Scope does not exist" on authorize.
+ * @see https://www.zoho.com/recruit/developer-guide/apiv2/oauth-overview.html
+ * No DELETE.
  */
 export const ZOHO_RECRUIT_SCOPES = [
-  "ZohoRecruit.modules.candidates.READ",
-  "ZohoRecruit.modules.candidates.CREATE",
-  "ZohoRecruit.modules.candidates.UPDATE",
-  "ZohoRecruit.modules.jobopenings.READ",
-  "ZohoRecruit.modules.notes.CREATE",
-  "ZohoRecruit.settings.modules.READ",
-  "ZohoRecruit.settings.fields.READ",
+  "ZohoRecruit.modules.READ",
+  "ZohoRecruit.modules.CREATE",
+  "ZohoRecruit.modules.UPDATE",
+  "ZohoRecruit.settings.READ",
 ] as const;
 
 export function zohoScopeString(): string {

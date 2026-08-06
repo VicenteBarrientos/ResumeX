@@ -16,17 +16,16 @@ Callback validates server-side state (nonce, user, expiry, single use).
 
 ## Scopes (minimum)
 
+Use Zoho **group** scopes (granular `modules.candidates.*` names fail authorize with “Scope does not exist”):
+
 | Scope | Why |
 |---|---|
-| `ZohoRecruit.modules.candidates.READ` | Duplicate search |
-| `ZohoRecruit.modules.candidates.CREATE` | Create candidate |
-| `ZohoRecruit.modules.candidates.UPDATE` | Associate / update |
-| `ZohoRecruit.modules.jobopenings.READ` | List jobs |
-| `ZohoRecruit.modules.notes.CREATE` | Evidence note |
-| `ZohoRecruit.settings.modules.READ` | Module check |
-| `ZohoRecruit.settings.fields.READ` | Mandatory fields |
+| `ZohoRecruit.modules.READ` | Jobs, candidates, duplicate search |
+| `ZohoRecruit.modules.CREATE` | Create candidate / note / application |
+| `ZohoRecruit.modules.UPDATE` | Associate / update |
+| `ZohoRecruit.settings.READ` | Modules / fields metadata |
 
-No DELETE, offers, interviews, reports, clients, contacts.
+No `DELETE`.
 
 ## Multi-DC
 
