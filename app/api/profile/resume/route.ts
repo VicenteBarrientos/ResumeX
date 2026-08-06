@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -69,19 +70,19 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   const formData = await req.formData();
   const file = formData.get("resumePdf");
 
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "PDF file required." }, { status: 400 });
+    return apiError("PDF file required.", { status: 400 });
   }
 
   const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-  if (!isPdf) return NextResponse.json({ error: "Only PDF files are supported." }, { status: 400 });
+  if (!isPdf) return apiError("Only PDF files are supported.", { status: 400 });
   if (file.size > MAX_PDF_SIZE_BYTES) {
-    return NextResponse.json({ error: `PDF must be ${MAX_PDF_SIZE_LABEL} or smaller.` }, { status: 400 });
+    return apiError(`PDF must be ${MAX_PDF_SIZE_LABEL} or smaller.`, { status: 400 });
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -96,7 +97,7 @@ export async function POST(req: Request) {
   }
 
   if (!resumeText?.trim()) {
-    return NextResponse.json({ error: "Could not extract text from this PDF. Try copy-pasting your resume text directly." }, { status: 422 });
+    return apiError("Could not extract text from this PDF. Try copy-pasting your resume text directly.", { status: 422 });
   }
 
   // OpenAI contact parse is optional; only burn quota when a key is configured.
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[resume] DB upsert failed.");
     debugError("[resume] DB upsert failure detail:", err);
-    return NextResponse.json({ error: "Database error saving resume." }, { status: 500 });
+    return apiError("Database error saving resume.", { status: 500 });
   }
 
   if (typeof contactCostUsd === "number") {
@@ -146,7 +147,7 @@ export async function POST(req: Request) {
 
 export async function DELETE() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   await db.profile.update({
     where: { userId: session.user.id },

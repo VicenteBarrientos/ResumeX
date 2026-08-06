@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { RESUMEX_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
@@ -9,12 +10,12 @@ const BASE_URL = process.env.NEXTAUTH_URL?.trim().replace(/\/$/, "") || RESUMEX_
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   const stripe = getStripe();
   const { type } = await req.json(); // "pro" | "donation"
   const user = await db.user.findUnique({ where: { id: session.user.id } });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (!user) return apiError("User not found", { status: 404 });
 
   // Get or create Stripe customer
   let customerId = user.stripeCustomerId ?? undefined;

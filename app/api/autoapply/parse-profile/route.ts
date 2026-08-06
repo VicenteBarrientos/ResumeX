@@ -4,6 +4,7 @@ import {
   logAnalysisError,
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
+import { apiError } from "@/lib/api/response";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
@@ -88,10 +89,7 @@ export async function POST(request: Request) {
 
   const apiKey = getOpenAiApiKey();
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "OpenAI API key is not configured on the server." },
-      { status: 500 }
-    );
+    return apiError("OpenAI API key is not configured on the server.", { status: 500 });
   }
 
   const contentType = request.headers.get("content-type") ?? "";
@@ -101,19 +99,16 @@ export async function POST(request: Request) {
     : await resolveResumeFromJson(request);
 
   if (resolved.error) {
-    return NextResponse.json({ error: resolved.error }, { status: resolved.status ?? 400 });
+    return apiError(resolved.error, { status: resolved.status ?? 400 });
   }
 
   const { resume } = resolved;
   if (!resume) {
-    return NextResponse.json({ error: "Resume text is required." }, { status: 400 });
+    return apiError("Resume text is required.", { status: 400 });
   }
 
   if (resume.length > MAX_TEXT_LENGTH) {
-    return NextResponse.json(
-      { error: "Resume must be under 15,000 characters." },
-      { status: 400 }
-    );
+    return apiError("Resume must be under 15,000 characters.", { status: 400 });
   }
 
   const denial = await assertAiQuota(userId, "parse_profile");
@@ -129,9 +124,8 @@ export async function POST(request: Request) {
   } catch (error) {
     logAnalysisError(error);
     const analysisError = normalizeAnalysisError(error);
-    return NextResponse.json(
-      { error: getClientErrorMessage(analysisError, isDev) },
-      { status: analysisError.status }
-    );
+    return apiError(getClientErrorMessage(analysisError, isDev), {
+      status: analysisError.status,
+    });
   }
 }

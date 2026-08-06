@@ -4,6 +4,7 @@ import {
   logAnalysisError,
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
+import { apiError } from "@/lib/api/response";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
 import { extractTextFromDocx } from "@/lib/docx";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
@@ -125,10 +126,7 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     console.error("[ResumeX] OPENAI_API_KEY is not configured.");
-    return NextResponse.json(
-      { error: "OpenAI API key is not configured on the server." },
-      { status: 500 },
-    );
+    return apiError("OpenAI API key is not configured on the server.", { status: 500 });
   }
 
   // ?debug=1 is only honoured in development.
@@ -143,10 +141,7 @@ export async function POST(request: Request) {
     : await resolveResumeFromJson(request);
 
   if (resolved.error) {
-    return NextResponse.json(
-      { error: resolved.error },
-      { status: resolved.status ?? 400 },
-    );
+    return apiError(resolved.error, { status: resolved.status ?? 400 });
   }
 
   const { resume, extractionDebug } = resolved as {
@@ -155,17 +150,11 @@ export async function POST(request: Request) {
   };
 
   if (!resume) {
-    return NextResponse.json(
-      { error: "Resume text or file is required." },
-      { status: 400 },
-    );
+    return apiError("Resume text or file is required.", { status: 400 });
   }
 
   if (resume.length > MAX_TEXT_LENGTH) {
-    return NextResponse.json(
-      { error: "Resume must be under 15,000 characters." },
-      { status: 400 },
-    );
+    return apiError("Resume must be under 15,000 characters.", { status: 400 });
   }
 
   const denial = await assertAiQuota(userId, "format");
@@ -195,9 +184,8 @@ export async function POST(request: Request) {
 
     const analysisError = normalizeAnalysisError(error);
 
-    return NextResponse.json(
-      { error: getClientErrorMessage(analysisError, isDev) },
-      { status: analysisError.status },
-    );
+    return apiError(getClientErrorMessage(analysisError, isDev), {
+      status: analysisError.status,
+    });
   }
 }

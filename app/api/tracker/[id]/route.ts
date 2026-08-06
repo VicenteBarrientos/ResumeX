@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   const { id } = await params;
   const app = await db.application.findFirst({ where: { id, userId: session.user.id } });
-  if (!app) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!app) return apiError("Not found", { status: 404 });
 
   return NextResponse.json(app);
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   const { id } = await params;
   const existing = await db.application.findFirst({ where: { id, userId: session.user.id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) return apiError("Not found", { status: 404 });
 
   const { company, role, jobUrl, status, matchScore, notes } = await request.json();
 
@@ -41,11 +42,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return apiError("Unauthorized", { status: 401 });
 
   const { id } = await params;
   const existing = await db.application.findFirst({ where: { id, userId: session.user.id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) return apiError("Not found", { status: 404 });
 
   await db.application.delete({ where: { id } });
   return NextResponse.json({ success: true });

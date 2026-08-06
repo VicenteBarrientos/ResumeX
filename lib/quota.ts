@@ -5,9 +5,10 @@
  * sources). Prefer this over `lib/rate-limit.ts`, which is an in-memory
  * best-effort bucket for pre-auth burst control only.
  *
- * Product limits live in `lib/quota-limits.ts` (proposed; see that file).
+ * Product limits live in `lib/quota-limits.ts`.
  */
-import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
+import type { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 export type QuotaDenial = {
@@ -118,16 +119,10 @@ export async function recordUsage(
 
 /** Flat denial body — `error` stays a string (R-021 / extension contract). */
 export function quotaDenialResponse(denial: QuotaDenial): NextResponse {
-  const body: Record<string, unknown> = {
-    error: denial.message,
+  return apiError(denial.message, {
+    status: denial.status,
     code: denial.code,
-  };
-  if (denial.upgradeUrl) body.upgradeUrl = denial.upgradeUrl;
-
-  const headers: HeadersInit = {};
-  if (denial.retryAfterSec) {
-    headers["Retry-After"] = String(denial.retryAfterSec);
-  }
-
-  return NextResponse.json(body, { status: denial.status, headers });
+    upgradeUrl: denial.upgradeUrl,
+    retryAfterSec: denial.retryAfterSec,
+  });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { Resend } from "resend";
+import { apiError } from "@/lib/api/response";
 import { RESUMEX_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
 
@@ -11,16 +12,16 @@ export async function POST(request: Request) {
     const { username, password, email } = await request.json();
 
     if (!username?.trim() || !password) {
-      return NextResponse.json({ error: "Username and password required." }, { status: 400 });
+      return apiError("Username and password required.", { status: 400 });
     }
 
     if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
+      return apiError("Password must be at least 6 characters.", { status: 400 });
     }
 
     const existing = await db.user.findUnique({ where: { username: username.trim() } });
     if (existing) {
-      return NextResponse.json({ error: "Username already taken." }, { status: 409 });
+      return apiError("Username already taken.", { status: 409 });
     }
 
     const passwordHash = await hash(password, 12);
@@ -53,6 +54,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: user.id, username: user.username }, { status: 201 });
   } catch (error) {
     console.error("[register] failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+    return apiError("Something went wrong.", { status: 500 });
   }
 }

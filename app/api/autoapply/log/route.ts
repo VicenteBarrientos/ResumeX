@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { requireUserId } from "@/lib/require-auth";
 
@@ -17,20 +18,17 @@ export async function POST(req: NextRequest) {
   try {
     const { userId, error: authError } = await requireUserId(req);
     if (authError) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401, headers: CORS_HEADERS }
-      );
+      return apiError("Unauthorized", { status: 401, headers: CORS_HEADERS });
     }
 
     const body = await req.json();
     const { platform, company, role, jobUrl, jobDescription, answers } = body;
 
     if (!platform || !role) {
-      return NextResponse.json(
-        { error: "platform and role are required" },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return apiError("platform and role are required", {
+        status: 400,
+        headers: CORS_HEADERS,
+      });
     }
 
     const application = {
@@ -60,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, application }, { headers: CORS_HEADERS });
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400, headers: CORS_HEADERS });
+    return apiError("Invalid request body", { status: 400, headers: CORS_HEADERS });
   }
 }
 

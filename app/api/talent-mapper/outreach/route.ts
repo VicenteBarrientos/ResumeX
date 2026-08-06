@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { quotaDenialResponse } from "@/lib/quota";
 import { generateOutreach } from "@/lib/talent-mapper/ai";
@@ -17,24 +18,18 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      {
-        error: "Invalid JSON body.",
-        action: "Retry drafting outreach from the researcher panel.",
-      },
-      { status: 400 },
-    );
+    return apiError("Invalid JSON body.", {
+      status: 400,
+      action: "Retry drafting outreach from the researcher panel.",
+    });
   }
 
   const parsed = outreachRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: "Invalid outreach request.",
-        action: "Open a researcher and try Draft personalized outreach again.",
-      },
-      { status: 400 },
-    );
+    return apiError("Invalid outreach request.", {
+      status: 400,
+      action: "Open a researcher and try Draft personalized outreach again.",
+    });
   }
 
   const denial = await assertAiQuota(userId, "outreach");
@@ -63,13 +58,10 @@ export async function POST(req: Request) {
     await recordUsage(userId, "outreach");
     return NextResponse.json(result);
   } catch {
-    return NextResponse.json(
-      {
-        error: "Outreach generation failed.",
-        action:
-          "You can still copy a manual note. Check OPENAI_API_KEY or try again in a moment.",
-      },
-      { status: 502 },
-    );
+    return apiError("Outreach generation failed.", {
+      status: 502,
+      action:
+        "You can still copy a manual note. Check OPENAI_API_KEY or try again in a moment.",
+    });
   }
 }

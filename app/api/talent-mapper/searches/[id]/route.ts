@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { apiError } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/require-auth";
 import {
@@ -31,7 +32,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params;
   const row = await loadOwnedSearch(id, userId);
   if (!row) {
-    return NextResponse.json({ error: "Search not found." }, { status: 404 });
+    return apiError("Search not found.", { status: 404 });
   }
 
   return NextResponse.json({ search: toSearchDetail(row) });
@@ -44,14 +45,14 @@ export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const existing = await loadOwnedSearch(id, userId);
   if (!existing) {
-    return NextResponse.json({ error: "Search not found." }, { status: 404 });
+    return apiError("Search not found.", { status: 404 });
   }
 
   let body: TalentSearchWriteInput;
   try {
     body = (await request.json()) as TalentSearchWriteInput;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    return apiError("Invalid JSON body.", { status: 400 });
   }
 
   const data: {
@@ -144,7 +145,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     select: { id: true },
   });
   if (!existing) {
-    return NextResponse.json({ error: "Search not found." }, { status: 404 });
+    return apiError("Search not found.", { status: 404 });
   }
 
   await db.talentSearch.delete({ where: { id: existing.id } });

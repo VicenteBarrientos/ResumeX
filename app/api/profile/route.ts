@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -29,7 +30,7 @@ function parseProfileJson(raw: string | null): unknown {
 
 export async function GET(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   const profile = await db.profile.findUnique({ where: { userId } });
   if (!profile) return NextResponse.json({});
@@ -48,7 +49,7 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   const body = (await req.json()) as Record<string, unknown>;
   const fullName = body.fullName as string | undefined;

@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { getUserIdFromBearer } from "@/lib/extension-auth";
 import { db } from "@/lib/db";
@@ -13,7 +14,7 @@ async function resolveUserId(req: Request): Promise<string | null> {
 
 export async function GET(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   const answers = await db.answer.findMany({
     where: { userId },
@@ -24,11 +25,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   const { question, answer } = await req.json();
   if (!question?.trim() || !answer?.trim()) {
-    return NextResponse.json({ error: "Question and answer are required" }, { status: 400 });
+    return apiError("Question and answer are required", { status: 400 });
   }
 
   // Upsert — update existing answer if same question already saved

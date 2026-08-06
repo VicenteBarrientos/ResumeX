@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/require-auth";
 import { db } from "@/lib/db";
 import { getProviderCapabilities } from "@/lib/ats/capabilities";
 import { encryptIntegrationCredential } from "@/lib/ats/encryption";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { createAshbyAdapter } from "@/lib/ats/providers/ashby/adapter";
 import { createDemoAshbyAdapter } from "@/lib/ats/providers/ashby/demo-adapter";
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     if (body?.demo === true) {
       const parsed = ashbyDemoConnectSchema.safeParse(body);
       if (!parsed.success) {
-        return atsJson({ error: { message: "Invalid demo payload." } }, 400);
+        return apiError("Invalid demo payload.", { status: 400 });
       }
 
       const adapter = createDemoAshbyAdapter();
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
 
     const parsed = ashbyConnectSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson({ error: { message: "Invalid connection payload.", details: parsed.error.flatten() } }, 400);
+      return apiError("Invalid connection payload.", { status: 400, details: parsed.error.flatten() });
     }
 
     const { displayName, apiKey, sourceId, actingUserId, mode } = parsed.data;

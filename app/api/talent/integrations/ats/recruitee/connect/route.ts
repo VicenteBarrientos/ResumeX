@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/require-auth";
 import { db } from "@/lib/db";
 import { getProviderCapabilities } from "@/lib/ats/capabilities";
 import { encryptIntegrationCredential } from "@/lib/ats/encryption";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { atsCacheInvalidate } from "@/lib/ats/cache";
 import { createRecruiteeAdapter } from "@/lib/ats/providers/recruitee/adapter";
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = recruiteeConnectSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson({ error: { message: "Invalid connection payload.", details: parsed.error.flatten() } }, 400);
+      return apiError("Invalid connection payload.", { status: 400, details: parsed.error.flatten() });
     }
 
     const { displayName, companyIdOrSubdomain, token, webhookSecret } = parsed.data;

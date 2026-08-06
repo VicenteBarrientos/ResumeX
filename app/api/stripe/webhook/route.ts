@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/api/response";
 import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -11,14 +12,14 @@ export async function POST(req: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    return NextResponse.json({ error: "Stripe webhook secret is not configured" }, { status: 500 });
+    return apiError("Stripe webhook secret is not configured", { status: 500 });
   }
 
   let event: Stripe.Event;
   try {
     event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
   } catch {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    return apiError("Invalid signature", { status: 400 });
   }
 
   async function getCustomer(customerId: string) {

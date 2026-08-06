@@ -130,7 +130,7 @@ export default function AtsIntegrationsClient() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error?.message || "Recruitee connect failed.");
+      setError((typeof data?.error === "string" ? data.error : undefined) || "Recruitee connect failed.");
       return;
     }
     setRtToken("");
@@ -152,7 +152,7 @@ export default function AtsIntegrationsClient() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error?.message || "Ashby connect failed.");
+      setError((typeof data?.error === "string" ? data.error : undefined) || "Ashby connect failed.");
       return;
     }
     setAshKey("");
@@ -169,7 +169,7 @@ export default function AtsIntegrationsClient() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error?.message || "Could not enable Demo Mode.");
+      setError((typeof data?.error === "string" ? data.error : undefined) || "Could not enable Demo Mode.");
       return;
     }
     setMessage("Ashby Demo Mode enabled — no external ATS data will be modified.");
@@ -183,7 +183,7 @@ export default function AtsIntegrationsClient() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error?.message || "Connection test failed.");
+      setError((typeof data?.error === "string" ? data.error : undefined) || "Connection test failed.");
       return;
     }
     setMessage(
@@ -212,7 +212,7 @@ export default function AtsIntegrationsClient() {
     const res = await fetch(`/api/talent/integrations/ats/${id}/transfers`);
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error?.message || "Could not load transfer history.");
+      setError((typeof data?.error === "string" ? data.error : undefined) || "Could not load transfer history.");
       return;
     }
     setHistory(data.transfers || []);

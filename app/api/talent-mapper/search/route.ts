@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { quotaDenialResponse } from "@/lib/quota";
 import { normalizeUnknownError } from "@/lib/talent-mapper/errors";
@@ -25,25 +26,19 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      {
-        error: "Invalid JSON body.",
-        action: "Retry the search from the Talent Mapper UI.",
-      },
-      { status: 400 },
-    );
+    return apiError("Invalid JSON body.", {
+      status: 400,
+      action: "Retry the search from the Talent Mapper UI.",
+    });
   }
 
   const parsed = searchRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: "Invalid search request.",
-        action: "Review criteria and enable at least one search query.",
-        details: parsed.error.flatten(),
-      },
-      { status: 400 },
-    );
+    return apiError("Invalid search request.", {
+      status: 400,
+      action: "Review criteria and enable at least one search query.",
+      details: parsed.error.flatten(),
+    });
   }
 
   let mode: SearchMode = parsed.data.mode;
@@ -64,33 +59,24 @@ export async function POST(req: Request) {
   const needsPubmed = sources.includes("pubmed");
 
   if (needsOpenAlex && openAlexQueries.length === 0 && needsPubmed && pubmedQueries.length === 0) {
-    return NextResponse.json(
-      {
-        error: "No enabled queries.",
-        action: "Enable or add at least one OpenAlex or PubMed query before running the search.",
-      },
-      { status: 400 },
-    );
+    return apiError("No enabled queries.", {
+      status: 400,
+      action: "Enable or add at least one OpenAlex or PubMed query before running the search.",
+    });
   }
 
   if (needsOpenAlex && openAlexQueries.length === 0 && !needsPubmed) {
-    return NextResponse.json(
-      {
-        error: "No enabled OpenAlex queries.",
-        action: "Enable or add at least one OpenAlex query before searching.",
-      },
-      { status: 400 },
-    );
+    return apiError("No enabled OpenAlex queries.", {
+      status: 400,
+      action: "Enable or add at least one OpenAlex query before searching.",
+    });
   }
 
   if (needsPubmed && pubmedQueries.length === 0 && !needsOpenAlex) {
-    return NextResponse.json(
-      {
-        error: "No enabled PubMed queries.",
-        action: "Enable or add at least one PubMed query before searching.",
-      },
-      { status: 400 },
-    );
+    return apiError("No enabled PubMed queries.", {
+      status: 400,
+      action: "Enable or add at least one PubMed query before searching.",
+    });
   }
 
   // Live mode may fall back to demo when no source is configured
@@ -142,16 +128,15 @@ export async function POST(req: Request) {
     }
 
     if (result.candidates.length === 0) {
-      return NextResponse.json(
-        {
-          error: "Works found but no author metadata matched the criteria.",
-          action:
-            "Broaden required techniques, enable adjacent queries, or lower specificity, then search again.",
+      return apiError("Works found but no author metadata matched the criteria.", {
+        status: 404,
+        action:
+          "Broaden required techniques, enable adjacent queries, or lower specificity, then search again.",
+        extra: {
           warnings: result.meta.warnings,
           diagnostics: result.meta.diagnostics,
         },
-        { status: 404 },
-      );
+      });
     }
 
     if (mode !== "demo") {
@@ -176,13 +161,10 @@ export async function POST(req: Request) {
             ? 404
             : 502;
 
-    return NextResponse.json(
-      {
-        error: normalized.message,
-        action,
-        code,
-      },
-      { status },
-    );
+    return apiError(normalized.message, {
+      status,
+      action,
+      code,
+    });
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { getUserIdFromBearer } from "@/lib/extension-auth";
@@ -13,7 +14,7 @@ async function resolveUserId(req: Request): Promise<string | null> {
 
 export async function GET(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   const applications = await db.application.findMany({
     where: { userId },
@@ -25,13 +26,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) return apiError("Unauthorized", { status: 401 });
 
   try {
     const { company, role, jobUrl, status, matchScore, notes } = await req.json();
 
     if (!company?.trim() || !role?.trim()) {
-      return NextResponse.json({ error: "Company and role are required." }, { status: 400 });
+      return apiError("Company and role are required.", { status: 400 });
     }
 
     const app = await db.application.create({
@@ -48,6 +49,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(app, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+    return apiError("Something went wrong.", { status: 500 });
   }
 }
