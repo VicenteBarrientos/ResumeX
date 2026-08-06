@@ -34,7 +34,7 @@ Aplican a **toda** tarea de este roadmap. No se repiten en cada una.
 - **Toda ruta de página que se mueva deja un 308** en `PRODUCT_SEGMENT_REDIRECTS` (`next.config.ts`, R-018).
 - **Nombres y rutas de producto salen de `lib/products.ts`** (R-019). Nada de `"ResumeX Talent"` hardcodeado.
 - **Las APIs siguen planas** hasta que exista versionado (R-017).
-- **Verificación mínima antes de commitear:** `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Si la tarea toca Talent Mapper, además `npm run test:e2e:talent-mapper` con el dev server arriba.
+- **Verificación mínima antes de commitear:** `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Si la tarea toca Talent Mapper, además `npm run test:e2e:talent-mapper` con el dev server arriba. Si toca Career analyzer/tracker/cover-letter, además `npm run test:e2e:career`.
 - **Sin secretos** en el repo, el handoff ni el wiki (R-015).
 - **Extraer al segundo uso, no antes (R-009).** Ya causó dos cancelaciones (T-3.2, T-3.3). No repetir el error en las fases nuevas.
 
@@ -80,13 +80,13 @@ La foto: el producto **funciona y está separado correctamente**, pero tiene deu
 
 **Terminado (2026-08-05):** `lib/__tests__/format-resume.test.ts`, `merge-profile.test.ts`, `parse-profile.test.ts` — OpenAI mockeado; ramas de normalización, merge conflict, y errores `NO_*`/`MALFORMED_*` fijadas.
 
-### ⬜ T-7.2 — E2E de Career (cierra B-3)
+### ✅ T-7.2 — E2E de Career (cierra B-3)
 
 - Nuevo `scripts/e2e-career.mjs`, mismo patrón que `e2e-talent-mapper.mjs` (Playwright, usuario demo, dev server en otra terminal).
 - Camino mínimo: login → `/career/analyzer` (CV + JD demo → resultado con criterios y quotes) → `/career/tracker` (crear aplicación → verla en la lista) → `/career/cover-letter` (generar una carta).
 - Agregar el script a `package.json` (`test:e2e:career`) y a la lista de verificación de `AGENTS.md`/reglas transversales de este archivo cuando la tarea toque esas superficies.
 
-**Terminado cuando:** el script corre limpio contra el dev server local, sin errores de consola ni requests fallidos, y queda documentado en `README.md` igual que el de Talent Mapper.
+**Terminado (2026-08-05):** `scripts/e2e-career.mjs` + `npm run test:e2e:career`. Demo analyzer/cover-letter determinísticos vía `lib/demo-career.ts` (sin OpenAI ni burn de free-tier). Documentado en `README.md` y `AGENTS.md`.
 
 ### 🟨 T-7.3 — CI mínima en GitHub Actions
 
@@ -242,7 +242,7 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 | ID | Estado | Descripción |
 |---|---|---|
 | ⬜ B-2 | `format-resume`/`merge-profile`/`parse-profile` sin tests | Absorbido por **T-7.1** |
-| ⬜ B-3 | E2E Career pendiente | Absorbido por **T-7.2** |
+| ✅ B-3 | E2E Career | Cerrado por **T-7.2** |
 | ⏸️ B-6 | `criterionKind` (tipar categoría del criterio: técnica/organismo/área/geografía) | Diferida — sin segundo consumidor que lo necesite hoy; revivir si Talent Mapper o Assess necesitan pesos por tipo de criterio |
 | ✅ B-7 | `aiInferred` en `CriteriaItem`/`StrongMatch` | Confirmado presente en `lib/types.ts:35,42` — cerrar como hecho |
 | ⬜ B-8 | i18n Talent pendiente | Absorbido por **T-8.3** |

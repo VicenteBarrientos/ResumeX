@@ -6,6 +6,7 @@ import {
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
 import { MAX_TEXT_LENGTH } from "@/lib/constants";
+import { getDemoCareerAnalysis, isCareerDemoInput } from "@/lib/demo-career";
 import { assertAnalyzerEntitlement, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import { requireSession } from "@/lib/require-auth";
@@ -20,28 +21,6 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   const { userId, error: authError } = await requireSession();
   if (authError) return authError;
-
-  const denial = await assertAnalyzerEntitlement(userId);
-  if (denial) {
-    return NextResponse.json(
-      {
-        error: denial.message,
-        code: denial.code,
-        upgradeUrl: denial.upgradeUrl,
-      },
-      { status: 402 },
-    );
-  }
-
-  const apiKey = getOpenAiApiKey();
-
-  if (!apiKey) {
-    console.error("[ResumeX] OPENAI_API_KEY is not configured.");
-    return NextResponse.json(
-      { error: "OpenAI API key is not configured on the server." },
-      { status: 500 },
-    );
-  }
 
   const resolved = await resolveResumeJobInput(request);
 
@@ -65,6 +44,33 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Resume and job description must each be under 15,000 characters." },
       { status: 400 },
+    );
+  }
+
+  // Deterministic Try-demo path: no OpenAI, no free-tier burn.
+  if (isCareerDemoInput(resume, jobDescription)) {
+    return NextResponse.json({ result: getDemoCareerAnalysis() });
+  }
+
+  const denial = await assertAnalyzerEntitlement(userId);
+  if (denial) {
+    return NextResponse.json(
+      {
+        error: denial.message,
+        code: denial.code,
+        upgradeUrl: denial.upgradeUrl,
+      },
+      { status: 402 },
+    );
+  }
+
+  const apiKey = getOpenAiApiKey();
+
+  if (!apiKey) {
+    console.error("[ResumeX] OPENAI_API_KEY is not configured.");
+    return NextResponse.json(
+      { error: "OpenAI API key is not configured on the server." },
+      { status: 500 },
     );
   }
 

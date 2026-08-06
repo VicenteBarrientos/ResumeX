@@ -72,9 +72,14 @@ With the dev server running:
 
 ```bash
 npm run test:e2e:talent-mapper
+npm run test:e2e:career
 ```
 
-This registers a local test user (default `tm_e2e_demo`), signs in, runs the full demo path, shortlists a researcher, and downloads the CSV. Override with `TALENT_MAPPER_E2E_USER` / `TALENT_MAPPER_E2E_PASS` / `TALENT_MAPPER_E2E_BASE` if needed. First time only: `npx playwright install chromium`.
+**Talent Mapper** registers a local test user (default `tm_e2e_demo`), signs in, runs the full demo path, shortlists a researcher, and downloads the CSV. Override with `TALENT_MAPPER_E2E_USER` / `TALENT_MAPPER_E2E_PASS` / `TALENT_MAPPER_E2E_BASE` if needed.
+
+**Career** registers `career_e2e_demo`, runs Try-demo analyzer → creates a tracker application → generates a demo cover letter. Override with `CAREER_E2E_USER` / `CAREER_E2E_PASS` / `CAREER_E2E_BASE`. Analyzer and cover-letter demos are deterministic (no OpenAI).
+
+First time only: `npx playwright install chromium`.
 
 ### Scoring (0–100 research relevance)
 

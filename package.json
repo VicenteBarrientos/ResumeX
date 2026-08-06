@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:e2e:career": "node scripts/e2e-career.mjs",
     "test:e2e:talent-mapper": "node scripts/e2e-talent-mapper.mjs",
     "typecheck": "tsc --noEmit"
   },

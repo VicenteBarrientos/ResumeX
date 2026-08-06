@@ -18,7 +18,7 @@
 
 ### Trabajo en vuelo
 
-Nada en vuelo crítico. Producción en `065e2e1`. Pendiente humano: configurar Stripe env vars y smoke del free-tier analyzer.
+Nada en vuelo crítico. T-7.1 y T-7.2 cerrados. Pendiente humano: Stripe env vars + smoke free-tier analyzer no-demo.
 
 
 ## Protocolo para agentes
@@ -462,4 +462,15 @@ No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarl
 - **Cambios clave:** `lib/__tests__/format-resume.test.ts`, `merge-profile.test.ts`, `parse-profile.test.ts`; `eslint.config.mjs` ignora `scripts/**/*.cjs` (require necesario en migrate recovery).
 - **Validaciones:** `npm test` 94 passed; `npm run lint` clean.
 - **Siguiente paso:** humano pega Stripe keys en Vercel y verifica `/api/stripe/health`; o tomar T-7.2 (E2E Career) / T-7.4 (bordes).
+
+### 2026-08-05 20:15 — T-7.2 Career E2E + demo fallbacks
+
+- **Objetivo:** cerrar T-7.2 (E2E Career) con camino demo fiable bajo free-tier.
+- **Estado:** completado. `npm run test:e2e:career` ok contra `localhost:3000`.
+- **Cambios clave:**
+  - `scripts/e2e-career.mjs` + `npm run test:e2e:career`: login → analyzer Try demo → tracker add → cover letter Try demo.
+  - `lib/demo-career.ts`: análisis y cover letter determinísticos cuando el payload es exactamente `DEMO_RESUME`/`DEMO_JOB_DESCRIPTION` (sin OpenAI ni burn de entitlements).
+  - Try demo en `/career/cover-letter`; docs en `README.md` / `AGENTS.md` / `ROADMAP.md` (B-3 cerrado).
+- **Validaciones:** `npm test`; `npm run lint`; `npm run test:e2e:career` → `ok: true`.
+- **Siguiente paso:** humano Stripe keys; o T-7.4 (bordes) / T-9.1 (`/extension-auth`) / retirar `jobsearcher`.
 

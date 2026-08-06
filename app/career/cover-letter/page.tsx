@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { DEMO_JOB_DESCRIPTION } from "@/lib/demo-data";
 
 export default function CoverLetterPage() {
   const { data: session } = useSession();
@@ -13,6 +14,14 @@ export default function CoverLetterPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const letterRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleTryDemo() {
+    setJobDescription(DEMO_JOB_DESCRIPTION);
+    setCompany("Example Fintech Platform");
+    setRole("Senior Full-Stack Engineer");
+    setError("");
+    setLetter("");
+  }
 
   useEffect(() => {
     const debounce = setTimeout(async () => {
@@ -115,18 +124,29 @@ export default function CoverLetterPage() {
               />
             </div>
           </div>
-          <button
-            onClick={generate}
-            disabled={loading || !jobDescription.trim()}
-            className="w-full rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Writing cover letter…
-              </span>
-            ) : "Generate cover letter"}
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={handleTryDemo}
+              disabled={loading}
+              className="w-full rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand-400 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              Try demo
+            </button>
+            <button
+              type="button"
+              onClick={generate}
+              disabled={loading || !jobDescription.trim()}
+              className="w-full flex-1 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Writing cover letter…
+                </span>
+              ) : "Generate cover letter"}
+            </button>
+          </div>
           {error && (
             <p className="text-sm text-rose-600">{error}</p>
           )}

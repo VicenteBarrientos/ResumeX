@@ -50,6 +50,7 @@ npm test               # vitest run
 npm run typecheck
 npm run lint
 npm run test:e2e:talent-mapper   # requiere npm run dev en otra terminal
+npm run test:e2e:career          # requiere npm run dev en otra terminal
 ```
 
 ## Al terminar

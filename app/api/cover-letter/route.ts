@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import {
+  getDemoCoverLetter,
+  isCareerDemoJobDescription,
+} from "@/lib/demo-career";
+import {
   assertCoverLetterEntitlement,
   recordUsage,
 } from "@/lib/entitlements";
@@ -24,6 +28,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { jobDescription, company, role } = await req.json();
+
+  if (!jobDescription?.trim()) {
+    return NextResponse.json({ error: "Job description required." }, { status: 400 });
+  }
+
+  // Deterministic Try-demo JD: no OpenAI, no free-tier burn.
+  if (isCareerDemoJobDescription(jobDescription)) {
+    return NextResponse.json({
+      letter: getDemoCoverLetter(
+        typeof company === "string" ? company : undefined,
+        typeof role === "string" ? role : undefined,
+      ),
+    });
+  }
+
   const denial = await assertCoverLetterEntitlement(session.user.id);
   if (denial) {
     return NextResponse.json(
@@ -34,12 +54,6 @@ export async function POST(req: Request) {
       },
       { status: 402 },
     );
-  }
-
-  const { jobDescription, company, role } = await req.json();
-
-  if (!jobDescription?.trim()) {
-    return NextResponse.json({ error: "Job description required." }, { status: 400 });
   }
 
   let profileContext = "";
