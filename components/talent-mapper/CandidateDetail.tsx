@@ -55,7 +55,7 @@ export default function CandidateDetail({
       <aside className="flex h-full w-full max-w-xl flex-col overflow-hidden border-l border-zinc-200 bg-white shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">
+            <h2 className="text-lg font-semibold text-zinc-900">
               {candidate.name}
             </h2>
             <p className="mt-1 text-sm text-zinc-600">
@@ -108,7 +108,7 @@ export default function CandidateDetail({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs"
+            className="rounded-md border border-zinc-200 px-3 py-1 text-xs"
           >
             Close
           </button>
@@ -290,7 +290,7 @@ export default function CandidateDetail({
           <button
             type="button"
             onClick={onToggleShortlist}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
+            className={`rounded-md px-4 py-2 text-sm font-medium ${
               shortlisted
                 ? "bg-brand-600 text-white"
                 : "border border-zinc-200"
@@ -301,7 +301,7 @@ export default function CandidateDetail({
           <button
             type="button"
             onClick={() => setSendToAtsOpen(true)}
-            className="rounded-full border border-emerald-700 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
+            className="rounded-md border border-emerald-700 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
           >
             Send to ATS
           </button>

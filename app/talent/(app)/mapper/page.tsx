@@ -10,12 +10,8 @@ export const metadata: Metadata = {
 
 export default function TalentMapperPage() {
   return (
-    <div className="relative min-h-full flex-1 overflow-hidden text-zinc-900">
-      <div className="relative z-10">
-        <Suspense fallback={<div className="p-8 text-sm text-zinc-500">Loading Talent Mapper…</div>}>
-          <TalentMapperWorkspace />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense fallback={<div className="p-6 text-sm text-zinc-500">Loading Talent Mapper…</div>}>
+      <TalentMapperWorkspace />
+    </Suspense>
   );
 }

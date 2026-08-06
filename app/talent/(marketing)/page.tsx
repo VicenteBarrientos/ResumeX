@@ -59,68 +59,58 @@ export default async function TalentLandingPage() {
     : `/login?callbackUrl=${encodeURIComponent(TALENT.home)}`;
 
   return (
-    <div className="relative min-h-full overflow-hidden text-zinc-900">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-32 -top-20 h-[500px] w-[500px] rounded-full bg-emerald-100/60 blur-3xl" />
-        <div className="absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-teal-100/40 blur-3xl" />
-      </div>
-
+    <div className="relative min-h-full text-zinc-900">
       <div className="relative z-10">
-        {/* Hero */}
-        <section className="mx-auto max-w-5xl px-4 pb-16 pt-24 text-center sm:px-6 lg:px-8">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">
+        <section className="mx-auto max-w-5xl px-4 pb-14 pt-20 sm:px-6 lg:px-8">
+          <p className="mb-3 text-sm font-semibold text-brand-700">
             {TALENT.name} — for {TALENT.audience.toLowerCase()}
           </p>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Find researchers by their evidence,
-            <br />
-            <span className="text-emerald-700">not by their job title</span>
+          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+            Find researchers by their evidence,{" "}
+            <span className="text-brand-600">not by their job title</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600">
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-zinc-600">
             Source candidates from public research publications, with paper-level evidence
             and an explainable relevance score.
           </p>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-zinc-500">
+          <p className="mt-2 max-w-xl text-sm text-zinc-500">
             Private use for now — not a public product launch.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={primaryHref}
-              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600"
+              className="inline-flex items-center rounded-lg bg-brand-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-brand-500"
             >
               Open Talent Mapper
             </TrackedLink>
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={session ? TALENT.home : "/register"}
-              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700"
+              className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-6 py-3 text-base font-semibold text-zinc-700 transition hover:border-brand-300 hover:text-brand-700"
             >
               {session ? "Run demo search →" : "Create account →"}
             </TrackedLink>
           </div>
-          <p className="mt-4 text-sm text-zinc-500">
+          <p className="mt-3 text-sm text-zinc-500">
             Demo snapshot works without an OpenAlex key.
           </p>
         </section>
 
-        {/* How it works */}
-        <section className="bg-zinc-50 py-20">
+        <section className="border-y border-zinc-200 bg-white py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mb-10 text-2xl font-bold tracking-tight sm:text-3xl">
               How it works
             </h2>
             <div className="grid gap-8 sm:grid-cols-2">
               {STEPS.map((s) => (
                 <div key={s.n} className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand-600 text-sm font-bold text-white">
                     {s.n}
                   </div>
                   <div>
-                    <h3 className="mb-1.5 text-base font-semibold">{s.title}</h3>
-                    <p className="text-sm leading-relaxed text-zinc-500">
-                      {s.body}
-                    </p>
+                    <h3 className="mb-1 text-base font-semibold">{s.title}</h3>
+                    <p className="text-sm leading-relaxed text-zinc-500">{s.body}</p>
                   </div>
                 </div>
               ))}
@@ -128,29 +118,26 @@ export default async function TalentLandingPage() {
           </div>
         </section>
 
-        {/* Scoring */}
-        <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               An explainable score, not a black box
             </h2>
-            <p className="mt-3 text-base text-zinc-500">
+            <p className="mt-2 text-base text-zinc-500">
               Research relevance out of 100. Every point is attributable, and you can see
               which paper earned it.
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
             {SCORE.map((row) => (
               <div
                 key={row.label}
-                className="flex items-center gap-4 border-b border-zinc-100 px-5 py-3.5 last:border-0"
+                className="flex items-center gap-4 border-b border-zinc-100 px-5 py-3 last:border-0"
               >
-                <span className="flex-1 text-sm text-zinc-700">
-                  {row.label}
-                </span>
+                <span className="flex-1 text-sm text-zinc-700">{row.label}</span>
                 <div className="hidden h-1.5 w-40 overflow-hidden rounded-full bg-zinc-100 sm:block">
                   <div
-                    className="h-full rounded-full bg-emerald-600"
+                    className="h-full rounded-full bg-brand-600"
                     style={{ width: `${row.max}%` }}
                   />
                 </div>
@@ -162,10 +149,9 @@ export default async function TalentLandingPage() {
           </div>
         </section>
 
-        {/* Limits — stated up front on purpose (R-007, R-014) */}
-        <section className="bg-zinc-50 py-20">
+        <section className="border-y border-zinc-200 bg-zinc-50 py-16">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="mb-3 text-2xl font-bold tracking-tight">
               What this does not tell you
             </h2>
             <p className="mb-8 text-base text-zinc-500">
@@ -186,16 +172,15 @@ export default async function TalentLandingPage() {
           </div>
         </section>
 
-        {/* CTA + cross-product */}
-        <section className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <section className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Map a role you cannot fill
           </h2>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <TrackedLink
               event="talent_landing_mapper_cta"
               href={primaryHref}
-              className="inline-flex items-center rounded-full bg-emerald-700 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600"
+              className="inline-flex items-center rounded-lg bg-brand-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-brand-500"
             >
               Open Talent Mapper
             </TrackedLink>
@@ -206,7 +191,7 @@ export default async function TalentLandingPage() {
                   ? "/talent/assess"
                   : `/login?callbackUrl=${encodeURIComponent("/talent/assess")}`
               }
-              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700"
+              className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-6 py-3 text-base font-semibold text-zinc-700 transition hover:border-brand-300 hover:text-brand-700"
             >
               Assess a resume →
             </TrackedLink>

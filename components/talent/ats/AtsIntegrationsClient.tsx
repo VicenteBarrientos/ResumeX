@@ -222,15 +222,17 @@ export default function AtsIntegrationsClient() {
     connections.filter((c) => c.provider === p && c.status !== "disconnected");
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-        ATS Integrations
-      </h1>
-      <p className="mt-2 max-w-2xl text-zinc-600">
-        Send recruiter-reviewed candidates and evidence into your existing hiring
-        system. ResumeX discovers and evaluates talent outside the ATS — the ATS
-        remains the system of record.
-      </p>
+    <div className="px-4 py-5 sm:px-5 lg:px-6">
+      <header className="mb-5 border-b border-[var(--talent-panel-border)] pb-4">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+          ATS Integrations
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm text-zinc-500">
+          Send recruiter-reviewed candidates and evidence into your existing hiring
+          system. ResumeX discovers and evaluates talent outside the ATS — the ATS
+          remains the system of record.
+        </p>
+      </header>
 
       {message && (
         <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
@@ -246,19 +248,19 @@ export default function AtsIntegrationsClient() {
       {loading ? (
         <p className="mt-8 text-sm text-zinc-500">Loading connections…</p>
       ) : (
-        <div className="mt-8 space-y-8">
+        <div className="mt-6 space-y-8">
           {(Object.keys(PROVIDER_META) as AtsProvider[]).map((provider) => {
             const meta = PROVIDER_META[provider];
             const existing = byProvider(provider);
             return (
               <section
                 key={provider}
-                className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
+                className="rounded-lg border border-[var(--talent-panel-border)] bg-white p-5"
                 aria-labelledby={`ats-${provider}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 id={`ats-${provider}`} className="text-xl font-semibold text-zinc-900">
+                    <h2 id={`ats-${provider}`} className="text-base font-semibold text-zinc-900">
                       {meta.name}
                     </h2>
                     <p className="mt-1 text-sm text-zinc-600">{meta.description}</p>
@@ -294,21 +296,21 @@ export default function AtsIntegrationsClient() {
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-white"
+                            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-white"
                             onClick={() => void testConnection(c.id)}
                           >
                             Test
                           </button>
                           <button
                             type="button"
-                            className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-white"
+                            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-white"
                             onClick={() => void loadHistory(c.id)}
                           >
                             Transfer history
                           </button>
                           <button
                             type="button"
-                            className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
+                            className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
                             onClick={() => void disconnect(c.id)}
                           >
                             Disconnect
@@ -372,7 +374,7 @@ export default function AtsIntegrationsClient() {
                     </label>
                     <button
                       type="submit"
-                      className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+                      className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500"
                     >
                       Connect Recruitee
                     </button>
@@ -388,7 +390,7 @@ export default function AtsIntegrationsClient() {
                           "/api/talent/integrations/ats/zoho/connect"
                         );
                       }}
-                      className="inline-flex rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+                      className="inline-flex rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500"
                     >
                       Connect Zoho Recruit
                     </button>
@@ -400,7 +402,7 @@ export default function AtsIntegrationsClient() {
                     <button
                       type="button"
                       onClick={() => void enableAshbyDemo()}
-                      className="rounded-full border border-emerald-700 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
+                      className="rounded-md border border-brand-600 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
                     >
                       Try Demo Mode
                     </button>
@@ -434,7 +436,7 @@ export default function AtsIntegrationsClient() {
                       </label>
                       <button
                         type="submit"
-                        className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+                        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500"
                       >
                         Connect Ashby API key
                       </button>

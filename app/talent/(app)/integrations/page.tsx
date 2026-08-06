@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 
 export default function TalentIntegrationsPage() {
   return (
-    <main>
+    <div>
       <AtsIntegrationsClient />
-      <p className="mx-auto max-w-4xl px-4 pb-10 text-xs text-zinc-500">
+      <p className="px-4 pb-8 text-xs text-zinc-500 sm:px-5 lg:px-6">
         Part of {TALENT.name}. ResumeX does not replace your ATS.
       </p>
-    </main>
+    </div>
   );
 }

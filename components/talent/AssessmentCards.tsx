@@ -106,7 +106,7 @@ function CriteriaChecklist({
   items: CriteriaItem[];
 }) {
   return (
-    <article className="rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm">
+    <article className="rounded-lg border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         {title}
       </h3>
@@ -169,7 +169,7 @@ function CriteriaChecklist({
 
 function StrongMatchesList({ matches }: { matches: StrongMatch[] }) {
   return (
-    <article className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
+    <article className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-700">
         Strong matches
       </h3>
@@ -206,7 +206,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
 
   return (
     <section className="space-y-6" aria-live="polite">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <ScoreRing score={result.matchScore} />
           <div className="flex-1 space-y-4">
@@ -227,13 +227,13 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
             </div>
             <div className="flex flex-wrap gap-3">
               <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${concernStyles(result.concernLevel)}`}
+                className={`inline-flex items-center gap-2 rounded-md border px-4 py-1.5 text-sm font-medium ${concernStyles(result.concernLevel)}`}
               >
                 <span className="text-xs uppercase tracking-wide opacity-80">Concern</span>
                 <span>{CONCERN_LABELS[result.concernLevel]}</span>
               </div>
               <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium ${nextStepStyles(result.recommendedNextStep)}`}
+                className={`inline-flex items-center gap-2 rounded-md border px-4 py-1.5 text-sm font-medium ${nextStepStyles(result.recommendedNextStep)}`}
               >
                 <span className="text-xs uppercase tracking-wide opacity-80">Next step</span>
                 <span>{NEXT_STEP_LABELS[result.recommendedNextStep]}</span>
@@ -251,7 +251,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
       <StrongMatchesList matches={result.strongMatches} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-sky-200 bg-sky-50/60 p-5 shadow-sm">
+        <article className="rounded-lg border border-sky-200 bg-sky-50/60 p-5 shadow-sm">
           <SectionHeader
             title="Phone-screen questions"
             copyText={formatPhoneScreenQuestions(result.phoneScreenQuestions)}
@@ -273,7 +273,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
           </ol>
         </article>
 
-        <article className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm">
+        <article className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm">
           <SectionHeader
             title="Client-facing bullets"
             copyText={formatClientFacingBullets(result.clientFacingBullets)}
@@ -294,7 +294,7 @@ export default function AssessmentCards({ result }: AssessmentCardsProps) {
         </article>
       </div>
 
-      <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <article className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
         <SectionHeader
           title="Sendout blurb"
           copyText={formatSendoutBlurb(result.sendoutBlurb)}

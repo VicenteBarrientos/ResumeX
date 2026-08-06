@@ -209,7 +209,7 @@ export default function SendToAtsModal({
       aria-label="Send to ATS"
     >
       <button type="button" className="absolute inset-0 cursor-default" aria-label="Close" onClick={onClose} />
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-zinc-200 bg-white shadow-2xl sm:rounded-2xl">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-lg border border-zinc-200 bg-white shadow-2xl sm:rounded-lg">
         <header className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900">Send to ATS</h2>
@@ -217,7 +217,7 @@ export default function SendToAtsModal({
           </div>
           <button
             type="button"
-            className="rounded-full px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100"
+            className="rounded-md px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100"
             onClick={onClose}
           >
             Close
@@ -237,7 +237,7 @@ export default function SendToAtsModal({
               {connections.length === 0 ? (
                 <p className="text-sm text-zinc-500">
                   No connected ATS yet.{" "}
-                  <a href="/talent/integrations" className="text-emerald-700 underline">
+                  <a href="/talent/integrations" className="text-brand-700 underline">
                     Open integration settings
                   </a>
                 </p>
@@ -248,7 +248,7 @@ export default function SendToAtsModal({
                     type="button"
                     disabled={busy}
                     onClick={() => void selectConnection(c)}
-                    className="flex w-full flex-col rounded-xl border border-zinc-200 px-3 py-3 text-left hover:border-emerald-600"
+                    className="flex w-full flex-col rounded-xl border border-zinc-200 px-3 py-3 text-left hover:border-brand-500"
                   >
                     <span className="font-medium text-zinc-900">{c.displayName}</span>
                     <span className="text-xs text-zinc-500">
@@ -279,7 +279,7 @@ export default function SendToAtsModal({
                       type="button"
                       disabled={busy}
                       onClick={() => void selectJob(j)}
-                      className="w-full rounded-xl border border-zinc-200 px-3 py-3 text-left hover:border-emerald-600"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-3 text-left hover:border-brand-500"
                     >
                       <span className="font-medium text-zinc-900">{j.title}</span>
                       <span className="mt-1 block text-xs text-zinc-500">
@@ -357,7 +357,7 @@ export default function SendToAtsModal({
                 type="button"
                 disabled={busy || (!draft.email && !reuseId && !createDespiteNameOnly)}
                 onClick={() => void runPreview()}
-                className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 Continue to preview
               </button>
@@ -400,7 +400,7 @@ export default function SendToAtsModal({
               <button
                 type="button"
                 onClick={() => setStep("confirm")}
-                className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white"
               >
                 Review confirmation
               </button>
@@ -430,7 +430,7 @@ export default function SendToAtsModal({
                 type="button"
                 disabled={!confirmBasis || busy}
                 onClick={() => void confirmTransfer()}
-                className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 {confirmLabel}
               </button>
@@ -457,7 +457,7 @@ export default function SendToAtsModal({
                   href={result.candidateUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-emerald-700 underline"
+                  className="text-sm text-brand-700 underline"
                 >
                   Open candidate in ATS
                 </a>
@@ -465,7 +465,7 @@ export default function SendToAtsModal({
               {result.retryable && (
                 <button
                   type="button"
-                  className="block text-sm text-emerald-800 underline"
+                  className="block text-sm text-brand-800 underline"
                   onClick={() => {
                     setStep("confirm");
                   }}

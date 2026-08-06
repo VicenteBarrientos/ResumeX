@@ -76,6 +76,20 @@ export function productForPath(pathname: string): Product | null {
   );
 }
 
+/**
+ * Talent app tool routes use the Ashby-like sidebar shell instead of the
+ * floating Career chrome. The public landing `/talent` stays marketing.
+ */
+const TALENT_APP_SEGMENTS = ["mapper", "assess", "searches", "integrations"] as const;
+
+export function isTalentAppPath(pathname: string): boolean {
+  return TALENT_APP_SEGMENTS.some(
+    (segment) =>
+      pathname === `${TALENT.basePath}/${segment}` ||
+      pathname.startsWith(`${TALENT.basePath}/${segment}/`)
+  );
+}
+
 /** The other product — used for the cross-product link in the nav. */
 export function otherProduct(product: Product): Product {
   return product.id === "career" ? TALENT : CAREER;

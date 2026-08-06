@@ -125,15 +125,12 @@ export default function TalentAssessor() {
   const canSubmit = hasResume && jobDescription.trim().length > 0 && !isLoading;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-10 text-center">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
-          ResumeX Talent
-        </p>
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+    <div className="px-4 py-5 sm:px-5 lg:px-6">
+      <header className="mb-5 border-b border-[var(--talent-panel-border)] pb-4">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
           Candidate assessment
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-600">
+        <p className="mt-1 max-w-2xl text-sm text-zinc-500">
           Paste a resume and a job description. Get a hiring decision brief —
           concern level, next step, phone-screen questions, and a sendout-ready
           blurb. Nothing is invented beyond what the resume supports.
@@ -154,9 +151,9 @@ export default function TalentAssessor() {
                 setIsDragging(true);
               }}
               onDragLeave={() => setIsDragging(false)}
-              className={`rounded-2xl border border-dashed p-4 transition ${
+              className={`rounded-lg border border-dashed p-4 transition ${
                 isDragging
-                  ? "border-emerald-500 bg-emerald-50"
+                  ? "border-brand-500 bg-brand-50"
                   : "border-zinc-300 bg-zinc-50/80"
               }`}
             >
@@ -175,7 +172,7 @@ export default function TalentAssessor() {
                   disabled={isLoading}
                   className="sr-only"
                 />
-                <span className="mt-1 inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-emerald-400 hover:text-emerald-700">
+                <span className="mt-1 inline-flex rounded-md border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:border-brand-300 hover:text-brand-700">
                   Choose PDF
                 </span>
               </label>
@@ -214,7 +211,7 @@ export default function TalentAssessor() {
                 onChange={(event) => handleResumePaste(event.target.value)}
                 rows={14}
                 placeholder="Paste the candidate resume…"
-                className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-zinc-100"
+                className="w-full resize-y rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:bg-zinc-100"
                 disabled={isLoading || Boolean(pdfFile)}
               />
             </label>
@@ -229,7 +226,7 @@ export default function TalentAssessor() {
               onChange={(event) => setJobDescription(event.target.value)}
               rows={22}
               placeholder="Paste the role you are hiring for…"
-              className="w-full resize-y rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full resize-y rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
               disabled={isLoading}
             />
           </label>
@@ -244,18 +241,18 @@ export default function TalentAssessor() {
               type="button"
               onClick={handleTryDemo}
               disabled={isLoading}
-              className="inline-flex min-w-32 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-w-32 items-center justify-center rounded-md border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Try demo
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex min-w-40 items-center justify-center rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
+              className="inline-flex min-w-40 items-center justify-center rounded-md bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
             >
               {isLoading ? (
                 <>
-                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-md border-2 border-white/30 border-t-white" />
                   Assessing…
                 </>
               ) : (

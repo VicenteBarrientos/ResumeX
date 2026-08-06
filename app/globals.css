@@ -7,6 +7,10 @@
   --foreground: #1b1d22;
   --canvas-top: #f1f3f6;
   --canvas-bottom: #e2e6ec;
+  /* Talent app shell (Ashby-like layout; same ResumeX palette — R-020). */
+  --talent-sidebar: #ffffff;
+  --talent-canvas: #f1f3f6;
+  --talent-panel-border: #e4e7ec;
 }
 
 @theme {

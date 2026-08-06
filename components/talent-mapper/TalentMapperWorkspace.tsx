@@ -667,7 +667,7 @@ export default function TalentMapperWorkspace() {
   ) => (
     <span
       key={key ?? label}
-      className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700"
+      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700"
     >
       {label}
       {onMove && (
@@ -682,25 +682,26 @@ export default function TalentMapperWorkspace() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-      <header className="mb-8 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">
-          ResumeX module
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-          ResumeX Talent Mapper
-        </h1>
-        <p className="max-w-2xl text-base text-zinc-600">
-          Find potential candidates through public evidence of their work.
-        </p>
-        <p className="text-sm text-zinc-500">
-          Built for research-intensive and hard-to-fill searches.
-        </p>
-        <div className="flex flex-wrap gap-2 pt-1">
+    <div className="px-4 pb-10 pt-4 sm:px-5 lg:px-6">
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--talent-panel-border)] pb-4">
+        <div className="min-w-0 space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+            Talent Mapper
+          </h1>
+          <p className="max-w-2xl text-sm text-zinc-500">
+            Find researchers through public evidence of their work — not job titles.
+          </p>
+          {searchId ? (
+            <p className="text-xs text-zinc-400">
+              Server search active · shortlist and notes sync automatically
+            </p>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
             onClick={loadDemo}
-            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500"
+            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-500"
           >
             Load scientific sourcing demo
           </button>
@@ -708,33 +709,28 @@ export default function TalentMapperWorkspace() {
             type="button"
             onClick={() => void persistSnapshot()}
             disabled={saveBusy || (!roleTitle.trim() && !criteria)}
-            className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 disabled:opacity-50"
+            className="rounded-md border border-brand-200 bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-800 disabled:opacity-50"
           >
             {saveBusy ? "Saving…" : searchId ? "Save updates" : "Save search"}
           </button>
           <Link
             href="/talent/searches"
-            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600"
+            className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50"
           >
             Saved searches
           </Link>
           <button
             type="button"
             onClick={resetDemo}
-            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600"
+            className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50"
           >
             Reset demo
           </button>
         </div>
-        {searchId ? (
-          <p className="text-xs text-zinc-500">
-            Server search active · shortlist and notes sync automatically
-          </p>
-        ) : null}
       </header>
 
       {importOffer ? (
-        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950">
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <p className="font-medium">Import browser draft as a saved search?</p>
           <p className="mt-1 text-amber-900/80">
             This browser has a Talent Mapper draft
@@ -749,14 +745,14 @@ export default function TalentMapperWorkspace() {
               type="button"
               disabled={saveBusy}
               onClick={() => void importBrowserDraft()}
-              className="rounded-full bg-amber-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+              className="rounded-md bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
             >
               Import as saved search
             </button>
             <button
               type="button"
               onClick={dismissImportOffer}
-              className="rounded-full border border-amber-300 px-4 py-2 text-xs font-medium"
+              className="rounded-md border border-amber-300 px-3 py-1.5 text-xs font-medium"
             >
               Keep local only
             </button>
@@ -764,13 +760,16 @@ export default function TalentMapperWorkspace() {
         </div>
       ) : null}
 
-      <div className="mb-6 space-y-3">
+      <div className="mb-4 space-y-2">
         <HowItWorks />
         <WhyTalentMapper open={whyOpen} onToggle={() => setWhyOpen((v) => !v)} />
         <DemoTalkingPoints open={talkingOpen} onToggle={() => setTalkingOpen((v) => !v)} />
       </div>
 
-      <nav className="mb-6 flex flex-wrap gap-2 text-xs font-medium" aria-label="Talent Mapper steps">
+      <nav
+        className="mb-4 flex overflow-x-auto border-b border-[var(--talent-panel-border)] text-xs font-medium"
+        aria-label="Talent Mapper steps"
+      >
         {(
           [
             ["role", "1. Role"],
@@ -788,10 +787,10 @@ export default function TalentMapperWorkspace() {
               if (id === "strategy" && criteria) setStep("strategy");
               if (id === "results" && result) setStep("results");
             }}
-            className={`rounded-full px-3 py-1.5 ${
+            className={`shrink-0 border-b-2 px-3 py-2.5 transition ${
               step === id
-                ? "bg-zinc-900 text-white"
-                : "bg-zinc-100 text-zinc-600"
+                ? "border-brand-600 text-brand-700"
+                : "border-transparent text-zinc-500 hover:text-zinc-800"
             }`}
           >
             {label}
@@ -812,7 +811,7 @@ export default function TalentMapperWorkspace() {
       )}
 
       {step === "role" && (
-        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5">
+        <section className="space-y-4 rounded-lg border border-[var(--talent-panel-border)] bg-white p-5">
           <h2 className="text-lg font-semibold text-zinc-900">Enter a role</h2>
           <p className="text-sm text-zinc-500">{SCIENTIFIC_DEMO_LABEL}</p>
           <div>
@@ -823,7 +822,7 @@ export default function TalentMapperWorkspace() {
               id="role-title"
               value={roleTitle}
               onChange={(e) => setRoleTitle(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm"
               placeholder="e.g. Scientist — Virology and Experimental Biology"
             />
           </div>
@@ -836,7 +835,7 @@ export default function TalentMapperWorkspace() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={14}
-              className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed"
+              className="mt-1 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm leading-relaxed"
               placeholder="Paste a complete job description…"
             />
           </div>
@@ -844,7 +843,7 @@ export default function TalentMapperWorkspace() {
             type="button"
             disabled={busy}
             onClick={extractCriteria}
-            className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {busy ? "Extracting…" : "Extract sourcing criteria"}
           </button>
@@ -852,7 +851,7 @@ export default function TalentMapperWorkspace() {
       )}
 
       {step === "criteria" && criteria && (
-        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5">
+        <section className="space-y-5 rounded-lg border border-[var(--talent-panel-border)] bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900">
@@ -866,7 +865,7 @@ export default function TalentMapperWorkspace() {
             <button
               type="button"
               onClick={() => extractedCriteria && setCriteria(extractedCriteria)}
-              className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+              className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs"
             >
               Reset to extracted
             </button>
@@ -1027,14 +1026,14 @@ export default function TalentMapperWorkspace() {
                 setPubmedQueries(buildPubmedQueries(criteria));
                 setStep("strategy");
               }}
-              className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white"
+              className="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white"
             >
               Continue to search strategy
             </button>
             <button
               type="button"
               onClick={() => setStep("role")}
-              className="rounded-full border border-zinc-200 px-4 py-2 text-sm"
+              className="rounded-md border border-zinc-200 px-4 py-2 text-sm"
             >
               Back
             </button>
@@ -1043,7 +1042,7 @@ export default function TalentMapperWorkspace() {
       )}
 
       {step === "strategy" && criteria && (
-        <section className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5">
+        <section className="space-y-5 rounded-lg border border-[var(--talent-panel-border)] bg-white p-5">
           <h2 className="text-lg font-semibold text-zinc-900">
             Search strategy
           </h2>
@@ -1054,11 +1053,11 @@ export default function TalentMapperWorkspace() {
 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-medium text-zinc-500">Search mode</span>
-            <div className="flex rounded-full border border-zinc-200 p-0.5">
+            <div className="flex rounded-md border border-zinc-200 p-0.5">
               <button
                 type="button"
                 onClick={() => setMode("demo")}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                className={`rounded-md px-3 py-1.5 text-xs font-medium ${
                   mode === "demo" ? "bg-zinc-900 text-white" : "text-zinc-600"
                 }`}
               >
@@ -1069,7 +1068,7 @@ export default function TalentMapperWorkspace() {
                 onClick={() => setMode("live")}
                 disabled={!openAlexConfigured && pubmedStatus === "not_configured"}
                 title="Live search against configured sources"
-                className={`rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-40 ${
+                className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-40 ${
                   mode === "live" ? "bg-zinc-900 text-white" : "text-zinc-600"
                 }`}
               >
@@ -1168,7 +1167,7 @@ export default function TalentMapperWorkspace() {
                     },
                   ])
                 }
-                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+                className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs"
               >
                 Add OpenAlex query
               </button>
@@ -1276,7 +1275,7 @@ export default function TalentMapperWorkspace() {
                     },
                   ])
                 }
-                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+                className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs"
               >
                 Add PubMed query
               </button>
@@ -1294,7 +1293,7 @@ export default function TalentMapperWorkspace() {
               type="button"
               disabled={busy}
               onClick={runSearch}
-              className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
             >
               {busy
                 ? "Searching…"
@@ -1305,7 +1304,7 @@ export default function TalentMapperWorkspace() {
             <button
               type="button"
               onClick={() => setStep("criteria")}
-              className="rounded-full border border-zinc-200 px-4 py-2 text-sm"
+              className="rounded-md border border-zinc-200 px-4 py-2 text-sm"
             >
               Back
             </button>
@@ -1315,7 +1314,7 @@ export default function TalentMapperWorkspace() {
 
       {step === "results" && result && (
         <section className="space-y-5">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+          <div className="rounded-lg border border-[var(--talent-panel-border)] bg-white p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900">
@@ -1358,14 +1357,14 @@ export default function TalentMapperWorkspace() {
                 <button
                   type="button"
                   onClick={exportCsv}
-                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium"
+                  className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium"
                 >
                   Export shortlist CSV
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep("strategy")}
-                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs"
+                  className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs"
                 >
                   Adjust strategy
                 </button>
@@ -1397,7 +1396,7 @@ export default function TalentMapperWorkspace() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+          <div className="rounded-lg border border-[var(--talent-panel-border)] bg-white p-4">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-xs text-zinc-500">
                 Min relevance score
@@ -1498,18 +1497,18 @@ export default function TalentMapperWorkspace() {
           </div>
 
           {busy && (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="overflow-hidden rounded-lg border border-[var(--talent-panel-border)] bg-white">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="h-48 animate-pulse rounded-2xl bg-zinc-100"
+                  className="h-10 animate-pulse border-b border-zinc-100 bg-zinc-50 last:border-0"
                 />
               ))}
             </div>
           )}
 
           {!busy && filteredCandidates.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-zinc-300 px-6 py-12 text-center">
+            <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-12 text-center">
               <p className="font-medium text-zinc-800">
                 No potential researchers match these filters.
               </p>
@@ -1519,24 +1518,46 @@ export default function TalentMapperWorkspace() {
             </div>
           )}
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            {filteredCandidates.map((c) => (
-              <CandidateCard
-                key={c.authorId}
-                candidate={c}
-                shortlisted={shortlist.has(c.authorId)}
-                onToggleShortlist={() => toggleShortlist(c.authorId)}
-                onView={() => {
-                  setFocusOutreach(false);
-                  setSelectedId(c.authorId);
-                }}
-                onOutreach={() => {
-                  setFocusOutreach(true);
-                  setSelectedId(c.authorId);
-                }}
-              />
-            ))}
-          </div>
+          {!busy && filteredCandidates.length > 0 && (
+            <div className="overflow-hidden rounded-lg border border-[var(--talent-panel-border)] bg-white">
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--talent-panel-border)] bg-zinc-50 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                      <th className="px-3 py-2.5 font-semibold">Researcher</th>
+                      <th className="hidden px-3 py-2.5 font-semibold sm:table-cell">
+                        Institution
+                      </th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Score</th>
+                      <th className="hidden px-3 py-2.5 font-semibold md:table-cell">
+                        Evidence
+                      </th>
+                      <th className="px-3 py-2.5 text-right font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCandidates.map((c) => (
+                      <CandidateCard
+                        key={c.authorId}
+                        candidate={c}
+                        shortlisted={shortlist.has(c.authorId)}
+                        selected={selectedId === c.authorId}
+                        onToggleShortlist={() => toggleShortlist(c.authorId)}
+                        onView={() => {
+                          setFocusOutreach(false);
+                          setSelectedId(c.authorId);
+                        }}
+                        onOutreach={() => {
+                          setFocusOutreach(true);
+                          setSelectedId(c.authorId);
+                        }}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
       )}
 

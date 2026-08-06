@@ -8,11 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function TalentAssessPage() {
-  return (
-    <div className="relative min-h-full flex-1 overflow-hidden text-zinc-900">
-      <div className="relative z-10">
-        <TalentAssessor />
-      </div>
-    </div>
-  );
+  return <TalentAssessor />;
 }
