@@ -6,21 +6,19 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-06 19:40 UTC — America/Santiago
-- **Versión del handoff:** 1.8
-- **Estado:** ATS en `main`/`prod`; Demo Ashby E2E OK; CI **verde** en `9301330` ([Actions](https://github.com/VicenteBarrientos/ResumeX/actions/runs/31108825300)). **Auditoría de arquitectura del 2026-08-06** hecha; plan completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md). **Fase 12:** T-12.1 y T-12.2 en `cursor/architecture-debt-phase-12-7496` (sin mergear); **T-12.4 hecha** en `cursor/architecture-debt-t12-4-quota-8725` (cuota durable + `costUsd`, sin mergear).
-- **Próximo hito:** **T-12.5** (envelope de error plano, cierra hacia R-021) → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras). Mergear las ramas de Fase 12 cuando esté listo el humano.
-- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano** — no tomarlas sin eso. **Los números de `lib/quota-limits.ts` (excepto Free analyzer 1/semana y cover letter 1/día) son propuesta de producto** — confirmar antes de tratarlos como pricing policy.
-- **Riesgo con dinero en juego:** cerrado en código por T-12.4 (falta merge/deploy). `/api/talent-assess` y `/api/talent-mapper/search` (live) ahora pasan por `assertAiQuota`; `UsageEvent.costUsd` alimenta el techo diario.
+- **Última actualización:** 2026-08-06 19:48 UTC — America/Santiago
+- **Versión del handoff:** 1.9
+- **Estado:** **T-12.1 + T-12.2 + T-12.4 en `main` y Production** (`f9f46a6`, Vercel Production deploy id `5784391981`, READY). ATS Demo Ashby E2E OK. Auditoría + plan en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md).
+- **Próximo hito:** **T-12.5** (envelope de error plano, R-021) → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras).
+- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano**. **Los números de `lib/quota-limits.ts` (excepto Free analyzer 1/semana y cover letter 1/día) son propuesta de producto** — confirmar si hay que ajustar en prod.
+- **Riesgo con dinero en juego:** **cerrado en prod** por T-12.4. `/api/talent-assess` y `/api/talent-mapper/search` (live) pasan por `assertAiQuota`; `UsageEvent.costUsd` alimenta el techo diario (migración aplicada en el build de Vercel).
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
 - **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-**Fase 12:**
-- `cursor/architecture-debt-phase-12-7496` — T-12.1, T-12.2 (sin mergear).
-- `cursor/architecture-debt-t12-4-quota-8725` — T-12.4 (sin mergear).
+Ninguno de Fase 12 en vuelo: T-12.1–T-12.4 ya están en `main`/prod. Siguiente tomable: **T-12.5**.
 
 
 ## Protocolo para agentes
@@ -257,6 +255,15 @@ La rama `archive/cs50-clerk-2026-08-05` (en la copia CS50) conten?a un redise?o 
 No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarlas como backlog, no como migraci?n.
 
 ## Bit?cora de cambios
+
+### 2026-08-06 19:48 — Deploy a Production de T-12.1–T-12.4
+
+- **Objetivo:** publicar la ola 0 + cuota durable en prod.
+- **Estado:** completado.
+- **Cambios:** merge a `main` `f9f46a6` (incluye T-12.1, T-12.2, T-12.4). Vercel Production `5784391981` READY. PR #2 auto-merged; PR #4 cerrado tras el push (base no era `main`).
+- **Validaciones:** status commit `success` (Vercel); `/`, `/talent`, `/login` 200 en `https://resumex.talentxrecruiting.com`.
+- **Riesgos o bloqueos:** CI de GitHub Actions **no disparó** en este push (mismo patrón T-7.3 / App token). El build de Vercel sí corrió `prisma migrate deploy` (script de `npm run build`).
+- **Siguiente paso:** T-12.5; confirmar números de `lib/quota-limits.ts` si hace falta.
 
 ### 2026-08-05 13:46 ? consolidaci?n de repos y creaci?n del handoff
 
