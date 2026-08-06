@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
+import { quotaDenialResponse } from "@/lib/quota";
 import { normalizeUnknownError } from "@/lib/talent-mapper/errors";
 import { enabledQueries } from "@/lib/talent-mapper/query-builder";
 import { buildPubmedQueries } from "@/lib/talent-mapper/providers/pubmed/query-builder";
@@ -16,7 +18,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
 
   let body: unknown;
@@ -100,6 +102,12 @@ export async function POST(req: Request) {
     }
   }
 
+  // Demo snapshot / config fallback does not burn live-search quota.
+  if (mode !== "demo") {
+    const denial = await assertAiQuota(userId, "talent_mapper_search");
+    if (denial) return quotaDenialResponse(denial);
+  }
+
   try {
     const controller = new AbortController();
     const deadlineMs = 55_000;
@@ -144,6 +152,10 @@ export async function POST(req: Request) {
         },
         { status: 404 },
       );
+    }
+
+    if (mode !== "demo") {
+      await recordUsage(userId, "talent_mapper_search");
     }
 
     return NextResponse.json(result);

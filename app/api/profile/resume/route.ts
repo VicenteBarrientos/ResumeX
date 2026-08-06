@@ -5,7 +5,10 @@ import { NextResponse } from "next/server";
 import { extractTextFromPdf } from "@/lib/pdf";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL } from "@/lib/constants";
 import { debugError } from "@/lib/debug-log";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
+import { quotaDenialResponse } from "@/lib/quota";
+import { buildTokenUsage } from "@/lib/token-usage";
 import OpenAI from "openai";
 
 type ParsedContact = {
@@ -16,16 +19,19 @@ type ParsedContact = {
   linkedinUrl?: string;
 };
 
-async function parseContactFromResume(text: string): Promise<ParsedContact> {
+async function parseContactFromResume(
+  text: string,
+): Promise<{ contact: ParsedContact; costUsd?: number }> {
   const apiKey = getOpenAiApiKey();
   if (!apiKey) {
-    return {};
+    return { contact: {} };
   }
 
   try {
     const openai = new OpenAI({ apiKey });
+    const model = "gpt-4o-mini";
     const res = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       temperature: 0,
       messages: [
         {
@@ -37,15 +43,23 @@ async function parseContactFromResume(text: string): Promise<ParsedContact> {
     });
     const raw = res.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const usage = buildTokenUsage(
+      model,
+      res.usage?.prompt_tokens ?? 0,
+      res.usage?.completion_tokens ?? 0,
+    );
     return {
-      fullName: parsed.fullName ?? undefined,
-      email: parsed.email ?? undefined,
-      phone: parsed.phone ?? undefined,
-      location: parsed.location ?? undefined,
-      linkedinUrl: parsed.linkedinUrl ?? undefined,
+      contact: {
+        fullName: parsed.fullName ?? undefined,
+        email: parsed.email ?? undefined,
+        phone: parsed.phone ?? undefined,
+        location: parsed.location ?? undefined,
+        linkedinUrl: parsed.linkedinUrl ?? undefined,
+      },
+      costUsd: usage.estimatedCostUsd,
     };
   } catch {
-    return {};
+    return { contact: {} };
   }
 }
 
@@ -85,8 +99,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not extract text from this PDF. Try copy-pasting your resume text directly." }, { status: 422 });
   }
 
-  // Parse contact fields from resume text
-  const contact = await parseContactFromResume(resumeText);
+  // OpenAI contact parse is optional; only burn quota when a key is configured.
+  let contact: ParsedContact = {};
+  let contactCostUsd: number | undefined;
+  if (getOpenAiApiKey()) {
+    const denial = await assertAiQuota(session.user.id, "profile_resume");
+    if (denial) return quotaDenialResponse(denial);
+    const parsed = await parseContactFromResume(resumeText);
+    contact = parsed.contact;
+    contactCostUsd = parsed.costUsd;
+  }
 
   try {
     await db.profile.upsert({
@@ -113,6 +135,10 @@ export async function POST(req: Request) {
     console.error("[resume] DB upsert failed.");
     debugError("[resume] DB upsert failure detail:", err);
     return NextResponse.json({ error: "Database error saving resume." }, { status: 500 });
+  }
+
+  if (typeof contactCostUsd === "number") {
+    await recordUsage(session.user.id, "profile_resume", contactCostUsd);
   }
 
   return NextResponse.json({ resumeText, contact });

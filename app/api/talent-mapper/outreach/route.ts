@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
+import { quotaDenialResponse } from "@/lib/quota";
 import { generateOutreach } from "@/lib/talent-mapper/ai";
 import { outreachRequestSchema } from "@/lib/talent-mapper/schemas";
 import { requireSession } from "@/lib/require-auth";
@@ -8,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
 
   let body: unknown;
@@ -35,6 +37,9 @@ export async function POST(req: Request) {
     );
   }
 
+  const denial = await assertAiQuota(userId, "outreach");
+  if (denial) return quotaDenialResponse(denial);
+
   try {
     const result = await generateOutreach({
       candidate: {
@@ -55,6 +60,7 @@ export async function POST(req: Request) {
       roleTitle: parsed.data.roleTitle,
       tone: parsed.data.tone,
     });
+    await recordUsage(userId, "outreach");
     return NextResponse.json(result);
   } catch {
     return NextResponse.json(

@@ -6,9 +6,11 @@ import {
 } from "@/lib/analysis-errors";
 import { MAX_PDF_SIZE_BYTES, MAX_PDF_SIZE_LABEL, MAX_TEXT_LENGTH } from "@/lib/constants";
 import { extractTextFromDocx } from "@/lib/docx";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
 import { formatResume } from "@/lib/format-resume";
 import { extractTextFromPdfWithDebug } from "@/lib/pdf";
+import { quotaDenialResponse } from "@/lib/quota";
 import { requireSession } from "@/lib/require-auth";
 import type { CleanTextResult } from "@/lib/clean-text";
 import type { FormatRequest } from "@/lib/types";
@@ -116,7 +118,7 @@ async function resolveResumeFromJson(request: Request): Promise<{
 }
 
 export async function POST(request: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
 
   const apiKey = getOpenAiApiKey();
@@ -166,8 +168,12 @@ export async function POST(request: Request) {
     );
   }
 
+  const denial = await assertAiQuota(userId, "format");
+  if (denial) return quotaDenialResponse(denial);
+
   try {
     const { result, usage } = await formatResume(resume, apiKey);
+    await recordUsage(userId, "format", usage.estimatedCostUsd);
 
     return NextResponse.json({
       result,

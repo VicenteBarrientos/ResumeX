@@ -6,7 +6,9 @@ import {
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
 import { MAX_TEXT_LENGTH } from "@/lib/constants";
+import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
+import { quotaDenialResponse } from "@/lib/quota";
 import { requireSession } from "@/lib/require-auth";
 import { resolveResumeJobInput } from "@/lib/resolve-resume-job-input";
 
@@ -17,18 +19,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const { error: authError } = await requireSession();
+  const { userId, error: authError } = await requireSession();
   if (authError) return authError;
-
-  const apiKey = getOpenAiApiKey();
-
-  if (!apiKey) {
-    console.error("[ResumeX] OPENAI_API_KEY is not configured.");
-    return NextResponse.json(
-      { error: "OpenAI API key is not configured on the server." },
-      { status: 500 },
-    );
-  }
 
   const resolved = await resolveResumeJobInput(request);
 
@@ -55,8 +47,22 @@ export async function POST(request: Request) {
     );
   }
 
+  const denial = await assertAiQuota(userId, "talent_assess");
+  if (denial) return quotaDenialResponse(denial);
+
+  const apiKey = getOpenAiApiKey();
+
+  if (!apiKey) {
+    console.error("[ResumeX] OPENAI_API_KEY is not configured.");
+    return NextResponse.json(
+      { error: "OpenAI API key is not configured on the server." },
+      { status: 500 },
+    );
+  }
+
   try {
     const { result, usage } = await assessForTalent(resume, jobDescription, apiKey);
+    await recordUsage(userId, "talent_assess", usage.estimatedCostUsd);
 
     return NextResponse.json({
       result,

@@ -9,6 +9,7 @@ import { MAX_TEXT_LENGTH } from "@/lib/constants";
 import { getDemoCareerAnalysis, isCareerDemoInput } from "@/lib/demo-career";
 import { assertAnalyzerEntitlement, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
+import { quotaDenialResponse } from "@/lib/quota";
 import { requireSession } from "@/lib/require-auth";
 import { resolveResumeJobInput } from "@/lib/resolve-resume-job-input";
 
@@ -53,16 +54,7 @@ export async function POST(request: Request) {
   }
 
   const denial = await assertAnalyzerEntitlement(userId);
-  if (denial) {
-    return NextResponse.json(
-      {
-        error: denial.message,
-        code: denial.code,
-        upgradeUrl: denial.upgradeUrl,
-      },
-      { status: 402 },
-    );
-  }
+  if (denial) return quotaDenialResponse(denial);
 
   const apiKey = getOpenAiApiKey();
 
@@ -76,7 +68,7 @@ export async function POST(request: Request) {
 
   try {
     const { result, usage } = await analyzeForCareer(resume, jobDescription, apiKey);
-    await recordUsage(userId, "analyze");
+    await recordUsage(userId, "analyze", usage.estimatedCostUsd);
 
     return NextResponse.json({
       result,

@@ -1,6 +1,13 @@
 /**
- * Tiny in-memory rate limiter for credential endpoints.
- * Good enough for single-instance / low-traffic; not a substitute for edge WAF.
+ * Tiny in-memory rate limiter for **pre-auth** credential endpoints
+ * (`/api/auth/register`, `/api/extension/token`) where there is no durable
+ * `userId` to index `UsageEvent` against.
+ *
+ * Best-effort per Node process only: on Vercel serverless each instance has
+ * its own `Map`, so this will not enforce a global limit. That is acceptable
+ * for burst-shaping before auth; authenticated OpenAI / live-source spend is
+ * enforced by durable `lib/quota.ts` (T-12.4 / R-022). Do not use this module
+ * for paid-path protection.
  */
 
 type Bucket = { count: number; resetAt: number };

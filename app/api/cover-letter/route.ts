@@ -11,6 +11,8 @@ import {
   recordUsage,
 } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
+import { quotaDenialResponse } from "@/lib/quota";
+import { buildTokenUsage } from "@/lib/token-usage";
 import OpenAI from "openai";
 
 function getOpenAI() {
@@ -45,16 +47,7 @@ export async function POST(req: Request) {
   }
 
   const denial = await assertCoverLetterEntitlement(session.user.id);
-  if (denial) {
-    return NextResponse.json(
-      {
-        error: denial.message,
-        code: denial.code,
-        upgradeUrl: denial.upgradeUrl,
-      },
-      { status: 402 },
-    );
-  }
+  if (denial) return quotaDenialResponse(denial);
 
   let profileContext = "";
   const profile = await db.profile.findUnique({ where: { userId: session.user.id } });
@@ -75,8 +68,9 @@ export async function POST(req: Request) {
   const userPrompt = `Job Description:\n${jobDescription.slice(0, 4000)}${company ? `\n\nCompany: ${company}` : ""}${role ? `\nRole: ${role}` : ""}`;
 
   try {
+    const model = "gpt-4o-mini";
     const completion = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -86,7 +80,12 @@ export async function POST(req: Request) {
     });
 
     const letter = completion.choices[0]?.message?.content ?? "";
-    await recordUsage(session.user.id, "cover_letter");
+    const usage = buildTokenUsage(
+      model,
+      completion.usage?.prompt_tokens ?? 0,
+      completion.usage?.completion_tokens ?? 0,
+    );
+    await recordUsage(session.user.id, "cover_letter", usage.estimatedCostUsd);
     return NextResponse.json({ letter });
   } catch {
     return NextResponse.json(

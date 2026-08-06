@@ -95,7 +95,13 @@ La foto: el producto **funciona y está separado correctamente**, pero tiene deu
 
 **Progreso (2026-08-05):** workflow creado (`prisma generate` + typecheck + lint + test; build omitido a propósito). Falta el smoke en GitHub (PR con test roto → check rojo) para marcar ✅.
 
-**Terminado cuando:** un PR con un test roto a propósito falla el check en GitHub; uno limpio pasa. Documentar el resultado en la bitácora del handoff con el link al run.
+**⚠️ Hallazgo 2026-08-06 — el camino de PR nunca se ejercitó.** El "CI verde" que registra el handoff (`31108825300`) es un run de **push a `main`**, no de `pull_request`: son triggers distintos. Consultando la API, el repo tiene **cero runs con `event=pull_request` en toda su historia** (`gh api "repos/.../actions/runs?event=pull_request" -q .total_count` → `0`), y el PR #2 de la Fase 12 tampoco disparó el workflow: sus únicos checks son los de Vercel.
+
+El `on:` del workflow **está bien** (`pull_request: branches: [main]`) y el workflow está `active`, así que no es un bug de configuración. La causa más probable es que la rama y el PR se crearon con un token de GitHub App: GitHub no dispara workflows con eventos originados por ese tipo de credencial, para evitar recursión. Verificarlo requiere abrir un PR **a mano** desde la web con una cuenta humana.
+
+Consecuencia práctica: hoy **ningún PR está siendo verificado por CI**, sólo por el build de Vercel (que no corre typecheck, lint ni tests). Hasta cerrar esto, la verificación de cualquier rama sigue dependiendo de correr los comandos localmente.
+
+**Terminado cuando:** un PR con un test roto a propósito falla el check en GitHub; uno limpio pasa. Documentar el resultado en la bitácora del handoff con el link al run. **Precondición nueva:** confirmar que el trigger `pull_request` produce runs cuando el PR lo abre una cuenta humana; si no los produce, revisar los ajustes de Actions del repo (requiere permisos de admin que el agente no tiene — `GET /actions/permissions` devuelve 403).
 
 ### ⬜ T-7.4 — Tests de caracterización para `resolve-resume-job-input.ts` y `criteria-evidence.ts` en sus bordes
 
@@ -235,6 +241,146 @@ La foto: el producto **funciona y está separado correctamente**, pero tiene deu
 
 ---
 
+# Fase 12 — Deuda arquitectónica (capa HTTP, límites y fronteras)
+
+> **El detalle completo vive en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md):** diagnóstico D-1…D-10 con `archivo:línea`, el razonamiento de cada decisión, las **anti-tareas** y la lista de lo que está bien y no hay que tocar. **Leerlo antes de tomar cualquier T-12.x** — varias de estas tareas tienen una trampa que no se ve desde el título.
+
+**Objetivo.** Cerrar la deuda estructural que encontró la auditoría del 2026-08-06: la capa HTTP tiene dos dialectos (5 patrones de auth, 5 de validación, 4 formas de error sobre ~68 handlers), el gasto de OpenAI no tiene techo, hay type assertions en el borde de confianza, y el componente más valioso del producto es el menos testeable.
+
+**Por qué el número 12 no es la prioridad.** El número es orden de creación. Esta fase va **antes** de las Fases 8 y 9 y compite de igual a igual con lo que queda de la 7. Razón: D-1 (drift de auth) es la única deuda que **empeora con el tiempo** — cada ruta nueva escrita antes del arreglo es otra migración pendiente — y D-2 es la única que cuesta **dinero real**.
+
+**Decisiones que fija esta fase.** R-021 (envelope plano), R-022 (cuota durable), R-023 (frontera por lint), R-024 (sin casts en el borde), R-025 (retirado el destino `lib/career`/`lib/talent`). Están en `AGENT_HANDOFF.md` § Capa HTTP, límites y fronteras.
+
+## Ola 0 — Poder medir
+
+### ✅ T-12.1 — Frontera Career/Talent enforceada por ESLint (R-023)
+
+Mejor relación valor/esfuerzo del plan: un archivo de config y R-005 deja de depender de la memoria de nadie.
+
+**Terminado (2026-08-06):** `eslint.config.mjs` define zona Career y zona Talent y las restringe **en ambas direcciones** con `no-restricted-imports`; el mensaje cita R-005/R-023 y apunta a R-009. `npm run lint` queda con 0 errores **sin tocar ningún import existente** (confirma que la frontera ya se cumplía), y una violación deliberada en cada dirección falla.
+
+Corrección respecto del diseño original: **no hace falta allowlistear ningún puente.** `lib/ats/**` y `lib/talent-mapper/**` son ambos Talent, así que `lib/ats/from-researcher.ts` es intra-producto y legal por construcción.
+
+### ✅ T-12.2 — Índices por usuario y parseo defensivo del perfil
+
+**Terminado (2026-08-06):** `@@index([userId, createdAt])` en `Application` y `Answer` — compuesto, no sólo `[userId]`, porque los dos listados filtran por `userId` y ordenan por `createdAt`, así que un índice sirve al `WHERE` y al `ORDER BY`. Migración `20260806130000_userid_indexes` con `IF NOT EXISTS` (replayable: este repo ya recuperó a mano una migración a medio aplicar, P3009) y sin `CONCURRENTLY` porque `migrate deploy` envuelve cada migración en una transacción. `parseProfileJson` en `app/api/profile/route.ts` devuelve `null` ante JSON corrupto en vez de tirar 500; el cliente ya maneja `profileJson` falsy.
+
+Verificado: `prisma validate`, `prisma generate`, migración sin BOM, typecheck/lint/tests verdes. **No verificado contra Postgres real** (sin base de datos en el entorno): la ruta de valor corrupto queda como comprobación de deploy. La conversión de la columna a `Json` es T-12.11.
+
+### ⬜ T-12.3 — Observabilidad mínima (cierra B-11)
+
+- Paso gratis primero: documentar en `VERCEL.md` que `get_runtime_errors`/`get_runtime_logs` del MCP de Vercel ya sirven, y cómo consultarlos.
+- Después decidir Sentry o equivalente. Instrumentar fallos de OpenAI, de proveedor ATS, y el `catch` de `runStructuredAnalysis`.
+- Sin PII: nunca CV ni JD completos, sólo longitudes (como ya hace `debugLog`).
+
+**Terminado cuando:** un error provocado a propósito aparece con stack y ruta en la herramienta elegida, y está escrito dónde mirarlo.
+
+## Ola 1 — Frenar la sangría
+
+### ✅ T-12.4 — Cuota durable sobre `UsageEvent` (R-022, cierra B-12)
+
+La única deuda con **dinero en juego**. Media implementación ya existe y nadie la generalizó: `UsageEvent` con `@@index([userId, name, createdAt])` y `countUsage`/`recordUsage` en `lib/entitlements.ts:24-36`.
+
+- `lib/quota.ts` con `assertQuota({ userId, name, limit, windowMs })`. **Sin dependencia nueva ni tabla nueva** — no hace falta Redis para este volumen.
+- `lib/entitlements.ts` se reescribe encima sin cambiar su API pública ni los límites actuales.
+- Aplicar a toda ruta autenticada que llame a OpenAI o fuente externa: **`talent-assess` y `talent-mapper/search` hoy no tienen nada**, más `format`, `extract-job`, `extract-criteria`, `outreach`, `match-score`, `autoapply/parse-profile`, `profile/resume`.
+- Budget cap real: `costUsd Float?` en `UsageEvent`, escribiendo el `estimatedCostUsd` que `lib/token-usage.ts` ya calcula.
+- `consumeRateLimit` en memoria se queda sólo para ráfagas pre-auth (`register`, `extension/token`), documentando que es best-effort por instancia.
+- Pro con límite **alto, no infinito**: un límite ausente no es un plan de precios.
+
+**Terminado cuando:** un test agota la cuota de `talent-assess` y recibe 429/402 con `code`; el segundo intento no llega a OpenAI (verificable con el mock); hay test de corte por gasto acumulado.
+
+**Hecha** en `cursor/architecture-debt-t12-4-quota-8725` (2026-08-06). Límites Free analyzer/cover letter preservados; el resto (incl. techos Pro y budget diario) vive en `lib/quota-limits.ts` como **propuesta de producto** pendiente de confirmación humana antes de tratarlos como pricing policy.
+
+### ⬜ T-12.5 — Envelope de error único y plano (R-021)
+
+⚠️ **Leer R-021 antes de escribir una línea.** La migración va **de ATS hacia Career**, no al revés — la intuición contraria rompe el login de la extensión en producción, porque `chrome-extension/popup.js:275` asigna `data.error` (string) a `textContent`.
+
+- `lib/api/response.ts` con `apiError`/`apiOk`. Forma plana: `error` string, `code`/`retryable`/`details` al lado.
+- `lib/ats/http-response.ts` pasa a wrapper delgado, **preservando** su mapeo `AtsError.code → status`.
+- Actualizar en el mismo commit `AtsIntegrationsClient.tsx` y `SendToAtsModal.tsx`.
+- No cambiar los strings de `error` existentes: son copy visible y mezclarlo hace irrevisable el diff.
+- ⚠️ Verificar que el 402 de entitlements siga entregando `upgradeUrl` (lo consume el CTA de upgrade).
+
+**Terminado cuando:** grep de `NextResponse.json({ error` vacío fuera de `lib/api/response.ts`; el login de la extensión desempaquetada muestra el mensaje real y no `[object Object]`; ambos E2E verdes.
+
+### ⬜ T-12.6 — Zod en el borde de escritura (R-024)
+
+- Reemplazar `as TalentSearchWriteInput` (`searches/route.ts:40`, `[id]/route.ts:52`) y `as Record<string, unknown>` (`profile/route.ts`) por esquemas.
+- **`resultJson` no lleva esquema campo por campo** — duplicaría `ResearcherCandidate` y se desincronizaría. Lleva: esquema de envelope + cap de bytes + `schemaVersion`. El motivo está en `docs/ARCHITECTURE_DEBT.md`; entenderlo antes de discutirlo.
+
+**Terminado cuando:** un POST con `criteriaJson` malformado devuelve 400 con `code: "validation"` en vez de persistir; un `resultJson` sobre el cap devuelve 413/400; hay test de que un `schemaVersion` desconocido no revienta la UI.
+
+## Ola 2 — Estructura
+
+### ⬜ T-12.7 — Un solo punto de entrada de auth
+
+**Depende de T-12.5** (el envelope debe existir para que los 401 sean consistentes).
+
+- Borrar las tres copias locales de `resolveUserId` (`profile:7-11`, `tracker:7-11`, `answers:7-11`) y usar `requireUserId`, que ya hace exactamente eso.
+- Migrar los ~11 handlers con `getServerSession` inline a `requireSession`.
+- Arreglar `answers/[id]/route.ts:8`: `session?.user?.id`, no `!session`.
+- ⚠️ **`match-score` necesita verificación, no arreglo directo.** Devuelve 200 + `{score:null,error}` sin auth (`:27-28`). Antes de cambiarlo a 401, leer `chrome-extension/content.js` y `background.js`; si la extensión trata non-200 como fatal, el cambio viaja junto con la publicación de T-9.2.
+- Regla de lint que prohíba `getServerSession` fuera de `lib/auth-options.ts` y `lib/require-auth.ts`.
+
+**Terminado cuando:** `rg "getServerSession" app/api` sólo matchea vía helpers; `rg "resolveUserId"` vacío; los dos E2E verdes.
+
+### ⬜ T-12.8 — `defineRoute`
+
+**Depende de T-12.5 y T-12.7.** Con ~68 handlers R-009 está satisfecho de sobra; el riesgo acá es abstraer **de más**.
+
+- `lib/api/handler.ts`: auth → cuota → Zod → handler → mapeo de error. Sin registro de middlewares, sin DI, sin decoradores.
+- Migrar 3-4 rutas piloto (una Career simple, una con Bearer, una ATS con ownership). **Si no quedan más cortas y claras, abandonar la tarea** — 12.5 + 12.7 ya dan el 80%.
+
+**Terminado cuando:** las rutas piloto quedan sin boilerplate, y la decisión de seguir o abandonar está en la bitácora con esas rutas como evidencia.
+
+## Ola 3 — El componente grande
+
+### ⬜ T-12.9 — Descomponer `TalentMapperWorkspace.tsx`
+
+1.497 líneas, 36 `useState`. Mezcla fetch, `localStorage`, sync al servidor, CSV y todo el wizard. El motor debajo está fijado por tests (R-012); el componente que lo maneja, no.
+
+**Refactor puro: cero cambio de comportamiento.** `npm run test:e2e:talent-mapper` verde **después de cada paso**, no sólo al final.
+
+1. `useTalentSearchDraft` (localStorage + URL).
+2. `useTalentSearchPersistence` (create/update/shortlist/notes + debounce).
+3. `useMapperFilters` (sort/filtros/derivados) — lógica pura, la primera testeable unitariamente.
+4. Nombrar la máquina de estados: `step` + flags → `useReducer`.
+5. Separar presentación: `RoleStep`, `CriteriaStep`, `ResultsStep`, `FiltersBar`.
+
+- **No** introducir Zustand/Redux: R-009 aplica a dependencias igual que a abstracciones.
+
+**Terminado cuando:** el workspace queda < 300 líneas; los hooks 1-3 tienen test unitario; E2E verde; comparación visual antes/después sin diferencias (mismo método que `b7ffc87`).
+
+## Ola 4 — Requiere decisión humana
+
+### 🤔 T-12.10 — Calibrar precisión antes de agregar fuentes
+
+Resuelve la tensión R-013 / R-014: PubMed entró **antes** de medir la precisión de OpenAlex, y la desambiguación de autores ya era riesgo abierto — fusionar dos fuentes con modelos de identidad distintos lo multiplica.
+
+- Fixtures: 3-5 roles reales con investigadores etiquetados bueno/malo/dudoso **por criterio humano de dominio**. El etiquetado *es* la tarea y no lo puede hacer un agente.
+- Script (no test) que imprima `precision@10` para OpenAlex solo, PubMed solo y merge dual. Es una **medición**: reporta un número, no falla el build.
+- Si el merge dual empeora la precisión, la respuesta puede ser dejar PubMed detrás de un flag apagado, no borrarlo.
+- **Bloquea B-10** (tercera fuente).
+
+**Terminado cuando:** el script reporta las tres cifras y la conclusión sobre R-013 queda en la bitácora.
+
+### 🤔 T-12.11 — `Profile.profileJson` a columna `Json`
+
+**Depende de T-12.3** (migrar datos sin ver errores de producción es apostar). Migración con backfill de `String?` a `Json?` y lectura tolerante durante la transición. Separada de T-12.2 a propósito.
+
+### Riesgos de la Fase 12
+
+| Riesgo | Mitigación |
+|---|---|
+| Unificar el error hacia el shape anidado de ATS porque "es el código más nuevo" | R-021 y `docs/ARCHITECTURE_DEBT.md` explican por qué es al revés. Verificación obligatoria con la extensión desempaquetada en T-12.5 |
+| Mover los 40 archivos planos de `lib/` a carpetas por producto | Anti-tarea explícita. R-025 lo retira: churn de imports con cero cambio de acoplamiento. T-12.1 ya dio el beneficio |
+| T-12.9 cambia comportamiento sin que nadie lo note | Es refactor puro por contrato; E2E después de cada paso y comparación visual antes/después |
+| Cambiar el 200 de `match-score` rompe la extensión desplegada | Verificar consumo en `content.js`/`background.js` antes; si rompe, viaja con T-9.2 |
+| Meter Redis/Upstash para el rate limit | Anti-tarea: `UsageEvent` ya existe e indexado. Sobreingeniería para este volumen |
+
+---
+
 # Backlog transversal
 
 Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. No tiene fase asignada porque cada ítem es independiente y de tamaño pequeño — tomar cualquiera sin esperar el orden de fases.
@@ -247,9 +393,9 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 | ✅ B-7 | `aiInferred` en `CriteriaItem`/`StrongMatch` | Confirmado presente en `lib/types.ts:35,42` — cerrar como hecho |
 | ⬜ B-8 | i18n Talent pendiente | Absorbido por **T-8.3** |
 | ⬜ B-9 | a11y `/talent` pendiente | Absorbido por **T-8.1**/**T-8.2** |
-| ⏸️ B-10 | Segunda fuente de evidencia (NIH RePORTER o Europe PMC) | Condicionada a calibrar precisión de OpenAlex contra roles reales primero (R-013) — no agregar fuentes sin medir la que ya existe |
-| ⬜ B-11 | Observabilidad de errores en producción | Nuevo. No hay Sentry ni equivalente; los únicos logs son los de Vercel. Antes de escalar tráfico, evaluar agregar tracking de errores runtime (server actions, API routes) — no bloqueante hoy, pero barato de resolver temprano |
-| ⬜ B-12 | Límite de costo/uso de OpenAI | Nuevo. `analyze.ts`/`assessForTalent`/Talent Mapper llaman a OpenAI sin rate limit ni budget cap por usuario. Un usuario (o un bot) puede generar cientos de análisis sin fricción. Evaluar límite simple (por usuario/día) antes de que sea necesario por un incidente en vez de por prevención |
+| ⛔ B-10 | Segunda fuente de evidencia (NIH RePORTER o Europe PMC) | **Bloqueada por T-12.10.** Ya entró PubMed sin medir precisión (R-013); no agregar una tercera fuente hasta tener la línea base. No es "diferida por falta de tiempo": sin medición no se puede saber si ayuda |
+| ⬜ B-11 | Observabilidad de errores en producción | Absorbido por **T-12.3**. Sube de prioridad: sin esto no se puede verificar en prod ninguna corrección de la Fase 12 |
+| ⬜ B-12 | Límite de costo/uso de OpenAI | ✅ Absorbido y cerrado por **T-12.4** (`lib/quota.ts` + `costUsd` + techos Pro finitos). Confirmado peor de lo anotado originalmente: `/api/talent-assess` y `/api/talent-mapper/search` no tenían ni entitlement ni rate limit; `lib/rate-limit.ts` queda documentado como best-effort pre-auth por instancia |
 
 ---
 
@@ -268,4 +414,6 @@ Heredado del cierre de roadmap anterior más lo que surgió de esta auditoría. 
 
 - **2026-08-05** — Roadmap cerrado en alcance agente: Fases 3–6 + backlog viable (entrada anterior, preservada en el historial de git).
 - **2026-08-05** — T-3.4 procedencia; T-3.1/T-3.2; Fase 2 completa (entrada anterior, preservada en el historial de git).
+- **2026-08-06** — **T-12.4 hecha** en `cursor/architecture-debt-t12-4-quota-8725` (cuota durable + `costUsd` + techos Pro finitos; B-12 cerrado en código). Siguiente: T-12.5.
+- **2026-08-06** — **Fase 12 abierta y arrancada** tras la auditoría de arquitectura (sólo lectura, contra el código real y no contra este archivo). Diagnóstico D-1…D-10 y razonamiento completo en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md); decisiones R-021…R-025 en el handoff. Cuatro olas, T-12.1…T-12.11; **T-12.1 y T-12.2 ya hechas** en `cursor/architecture-debt-phase-12-7496`. Prioridad por encima de las Fases 8 y 9 pese al número, porque D-1 (drift de auth) empeora con el tiempo y D-2 (gasto sin techo) cuesta dinero. Backlog: B-11 absorbido por T-12.3, B-12 por T-12.4, B-10 pasa de ⏸️ a ⛔ bloqueada por T-12.10. Hallazgo que reordena el trabajo: la extensión desplegada lee `data.error` como string (`chrome-extension/popup.js:275`), así que la unificación del envelope va **de ATS hacia Career** y no al revés.
 - **2026-08-05** — Nuevo roadmap post-cierre: Fases 1–6 confirmadas completas en producción (`add4208`). Auditoría de terreno (tests, CI, i18n, a11y, tema de extensión, modelos Prisma) y apertura de Fases 7–11: red de seguridad (tests + E2E Career + CI), accesibilidad/i18n de Talent, paridad visual de la extensión, equipos (🤔 condicionada) y comercialización (⏸️ diferida). Backlog transversal actualizado: B-2/B-3/B-8/B-9 absorbidos por tareas nuevas, B-7 cerrado como ya hecho, B-11/B-12 nuevos (observabilidad, límite de costo OpenAI). El detalle tarea-por-tarea de las Fases 1–6 se conserva íntegro en `AGENT_HANDOFF.md` § Bitácora de cambios y en el historial de git de este archivo; no se repite acá para no diluir las fases nuevas.
