@@ -1,10 +1,10 @@
 /**
- * Proposed product quotas for T-12.4 / R-022.
+ * Confirmed product quotas for T-12.4 / R-022 (human-confirmed 2026-08-06).
  *
  * Free analyzer (1/week) and cover letter (1/day) preserve the limits that
- * shipped with the audit-fix entitlements. Everything else is a **proposal**:
- * Pro is high but finite (never unlimited). Confirm with a human before treating
- * these numbers as pricing policy in production.
+ * shipped with the audit-fix entitlements. All other Free/Pro call caps and
+ * the daily USD budgets below are the agreed pricing policy — Pro is high but
+ * never infinite.
  */
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const WEEK_MS = 7 * DAY_MS;

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/require-auth";
 import {
@@ -39,12 +40,12 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as TalentSearchWriteInput;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    return apiError("Invalid JSON body.", { status: 400 });
   }
 
   const roleTitle = body.roleTitle?.trim();
   if (!roleTitle) {
-    return NextResponse.json({ error: "roleTitle is required." }, { status: 400 });
+    return apiError("roleTitle is required.", { status: 400 });
   }
 
   const mode: SearchMode = body.mode === "live" ? "live" : "demo";

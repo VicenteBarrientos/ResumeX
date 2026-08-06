@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import {
@@ -27,13 +28,13 @@ function getOpenAI() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", { status: 401 });
   }
 
   const { jobDescription, company, role } = await req.json();
 
   if (!jobDescription?.trim()) {
-    return NextResponse.json({ error: "Job description required." }, { status: 400 });
+    return apiError("Job description required.", { status: 400 });
   }
 
   // Deterministic Try-demo JD: no OpenAI, no free-tier burn.
@@ -88,9 +89,6 @@ export async function POST(req: Request) {
     await recordUsage(session.user.id, "cover_letter", usage.estimatedCostUsd);
     return NextResponse.json({ letter });
   } catch {
-    return NextResponse.json(
-      { error: "Cover letter generation failed." },
-      { status: 500 },
-    );
+    return apiError("Cover letter generation failed.", { status: 500 });
   }
 }

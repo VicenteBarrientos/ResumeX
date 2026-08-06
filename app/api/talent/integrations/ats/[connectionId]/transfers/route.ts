@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/require-auth";
 import { db } from "@/lib/db";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { requireOwnedAtsConnection, requireOwnedTalentSearch } from "@/lib/ats/ownership";
 import { transferExecuteSchema } from "@/lib/ats/schemas";
@@ -15,15 +16,9 @@ export async function POST(req: Request, ctx: Ctx) {
     const body = await req.json();
     const parsed = transferExecuteSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson(
-        {
-          error: {
-            message:
-              "Transfer requires confirmed=true and confirmProcessingBasis=true.",
-            details: parsed.error.flatten(),
-          },
-        },
-        400
+      return apiError(
+        "Transfer requires confirmed=true and confirmProcessingBasis=true.",
+        { status: 400, details: parsed.error.flatten() },
       );
     }
 

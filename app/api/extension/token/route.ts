@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { db as prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { signExtensionToken } from "@/lib/extension-token";
@@ -13,13 +14,10 @@ export async function POST(req: NextRequest) {
 
     const ipLimit = consumeRateLimit(`ext-token:ip:${ip}`, 20, 60_000);
     if (!ipLimit.ok) {
-      return NextResponse.json(
-        { error: "Too many attempts. Try again shortly." },
-        {
-          status: 429,
-          headers: { "Retry-After": String(ipLimit.retryAfterSec) },
-        },
-      );
+      return apiError("Too many attempts. Try again shortly.", {
+        status: 429,
+        retryAfterSec: ipLimit.retryAfterSec,
+      });
     }
 
     const body = await req.json();
@@ -27,21 +25,15 @@ export async function POST(req: NextRequest) {
       typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
     const password = typeof body?.password === "string" ? body.password : "";
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password required." },
-        { status: 400 },
-      );
+      return apiError("Email and password required.", { status: 400 });
     }
 
     const emailLimit = consumeRateLimit(`ext-token:email:${email}`, 5, 60_000);
     if (!emailLimit.ok) {
-      return NextResponse.json(
-        { error: "Too many attempts. Try again shortly." },
-        {
-          status: 429,
-          headers: { "Retry-After": String(emailLimit.retryAfterSec) },
-        },
-      );
+      return apiError("Too many attempts. Try again shortly.", {
+        status: 429,
+        retryAfterSec: emailLimit.retryAfterSec,
+      });
     }
 
     const user = await prisma.user.findFirst({
@@ -49,24 +41,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user || !user.passwordHash) {
-      return NextResponse.json(
-        { error: "Invalid email or password." },
-        { status: 401 },
-      );
+      return apiError("Invalid email or password.", { status: 401 });
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      return NextResponse.json(
-        { error: "Invalid email or password." },
-        { status: 401 },
-      );
+      return apiError("Invalid email or password.", { status: 401 });
     }
 
     const token = await signExtensionToken(user.id);
 
     return NextResponse.json({ token, name: user.username });
   } catch {
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
+    return apiError("Server error.", { status: 500 });
   }
 }

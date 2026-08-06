@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
@@ -22,17 +23,26 @@ export async function POST(req: Request) {
   const { jobDescription, jobTitle, company } = await req.json();
 
   if (!jobDescription?.trim()) {
-    return NextResponse.json({ score: null, error: "No job description provided." });
+    return apiError("No job description provided.", {
+      status: 200,
+      extra: { score: null },
+    });
   }
 
   const userId = (await getUserIdFromBearer(req)) ?? (await getServerSession(authOptions))?.user?.id;
   if (!userId) {
-    return NextResponse.json({ score: null, error: "Sign in to get match scores." });
+    return apiError("Sign in to get match scores.", {
+      status: 200,
+      extra: { score: null },
+    });
   }
 
   const profile = await db.profile.findUnique({ where: { userId } });
   if (!profile?.resumeText) {
-    return NextResponse.json({ score: null, error: "Upload your resume first." });
+    return apiError("Upload your resume first.", {
+      status: 200,
+      extra: { score: null },
+    });
   }
 
   const denial = await assertAiQuota(userId, "match_score");
@@ -78,6 +88,9 @@ Respond ONLY with valid JSON, no markdown.`,
     await recordUsage(userId, "match_score", usage.estimatedCostUsd);
     return NextResponse.json(result);
   } catch {
-    return NextResponse.json({ score: null, error: "Analysis failed." });
+    return apiError("Analysis failed.", {
+      status: 200,
+      extra: { score: null },
+    });
   }
 }

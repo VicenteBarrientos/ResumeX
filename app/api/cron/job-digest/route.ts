@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { apiError } from "@/lib/api/response";
 import { RESUMEX_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
 
@@ -10,14 +11,11 @@ export async function GET(req: Request) {
   // otherwise the expected value becomes the literal "Bearer undefined".
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json(
-      { error: "Cron is not configured." },
-      { status: 500 },
-    );
+    return apiError("Cron is not configured.", { status: 500 });
   }
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", { status: 401 });
   }
 
   if (!resend) return NextResponse.json({ skipped: "No Resend key" });

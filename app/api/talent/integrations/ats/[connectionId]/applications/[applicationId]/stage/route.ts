@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/require-auth";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { getAtsAdapter } from "@/lib/ats/registry";
 import { providerSupports } from "@/lib/ats/capabilities";
@@ -16,10 +17,7 @@ export async function POST(req: Request, ctx: Ctx) {
     const body = await req.json();
     const parsed = stageChangeSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson(
-        { error: { message: "Stage change requires confirmed=true." } },
-        400
-      );
+      return apiError("Stage change requires confirmed=true.", { status: 400 });
     }
 
     const adapter = await getAtsAdapter(connectionId, auth.userId);
@@ -27,10 +25,7 @@ export async function POST(req: Request, ctx: Ctx) {
       !providerSupports(adapter.provider, "move_application") ||
       !adapter.moveApplication
     ) {
-      return atsJson(
-        { error: { message: "Moving applications is not supported for this ATS." } },
-        400
-      );
+      return apiError("Moving applications is not supported for this ATS.", { status: 400 });
     }
 
     await adapter.moveApplication({

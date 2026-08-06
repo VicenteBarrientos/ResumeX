@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/require-auth";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { getAtsAdapter } from "@/lib/ats/registry";
 import { candidateSearchSchema } from "@/lib/ats/schemas";
@@ -13,7 +14,7 @@ export async function POST(req: Request, ctx: Ctx) {
     const body = await req.json();
     const parsed = candidateSearchSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson({ error: { message: "Invalid search payload." } }, 400);
+      return apiError("Invalid search payload.", { status: 400 });
     }
 
     const adapter = await getAtsAdapter(connectionId, auth.userId);

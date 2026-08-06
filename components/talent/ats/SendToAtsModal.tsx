@@ -87,7 +87,7 @@ export default function SendToAtsModal({
     try {
       const res = await fetch(`/api/talent/integrations/ats/${c.id}/jobs`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "Could not load jobs.");
+      if (!res.ok) throw new Error((typeof data?.error === "string" ? data.error : undefined) || "Could not load jobs.");
       setJobs(data.jobs || []);
       setStep("choose_job");
     } catch (e) {
@@ -117,7 +117,7 @@ export default function SendToAtsModal({
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "Duplicate check failed.");
+      if (!res.ok) throw new Error((typeof data?.error === "string" ? data.error : undefined) || "Duplicate check failed.");
       setDuplicates(data.matches || []);
       setStep("duplicates");
     } catch (e) {
@@ -145,7 +145,7 @@ export default function SendToAtsModal({
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "Preview failed.");
+      if (!res.ok) throw new Error((typeof data?.error === "string" ? data.error : undefined) || "Preview failed.");
       setPreview(data.preview);
       setStep("preview");
     } catch (e) {
@@ -178,7 +178,7 @@ export default function SendToAtsModal({
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "Transfer failed.");
+      if (!res.ok) throw new Error((typeof data?.error === "string" ? data.error : undefined) || "Transfer failed.");
       setResult(data.result);
       setStep("result");
     } catch (e) {

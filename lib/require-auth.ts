@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
+import type { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth-options";
 import { getUserIdFromBearer } from "@/lib/extension-auth";
 
@@ -13,7 +14,7 @@ export async function requireSession(): Promise<
   if (!session?.user?.id) {
     return {
       userId: null,
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      error: apiError("Unauthorized", { status: 401 }),
     };
   }
   return { userId: session.user.id, error: null };
@@ -32,7 +33,7 @@ export async function requireUserId(req: Request): Promise<
   if (!session?.user?.id) {
     return {
       userId: null,
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      error: apiError("Unauthorized", { status: 401 }),
     };
   }
   return { userId: session.user.id, error: null };

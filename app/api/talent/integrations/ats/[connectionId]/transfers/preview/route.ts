@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/require-auth";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { requireOwnedTalentSearch } from "@/lib/ats/ownership";
 import { transferPreviewSchema } from "@/lib/ats/schemas";
@@ -14,7 +15,7 @@ export async function POST(req: Request, ctx: Ctx) {
     const body = await req.json();
     const parsed = transferPreviewSchema.safeParse(body);
     if (!parsed.success) {
-      return atsJson({ error: { message: "Invalid preview payload.", details: parsed.error.flatten() } }, 400);
+      return apiError("Invalid preview payload.", { status: 400, details: parsed.error.flatten() });
     }
 
     if (parsed.data.searchProjectId) {

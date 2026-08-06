@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { requireSession } from "@/lib/require-auth";
 
 interface JobResult {
@@ -91,7 +92,7 @@ export async function GET(req: Request) {
   ]);
 
   if (adzuna.length === 0 && jsearch.length === 0) {
-    return NextResponse.json({ error: "Job search not configured." }, { status: 503 });
+    return apiError("Job search not configured.", { status: 503 });
   }
 
   // Interleave results: adzuna, jsearch, adzuna, jsearch...

@@ -6,19 +6,19 @@
 
 ## Estado actual
 
-- **Última actualización:** 2026-08-06 19:48 UTC — America/Santiago
-- **Versión del handoff:** 1.9
-- **Estado:** **T-12.1 + T-12.2 + T-12.4 en `main` y Production** (`f9f46a6`, Vercel Production deploy id `5784391981`, READY). ATS Demo Ashby E2E OK. Auditoría + plan en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md).
-- **Próximo hito:** **T-12.5** (envelope de error plano, R-021) → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras).
-- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano**. **Los números de `lib/quota-limits.ts` (excepto Free analyzer 1/semana y cover letter 1/día) son propuesta de producto** — confirmar si hay que ajustar en prod.
-- **Riesgo con dinero en juego:** **cerrado en prod** por T-12.4. `/api/talent-assess` y `/api/talent-mapper/search` (live) pasan por `assertAiQuota`; `UsageEvent.costUsd` alimenta el techo diario (migración aplicada en el build de Vercel).
+- **Última actualización:** 2026-08-06 20:10 UTC — America/Santiago
+- **Versión del handoff:** 1.10
+- **Estado:** T-12.1–T-12.4 en prod. **T-12.5 hecha** en `cursor/architecture-debt-t12-5-envelope-8725` (envelope plano R-021). Cuotas de `lib/quota-limits.ts` **confirmadas** (2026-08-06). Auditoría + plan en [`docs/ARCHITECTURE_DEBT.md`](./docs/ARCHITECTURE_DEBT.md).
+- **Próximo hito:** merge/deploy T-12.5 → **T-12.3** (observabilidad) → **T-12.6** (Zod en escrituras).
+- **Bloqueos conocidos:** `ZOHO_RECRUIT_*` no están en Vercel. Live Recruitee/Ashby solo vía UI con tokens del cliente. **T-12.10 y T-12.11 requieren decisión/etiquetado humano**.
+- **Riesgo con dinero en juego:** **cerrado en prod** por T-12.4.
 - **Repositorio canónico:** `C:\Users\hp\Projects\ResumeX` — rama observada `main`.
 - **Prod:** `https://resumex.talentxrecruiting.com` (GitHub deploy post-`cb4fd5e`).
 - **Wiki:** `C:\Users\hp\ObsidianVault\ResumeX\`
 
 ### Trabajo en vuelo
 
-Ninguno de Fase 12 en vuelo: T-12.1–T-12.4 ya están en `main`/prod. Siguiente tomable: **T-12.5**.
+`cursor/architecture-debt-t12-5-envelope-8725` — T-12.5 (sin mergear al cerrar esta entrada).
 
 
 ## Protocolo para agentes
@@ -233,8 +233,8 @@ Prioridad real, no orden de numeración. Detalle de cada tarea: [`docs/ARCHITECT
 
 1. ✅ **T-12.1** — frontera Career/Talent por ESLint (R-023). Hecha en `cursor/architecture-debt-phase-12-7496`.
 2. ✅ **T-12.2** — índices `[userId, createdAt]` en `Application`/`Answer` + parseo defensivo de `profileJson`. Hecha en la misma rama.
-3. ✅ **T-12.4** — cuota durable sobre `UsageEvent` (R-022, cierra B-12). Hecha en `cursor/architecture-debt-t12-4-quota-8725`. ⚠️ Confirmar números de `lib/quota-limits.ts` (salvo Free analyzer/cover letter ya shipped).
-4. **T-12.5** — envelope de error único y plano (R-021). ⚠️ La migración va **de ATS hacia Career**, no al revés: leer R-021 antes de tocar nada.
+3. ✅ **T-12.4** — cuota durable sobre `UsageEvent` (R-022, cierra B-12). En prod; límites confirmados 2026-08-06.
+4. ✅ **T-12.5** — envelope de error único y plano (R-021). Hecha en `cursor/architecture-debt-t12-5-envelope-8725`.
 5. **T-12.3** — observabilidad (cierra B-11). Habilita verificar en prod todo lo demás.
 6. **T-12.6** — Zod en las escrituras de `talent-mapper/searches` y `profile` (R-024).
 7. **T-12.7** — un solo punto de entrada de auth; borrar las tres copias de `resolveUserId`. ⚠️ `match-score` necesita verificar la extensión antes de cambiar su 200→401.
@@ -255,6 +255,14 @@ La rama `archive/cs50-clerk-2026-08-05` (en la copia CS50) conten?a un redise?o 
 No hay c?digo que portar: eran declaraciones de tipo sin implementaci?n. Tratarlas como backlog, no como migraci?n.
 
 ## Bit?cora de cambios
+
+### 2026-08-06 20:10 — T-12.5 envelope plano + cuotas confirmadas
+
+- **Objetivo:** un solo envelope HTTP plano (`error` string) y fijar pricing de cuota.
+- **Estado:** T-12.5 completado en rama; límites de `quota-limits.ts` confirmados por humano.
+- **Cambios:** `lib/api/response.ts`; ATS `http-response` + UI; migración de `app/api/**` a `apiError` sin cambiar strings; tests de flatten.
+- **Validaciones:** typecheck, lint, `npm test` (incl. api-response); grep sin `NextResponse.json({ error` en routes.
+- **Siguiente paso:** merge/deploy T-12.5; luego T-12.3.
 
 ### 2026-08-06 19:48 — Deploy a Production de T-12.1–T-12.4
 

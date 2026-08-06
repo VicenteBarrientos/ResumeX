@@ -5,6 +5,7 @@ import {
   logAnalysisError,
   normalizeAnalysisError,
 } from "@/lib/analysis-errors";
+import { apiError } from "@/lib/api/response";
 import { MAX_TEXT_LENGTH } from "@/lib/constants";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { getOpenAiApiKey } from "@/lib/env";
@@ -25,24 +26,18 @@ export async function POST(request: Request) {
   const resolved = await resolveResumeJobInput(request);
 
   if (resolved.error) {
-    return NextResponse.json(
-      { error: resolved.error },
-      { status: resolved.status ?? 400 },
-    );
+    return apiError(resolved.error, { status: resolved.status ?? 400 });
   }
 
   const { resume, jobDescription } = resolved;
 
   if (!resume || !jobDescription) {
-    return NextResponse.json(
-      { error: "Both resume and job description are required." },
-      { status: 400 },
-    );
+    return apiError("Both resume and job description are required.", { status: 400 });
   }
 
   if (resume.length > MAX_TEXT_LENGTH || jobDescription.length > MAX_TEXT_LENGTH) {
-    return NextResponse.json(
-      { error: "Resume and job description must each be under 15,000 characters." },
+    return apiError(
+      "Resume and job description must each be under 15,000 characters.",
       { status: 400 },
     );
   }
@@ -54,10 +49,7 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     console.error("[ResumeX] OPENAI_API_KEY is not configured.");
-    return NextResponse.json(
-      { error: "OpenAI API key is not configured on the server." },
-      { status: 500 },
-    );
+    return apiError("OpenAI API key is not configured on the server.", { status: 500 });
   }
 
   try {
@@ -73,9 +65,8 @@ export async function POST(request: Request) {
 
     const analysisError = normalizeAnalysisError(error);
 
-    return NextResponse.json(
-      { error: getClientErrorMessage(analysisError, isDev) },
-      { status: analysisError.status },
-    );
+    return apiError(getClientErrorMessage(analysisError, isDev), {
+      status: analysisError.status,
+    });
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/response";
 import { assertAiQuota, recordUsage } from "@/lib/entitlements";
 import { quotaDenialResponse } from "@/lib/quota";
 import { extractSourcingCriteria } from "@/lib/talent-mapper/ai";
@@ -20,21 +21,18 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body.", action: "Send a JSON payload with jobDescription." },
-      { status: 400 }
-    );
+    return apiError("Invalid JSON body.", {
+      status: 400,
+      action: "Send a JSON payload with jobDescription.",
+    });
   }
 
   const parsed = extractCriteriaRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: "Empty job description.",
-        action: "Paste a role description, or load the scientific sourcing demo.",
-      },
-      { status: 400 }
-    );
+    return apiError("Empty job description.", {
+      status: 400,
+      action: "Paste a role description, or load the scientific sourcing demo.",
+    });
   }
 
   const { jobDescription, roleTitle } = parsed.data;

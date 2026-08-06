@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/require-auth";
+import { apiError } from "@/lib/api/response";
 import { atsErrorResponse, atsJson } from "@/lib/ats/http-response";
 import { getAtsAdapter } from "@/lib/ats/registry";
 import { providerSupports } from "@/lib/ats/capabilities";
@@ -12,7 +13,7 @@ export async function GET(_req: Request, ctx: Ctx) {
     const { connectionId, jobId } = await ctx.params;
     const adapter = await getAtsAdapter(connectionId, auth.userId);
     if (!providerSupports(adapter.provider, "list_stages") || !adapter.listStages) {
-      return atsJson({ error: { message: "Listing stages is not supported for this ATS." } }, 400);
+      return apiError("Listing stages is not supported for this ATS.", { status: 400 });
     }
     const stages = await adapter.listStages(jobId);
     return atsJson({ stages });
